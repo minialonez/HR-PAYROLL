@@ -2,27 +2,31 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HR Dashboard | ระบบ HR & Payroll v3</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HR Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1117;--s1:#1a1d27;--s2:#242736;--s3:#2d3143;--bd:#353849;--t1:#e4e6f0;--t2:#9ca0b0;--t3:#6b7084;--blue:#3b82f6;--blue2:#60a5fa;--grn:#22c55e;--grn-bg:rgba(34,197,94,.12);--red:#ef4444;--red-bg:rgba(239,68,68,.12);--amb:#f59e0b;--amb-bg:rgba(245,158,11,.12);--pur:#a78bfa;--pur-bg:rgba(167,139,250,.12);--cyn:#22d3ee;--cyn-bg:rgba(34,211,238,.12);--ora:#fb923c;--ora-bg:rgba(251,146,60,.12)}
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;display:flex}a{color:var(--blue2);text-decoration:none}
+:root{--bg:#0f1117;--s1:#1a1d27;--s2:#242736;--s3:#2d3143;--bd:#353849;--t1:#e4e6f0;--t2:#9ca0b0;--t3:#6b7084;--blue:#3b82f6;--grn:#22c55e;--grn-bg:rgba(34,197,94,.12);--red:#ef4444;--red-bg:rgba(239,68,68,.12);--amb:#f59e0b;--amb-bg:rgba(245,158,11,.12);--pur:#a78bfa;--pur-bg:rgba(167,139,250,.12);--cyn:#22d3ee;--cyn-bg:rgba(34,211,238,.12);--ora:#fb923c;--ora-bg:rgba(251,146,60,.12)}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
+a{color:var(--blue);text-decoration:none}
 .sidebar{width:220px;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
-.sidebar .logo{padding:20px 16px;border-bottom:1px solid var(--bd)}.sidebar .logo h1{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}.sidebar .logo p{font-size:10px;color:var(--t3);margin-top:3px;letter-spacing:.5px}
-.sidebar nav{flex:1;padding:8px;overflow-y:auto}.sidebar .sl{font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1px;padding:14px 8px 4px}
+.sidebar .logo{padding:20px 16px;border-bottom:1px solid var(--bd)}.sidebar .logo h1{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}.sidebar .logo p{font-size:10px;color:var(--t3);margin-top:3px}
+.sidebar nav{flex:1;padding:8px;overflow-y:auto}.sl{font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1px;padding:14px 8px 4px}
 .ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:var(--t2);cursor:pointer;font-size:12px;font-weight:500;transition:.15s}.ni:hover{background:var(--s2);color:var(--t1)}.ni.active{background:var(--blue);color:#fff}
 .ni .ic{font-size:14px;width:20px;text-align:center}.ni .badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:700}
-.sidebar .sb{padding:10px;border-top:1px solid var(--bd)}.sidebar .sb button{width:100%;padding:7px;background:var(--s2);border:1px solid var(--bd);border-radius:5px;color:var(--t2);font-size:11px;cursor:pointer;font-family:inherit}
-.main{margin-left:220px;flex:1;min-height:100vh}.topbar{padding:12px 24px;background:var(--s1);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
-.topbar h2{font-size:15px;font-weight:600}.topbar .meta{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:10px}.topbar .dot{width:7px;height:7px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite}
+.sidebar .sb{padding:10px;border-top:1px solid var(--bd)}.sidebar .sb .user-info{font-size:11px;color:var(--t2);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.sidebar .sb button{width:100%;padding:6px;background:var(--s2);border:1px solid var(--bd);border-radius:5px;color:var(--t2);font-size:10px;cursor:pointer;font-family:inherit;margin-top:4px}
+.app{display:flex;min-height:100vh}.main{margin-left:220px;flex:1;min-height:100vh}
+.topbar{padding:12px 24px;background:var(--s1);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.topbar h2{font-size:15px;font-weight:600}.topbar .meta{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:10px}
+.topbar .dot{width:7px;height:7px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.content{padding:20px 24px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:20px}
 .card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}.card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .card.grn::after{background:var(--grn)}.card.red::after{background:var(--red)}.card.amb::after{background:var(--amb)}.card.pur::after{background:var(--pur)}.card.cyn::after{background:var(--cyn)}.card.bl::after{background:var(--blue)}.card.ora::after{background:var(--ora)}
 .card .ci{font-size:22px;margin-bottom:6px}.card .cv{font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace}.card .cl{font-size:11px;color:var(--t2);margin-top:3px}
 .tw{background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:20px}
-.th_{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd)}.th_ h3{font-size:13px;font-weight:600}.th_ .fl{display:flex;gap:6px;align-items:center}
+.th_{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);flex-wrap:wrap;gap:8px}.th_ h3{font-size:13px;font-weight:600}.th_ .fl{display:flex;gap:6px;align-items:center}
 .th_ input,.th_ select{padding:5px 8px;background:var(--s2);border:1px solid var(--bd);border-radius:5px;color:var(--t1);font-size:11px;font-family:inherit}
 table{width:100%;border-collapse:collapse;font-size:12px}thead{background:var(--s2)}th{padding:8px 10px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--t2);white-space:nowrap}
 td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover td{background:var(--s2)}
@@ -32,18 +36,68 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 .sb0.danger{background:var(--red-bg);color:var(--red);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
 .ap{background:var(--s1);border:1px solid var(--amb);border-left:4px solid var(--amb);border-radius:10px;padding:14px 16px;margin-bottom:20px}
-.ap h3{font-size:13px;font-weight:600;color:var(--amb);margin-bottom:8px;display:flex;align-items:center;gap:6px}.ap.danger{border-color:var(--red)}.ap.danger h3{color:var(--red)}
+.ap h3{font-size:13px;font-weight:600;color:var(--amb);margin-bottom:8px}.ap.danger{border-color:var(--red)}.ap.danger h3{color:var(--red)}
 .ai{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px}.ai:last-child{border-bottom:none}.ai .at{flex:1}.ai .ad{font-size:10px;color:var(--t3);font-family:'JetBrains Mono',monospace}
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center}
-.md{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:400px;max-width:90vw}.md h3{font-size:15px;font-weight:600;margin-bottom:14px}
-.md label{display:block;font-size:11px;font-weight:600;color:var(--t2);margin-top:10px}.md input{width:100%;padding:8px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin-top:3px}
-.md .br{display:flex;gap:8px;margin-top:16px}.md .btn{flex:1;padding:8px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}.md .bp{background:var(--blue);color:#fff}.md .bs{background:var(--s3);color:var(--t2)}
-.page{display:none}.page.active{display:block}.empty{text-align:center;padding:30px;color:var(--t3);font-size:12px}.empty .ei{font-size:32px;margin-bottom:6px;opacity:.5}
+.page{display:none}.page.active{display:block}.empty{text-align:center;padding:30px;color:var(--t3);font-size:12px}
 .mt{display:none;background:none;border:none;color:var(--t1);font-size:20px;cursor:pointer}
 @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.mt{display:block}.cards{grid-template-columns:repeat(2,1fr)}}
+
+/* ===== LOGIN ===== */
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .6s,transform .6s}
+#loginScreen.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+.login-box{width:380px;max-width:90vw;text-align:center}
+.login-box .avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px}
+.login-box h2{font-size:22px;font-weight:700;margin-bottom:4px}
+.login-box p{font-size:13px;color:var(--t2);margin-bottom:24px}
+.login-box input{width:100%;padding:12px 14px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:10px;transition:border .2s}
+.login-box input:focus{outline:none;border-color:var(--blue)}
+.login-box .btn-login{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s}
+.login-box .btn-login:hover{background:#2563eb}
+.login-box .err{color:var(--red);font-size:12px;margin-top:8px;min-height:18px}
+
+/* ===== SETUP ===== */
+#setupScreen{position:fixed;inset:0;z-index:9998;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.setup-box{width:460px;max-width:90vw;text-align:center}
+.setup-box h2{font-size:22px;font-weight:700;margin-bottom:8px}
+.setup-box p{font-size:13px;color:var(--t2);margin-bottom:20px}
+.setup-box input{width:100%;padding:12px 14px;background:var(--s1);border:2px solid var(--blue);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:12px;text-align:center}
+.setup-box button{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* ===== USER MGMT ===== */
+.um-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.um-form input,.um-form select{padding:8px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit}
+.um-form button{grid-column:span 2;padding:8px;background:var(--grn);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body>
+
+<!-- ===== SETUP SCREEN ===== -->
+<div id="setupScreen" style="display:none">
+<div class="setup-box">
+  <div style="font-size:48px;margin-bottom:12px">🔗</div>
+  <h2>ตั้งค่า Web App URL</h2>
+  <p>วาง Google Apps Script URL เพื่อเริ่มใช้งาน</p>
+  <input id="setupUrl" placeholder="https://script.google.com/macros/s/.../exec">
+  <button onclick="saveSetup()">🚀 บันทึก & ดำเนินการ</button>
+  <p style="font-size:11px;color:var(--t3);margin-top:10px">URL ได้จาก Apps Script > Deploy > Web App</p>
+</div>
+</div>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen" style="display:none">
+<div class="login-box">
+  <div class="avatar">🏢</div>
+  <h2>HR Dashboard</h2>
+  <p>เข้าสู่ระบบเพื่อจัดการข้อมูล HR & Payroll</p>
+  <input id="loginUser" placeholder="👤 Username" autofocus>
+  <input id="loginPass" placeholder="🔒 Password" type="password" onkeydown="if(event.key==='Enter')doLogin()">
+  <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+  <div class="err" id="loginErr"></div>
+</div>
+</div>
+
+<!-- ===== APP ===== -->
+<div class="app" id="appScreen" style="display:none">
 <aside class="sidebar" id="sidebar">
   <div class="logo"><h1><span>🏢</span> HR Dashboard</h1><p>PAYROLL & ATTENDANCE v3</p></div>
   <nav>
@@ -58,216 +112,253 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="ni" data-page="attendance"><span class="ic">📋</span>บันทึกเวลา</div>
     <div class="ni" data-page="payroll"><span class="ic">💰</span>เงินเดือน</div>
     <div class="ni" data-page="holidays"><span class="ic">📅</span>วันหยุดบริษัท</div>
+    <div class="sl role-admin" style="display:none">ผู้ดูแลระบบ</div>
+    <div class="ni role-admin" data-page="users" style="display:none"><span class="ic">🔐</span>จัดการผู้ใช้</div>
   </nav>
-  <div class="sb"><button onclick="showSettings()">⚙️ ตั้งค่า Web App URL</button></div>
+  <div class="sb">
+    <div class="user-info"><span>👤</span> <span id="userDisplay">-</span> <span class="sb0 x" id="userRole">-</span></div>
+    <button onclick="showSettings()">⚙️ ตั้งค่า URL</button>
+    <button onclick="doLogout()" style="background:var(--red-bg);color:var(--red);border-color:rgba(239,68,68,.3)">🚪 ออกจากระบบ</button>
+  </div>
 </aside>
 
 <div class="main">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px"><button class="mt" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><h2 id="pageTitle">📊 Dashboard</h2></div>
-    <div class="meta"><span id="lastUpd">—</span><span class="dot" id="sDot" style="display:none"></span><span id="connSt" style="font-size:10px;color:var(--t3)">ยังไม่เชื่อมต่อ</span></div>
+    <div class="meta"><span id="lastUpd">—</span><span class="dot" id="sDot" style="display:none"></span><span id="connSt" style="font-size:10px">ยังไม่เชื่อมต่อ</span></div>
   </div>
   <div class="content">
-    <!-- ===== SETUP PAGE - หน้าใหญ่กลางจอ ===== -->
-    <div id="setupPage" style="display:none;position:fixed;inset:0;z-index:999;background:#0f1117;align-items:center;justify-content:center">
-      <div style="text-align:center;max-width:520px;padding:40px">
-        <div style="font-size:64px;margin-bottom:16px">🔗</div>
-        <h1 style="font-size:24px;font-weight:700;color:#e4e6f0;margin-bottom:8px">เชื่อมต่อ Web App</h1>
-        <p style="font-size:14px;color:#9ca0b0;margin-bottom:24px">วาง Google Apps Script URL ด้านล่างเพื่อเริ่มใช้งาน Dashboard</p>
-        <input id="setupUrl" placeholder="วาง URL ที่นี่... https://script.google.com/macros/s/xxxxx/exec"
-          style="width:100%;padding:14px 16px;background:#1a1d27;border:2px solid #3b82f6;border-radius:10px;color:#e4e6f0;font-size:15px;font-family:inherit;text-align:center;margin-bottom:12px">
-        <button onclick="connectUrl()"
-          style="width:100%;padding:14px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:16px">
-          🚀 เชื่อมต่อเลย!
-        </button>
-        <div style="background:#1a1d27;border:1px solid #353849;border-radius:10px;padding:16px;text-align:left">
-          <p style="font-size:12px;color:#9ca0b0;margin-bottom:8px;font-weight:600">📋 วิธีหา URL:</p>
-          <p style="font-size:12px;color:#6b7084;line-height:1.8">
-            1. เปิด Google Sheets ที่ติดตั้ง HR System<br>
-            2. เมนู <b style="color:#e4e6f0">Extensions → Apps Script</b><br>
-            3. กด <b style="color:#e4e6f0">Deploy → Manage deployments</b><br>
-            4. Copy URL ที่ขึ้นว่า <b style="color:#60a5fa">Web App URL</b>
-          </p>
-        </div>
-        <p id="setupError" style="color:#ef4444;font-size:13px;margin-top:12px;display:none"></p>
-      </div>
-    </div>
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="cards">
-        <div class="card bl"><div class="ci">👥</div><div class="cv" id="cTot">—</div><div class="cl">พนักงานทั้งหมด</div></div>
+        <div class="card bl"><div class="ci">👥</div><div class="cv" id="cTot">—</div><div class="cl">พนักงาน</div></div>
         <div class="card grn"><div class="ci">✅</div><div class="cv" id="cWrk">—</div><div class="cl">มาทำงาน</div></div>
         <div class="card red"><div class="ci">❌</div><div class="cv" id="cAbs">—</div><div class="cl">ขาดงาน</div></div>
         <div class="card pur"><div class="ci">📅</div><div class="cv" id="cLv">—</div><div class="cl">ลา</div></div>
         <div class="card amb"><div class="ci">⚠️</div><div class="cv" id="cFgt">—</div><div class="cl">ลืมสแกน</div></div>
-        <div class="card ora"><div class="ci">⏰</div><div class="cv" id="cLt60">—</div><div class="cl">สายเกิน 60 นาที</div></div>
+        <div class="card ora"><div class="ci">⏰</div><div class="cv" id="cLt60">—</div><div class="cl">สาย>60นาที</div></div>
         <div class="card cyn"><div class="ci">🕌</div><div class="cv" id="cFri">—</div><div class="cl">วันศุกร์</div></div>
       </div>
       <div id="dashAlerts"></div>
       <div class="tw"><div class="th_"><h3>📋 สถานะพนักงานวันนี้</h3><div class="fl"><input type="text" id="dSrch" placeholder="🔍 ค้นหา..." oninput="filterDash()"></div></div>
         <div style="overflow-x:auto"><table><thead id="dHd"></thead><tbody id="dBd"></tbody></table></div></div>
     </div>
-    <!-- EMPLOYEES -->
-    <div class="page" id="page-employees"><div class="tw"><div class="th_"><h3>👥 รายชื่อพนักงาน</h3></div><div style="overflow-x:auto"><table><thead id="eHd"></thead><tbody id="eBd"></tbody></table></div></div></div>
-    <!-- FORGOT SCAN -->
-    <div class="page" id="page-alerts">
-      <div class="ap" id="alertP"><h3>⚠️ ลืมสแกน (รอแก้ไข)</h3><div id="alertL"><div class="empty"><div class="ei">✅</div>ไม่มีรายการ</div></div></div>
-      <div class="tw"><div class="th_"><h3>📋 ประวัติลืมสแกน</h3></div><div style="overflow-x:auto"><table><thead id="fHd"></thead><tbody id="fBd"></tbody></table></div></div>
+    <!-- EMPLOYEES --><div class="page" id="page-employees"><div class="tw"><div class="th_"><h3>👥 พนักงาน</h3></div><div style="overflow-x:auto"><table><thead id="eHd"></thead><tbody id="eBd"></tbody></table></div></div></div>
+    <!-- ALERTS --><div class="page" id="page-alerts"><div class="ap"><h3>⚠️ ลืมสแกน (รอแก้ไข)</h3><div id="alertL"><div class="empty">ไม่มีรายการ</div></div></div><div class="tw"><div class="th_"><h3>📋 ประวัติลืมสแกน</h3></div><div style="overflow-x:auto"><table><thead id="fHd"></thead><tbody id="fBd"></tbody></table></div></div></div>
+    <!-- LATE --><div class="page" id="page-late"><div class="ap danger"><h3>🚨 สายเกิน 60 นาที</h3><div id="lateAlertL"></div></div><div class="tw"><div class="th_"><h3>⏰ รายการสาย</h3><div class="fl"><input type="date" id="ltFrom" onchange="loadLate()"><input type="date" id="ltTo" onchange="loadLate()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>วันที่</th><th>ID</th><th>ชื่อ</th><th>สาย</th><th>เหตุผล</th><th>หัก?</th><th>฿</th><th>สถานะ</th></tr></thead><tbody id="ltBd"></tbody></table></div></div></div>
+    <!-- PRAYER --><div class="page" id="page-prayer"><div class="tw"><div class="th_"><h3>🕌 ละหมาดศุกร์</h3></div><div style="overflow-x:auto"><table><thead id="prHd"></thead><tbody id="prBd"></tbody></table></div></div></div>
+    <!-- ATTENDANCE --><div class="page" id="page-attendance"><div class="tw"><div class="th_"><h3>📋 บันทึกเวลา</h3><div class="fl"><input type="date" id="atFrom" onchange="loadAtt()"><input type="date" id="atTo" onchange="loadAtt()"></div></div><div style="overflow-x:auto"><table><thead id="atHd"></thead><tbody id="atBd"></tbody></table></div></div></div>
+    <!-- PAYROLL --><div class="page" id="page-payroll"><div class="tw"><div class="th_"><h3>💰 เงินเดือน</h3><div class="fl"><input type="text" id="payP" placeholder="เช่น 03/2026 → 04/2026" style="width:180px"><button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPay()">โหลด</button></div></div><div style="overflow-x:auto"><table><thead id="pyHd"></thead><tbody id="pyBd"></tbody></table></div></div></div>
+    <!-- HOLIDAYS --><div class="page" id="page-holidays"><div class="tw"><div class="th_"><h3>📅 วันหยุดบริษัท</h3></div><div style="overflow-x:auto"><table><thead id="hlHd"></thead><tbody id="hlBd"></tbody></table></div></div></div>
+    <!-- USER MANAGEMENT -->
+    <div class="page" id="page-users">
+      <div class="tw"><div class="th_"><h3>🔐 จัดการผู้ใช้ Dashboard</h3></div>
+        <div style="padding:16px">
+          <div class="um-form">
+            <input id="nuUser" placeholder="Username"><input id="nuName" placeholder="ชื่อแสดง">
+            <input id="nuPass" placeholder="Password" type="text"><select id="nuRole"><option>employee</option><option>manager</option><option>hr</option><option>admin</option></select>
+            <button onclick="addUser()">➕ เพิ่มผู้ใช้ใหม่</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Username</th><th>ชื่อแสดง</th><th>สิทธิ์</th><th>จัดการ</th></tr></thead><tbody id="umBd"></tbody></table></div>
+      </div>
     </div>
-    <!-- LATE ALERTS -->
-    <div class="page" id="page-late">
-      <div class="ap danger" id="lateAlertP"><h3>🚨 สายเกิน 60 นาที (ต้องเรียกคุย)</h3><div id="lateAlertL"></div></div>
-      <div class="tw"><div class="th_"><h3>⏰ รายการสายทั้งหมด</h3><div class="fl"><input type="date" id="ltFrom" onchange="loadLate()"><input type="date" id="ltTo" onchange="loadLate()"></div></div>
-        <div style="overflow-x:auto"><table><thead><tr><th>วันที่</th><th>ID</th><th>ชื่อ</th><th>สาย(นาที)</th><th>เหตุผล</th><th>หัก?</th><th>หัก(฿)</th><th>สถานะ</th></tr></thead><tbody id="ltBd"></tbody></table></div></div>
-    </div>
-    <!-- PRAYER -->
-    <div class="page" id="page-prayer"><div class="tw"><div class="th_"><h3>🕌 บันทึกละหมาดวันศุกร์</h3></div><div style="overflow-x:auto"><table><thead id="prHd"></thead><tbody id="prBd"></tbody></table></div></div></div>
-    <!-- ATTENDANCE -->
-    <div class="page" id="page-attendance"><div class="tw"><div class="th_"><h3>📋 บันทึกเวลา</h3><div class="fl"><input type="date" id="atFrom" onchange="loadAtt()"><input type="date" id="atTo" onchange="loadAtt()"></div></div>
-      <div style="overflow-x:auto"><table><thead id="atHd"></thead><tbody id="atBd"></tbody></table></div></div></div>
-    <!-- PAYROLL -->
-    <div class="page" id="page-payroll"><div class="tw"><div class="th_"><h3>💰 เงินเดือน (รอบ 26-25)</h3><div class="fl"><input type="text" id="payP" placeholder="เช่น 03/2026 → 04/2026" style="width:180px"><button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPay()">โหลด</button></div></div>
-      <div style="overflow-x:auto"><table><thead id="pyHd"></thead><tbody id="pyBd"></tbody></table></div></div></div>
-    <!-- HOLIDAYS -->
-    <div class="page" id="page-holidays"><div class="tw"><div class="th_"><h3>📅 วันหยุดบริษัท</h3></div><div style="overflow-x:auto"><table><thead id="hlHd"></thead><tbody id="hlBd"></tbody></table></div></div></div>
   </div>
+</div>
 </div>
 
 <!-- SETTINGS MODAL -->
-<div class="mo" id="setMo" style="display:none" onclick="if(event.target===this)hideSt()">
-  <div class="md"><h3>⚙️ ตั้งค่าการเชื่อมต่อ</h3>
-    <label>Google Apps Script Web App URL</label><input id="apiUrl" placeholder="https://script.google.com/macros/s/...../exec">
-    <p style="font-size:10px;color:var(--t3);margin-top:4px">ได้จาก Google Sheets > เมนู HR System > ⚙️ > 🔗 ดู Web App URL</p>
-    <label>Auto Refresh (วินาที)</label><input id="refInt" type="number" value="60" min="10">
-    <div class="br"><button class="btn bs" onclick="hideSt()">ยกเลิก</button><button class="btn bp" onclick="saveSt()">💾 บันทึก</button></div>
+<div id="setMo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:none;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+<div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:400px;max-width:90vw">
+  <h3 style="font-size:15px;font-weight:600;margin-bottom:14px">⚙️ ตั้งค่า</h3>
+  <label style="font-size:11px;font-weight:600;color:var(--t2)">Web App URL</label>
+  <input id="apiUrl" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0 10px">
+  <label style="font-size:11px;font-weight:600;color:var(--t2)">Auto Refresh (วินาที)</label>
+  <input id="refInt" type="number" value="60" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0">
+  <div style="display:flex;gap:8px;margin-top:16px">
+    <button onclick="document.getElementById('setMo').style.display='none'" style="flex:1;padding:8px;background:var(--s3);color:var(--t2);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">ยกเลิก</button>
+    <button onclick="saveSt()" style="flex:1;padding:8px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">💾 บันทึก</button>
   </div>
+</div>
 </div>
 
 <script>
-let API='',REF=60,timer=null,allDash=[];
+let API='',REF=60,timer=null,allDash=[],curUser=null;
 const $=id=>document.getElementById(id);
+
+// ===== INIT =====
 document.addEventListener('DOMContentLoaded',()=>{
-  API=localStorage.getItem('hr_api')||'';REF=parseInt(localStorage.getItem('hr_ref')||'60');
+  API=localStorage.getItem('hr_api')||'';
+  REF=parseInt(localStorage.getItem('hr_ref')||'60');
+  const sess=localStorage.getItem('hr_session');
+  if(sess)try{curUser=JSON.parse(sess)}catch(e){}
+
+  // Flow: no URL → setup | no login → login | else → app
+  if(!API){$('setupScreen').style.display='flex';return;}
+  if(!curUser){$('loginScreen').style.display='flex';return;}
+  showApp();
+});
+
+// ===== SETUP =====
+function saveSetup(){
+  API=$('setupUrl').value.trim();
+  if(!API){alert('กรุณาวาง URL');return;}
+  localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref','60');
+  $('setupScreen').style.display='none';
+  $('loginScreen').style.display='flex';
+}
+function showSettings(){$('setMo').style.display='flex';$('apiUrl').value=API;$('refInt').value=REF}
+function saveSt(){API=$('apiUrl').value.trim();REF=parseInt($('refInt').value)||60;localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref',REF);$('setMo').style.display='none';startRef();loadAll()}
+
+// ===== LOGIN =====
+async function doLogin(){
+  const u=$('loginUser').value.trim(),p=$('loginPass').value;
+  if(!u||!p){$('loginErr').textContent='กรุณากรอก Username และ Password';return;}
+  $('loginErr').textContent='กำลังเข้าสู่ระบบ...';
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'login',username:u,password:p})});
+    const d=await r.json();
+    if(d.success){
+      curUser=d.user;localStorage.setItem('hr_session',JSON.stringify(curUser));
+      $('loginScreen').classList.add('fade-out');
+      setTimeout(()=>{$('loginScreen').style.display='none';showApp();},600);
+    }else{$('loginErr').textContent='❌ '+d.message;}
+  }catch(e){$('loginErr').textContent='❌ เชื่อมต่อไม่ได้ ตรวจสอบ URL';}
+}
+function doLogout(){curUser=null;localStorage.removeItem('hr_session');location.reload();}
+
+// ===== APP =====
+function showApp(){
+  $('appScreen').style.display='flex';
+  $('userDisplay').textContent=curUser.displayName||curUser.username;
+  $('userRole').textContent=curUser.role;
+  // Role-based menu
+  if(curUser.role==='admin'){
+    document.querySelectorAll('.role-admin').forEach(e=>e.style.display='');
+  }
+  // Hide payroll for employee role
+  if(curUser.role==='employee'){
+    document.querySelectorAll('[data-page="payroll"],[data-page="late"]').forEach(e=>e.style.display='none');
+  }
+  // Init dates
   const t=new Date(),d26=new Date(t.getFullYear(),t.getMonth()-1,26);
   if($('atFrom'))$('atFrom').value=fmt(d26);if($('atTo'))$('atTo').value=fmt(t);
   if($('ltFrom'))$('ltFrom').value=fmt(d26);if($('ltTo'))$('ltTo').value=fmt(t);
+  // Nav
   document.querySelectorAll('.ni').forEach(n=>n.addEventListener('click',()=>{
     document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));n.classList.add('active');
     const p=n.dataset.page;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
     $('page-'+p).classList.add('active');$('pageTitle').textContent=n.textContent.trim();loadPage(p);$('sidebar').classList.remove('open');
   }));
-  if(API){startRef();loadAll();$('setupPage').style.display='none';}
-  else{$('setupPage').style.display='flex';}
-});
+  startRef();loadAll();
+}
+
 function fmt(d){return d.getFullYear()+'-'+(''+(d.getMonth()+1)).padStart(2,'0')+'-'+(''+(d.getDate())).padStart(2,'0')}
-function showSettings(){$('setMo').style.display='flex';$('apiUrl').value=API;$('refInt').value=REF}
-function hideSt(){$('setMo').style.display='none'}
-function saveSt(){API=$('apiUrl').value.trim();REF=parseInt($('refInt').value)||60;localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref',REF);hideSt();startRef();loadAll()}
 function startRef(){if(timer)clearInterval(timer);timer=setInterval(()=>loadAll(),REF*1000)}
-async function apiFetch(action,params={}){
+
+// ===== API =====
+async function apiGet(action,params={}){
   if(!API)return null;const u=new URL(API);u.searchParams.set('action',action);
   for(const[k,v]of Object.entries(params))u.searchParams.set(k,v);
   try{const r=await fetch(u);const d=await r.json();$('sDot').style.display='inline-block';$('connSt').textContent='เชื่อมต่อแล้ว';$('lastUpd').textContent=new Date().toLocaleString('th-TH');return d;}
-  catch(e){$('sDot').style.display='none';$('connSt').textContent='❌ เชื่อมต่อไม่ได้';return null}
+  catch(e){$('sDot').style.display='none';$('connSt').textContent='❌ ไม่ได้';return null}
 }
+async function apiPost(body){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+  return await r.json();
+}
+
 async function loadAll(){loadSum();loadDash();loadAlerts();loadLate()}
 function loadPage(p){
   if(p==='dashboard'){loadSum();loadDash()}else if(p==='employees')loadEmp();else if(p==='alerts')loadAlerts();
   else if(p==='late')loadLate();else if(p==='attendance')loadAtt();else if(p==='payroll')loadPay();
-  else if(p==='holidays')loadHol();else if(p==='prayer')loadPrayer();
+  else if(p==='holidays')loadHol();else if(p==='prayer')loadPrayer();else if(p==='users')loadUsers();
 }
-// SUMMARY
+
+// ===== SUMMARY =====
 async function loadSum(){
-  const d=await apiFetch('summary');if(!d||!d.success)return;
+  const d=await apiGet('summary');if(!d||!d.success)return;
   $('cTot').textContent=d.totalEmployees||0;$('cWrk').textContent=d.atWork||0;$('cAbs').textContent=d.absent||0;
   $('cLv').textContent=d.leave||0;$('cFgt').textContent=d.pendingForgotScan||0;
-  $('cLt60').textContent=d.lateOver60Today||0;$('cFri').textContent=d.isFriday?'🟢 ใช่':'—';
+  $('cLt60').textContent=d.lateOver60Today||0;$('cFri').textContent=d.isFriday?'🟢':'—';
   $('bScan').textContent=d.pendingForgotScan||0;$('bScan').style.display=(d.pendingForgotScan>0)?'inline':'none';
-  const lt60=d.lateOver60Today||0;$('bLate').textContent=lt60;$('bLate').style.display=lt60>0?'inline':'none';
+  const lt=d.lateOver60Today||0;$('bLate').textContent=lt;$('bLate').style.display=lt>0?'inline':'none';
   let al='';
-  if(d.isHoliday)al+='<div class="ap" style="border-color:var(--cyn)"><h3 style="color:var(--cyn)">🎉 วันนี้เป็นวันหยุดบริษัท</h3></div>';
-  if(lt60>0)al+='<div class="ap danger"><h3>🚨 วันนี้มีพนักงานสายเกิน 60 นาที '+lt60+' คน – ต้องเรียกคุย</h3></div>';
+  if(d.isHoliday)al+='<div class="ap" style="border-color:var(--cyn)"><h3 style="color:var(--cyn)">🎉 วันหยุดบริษัท</h3></div>';
+  if(lt>0)al+='<div class="ap danger"><h3>🚨 สายเกิน 60 นาที '+lt+' คน – เรียกคุย</h3></div>';
   $('dashAlerts').innerHTML=al;
 }
-// DASHBOARD TABLE
-async function loadDash(){const d=await apiFetch('dashboard');if(!d||!d.success||!d.data)return;allDash=d.data;renderDash(d.data)}
+// ===== DASHBOARD =====
+async function loadDash(){const d=await apiGet('dashboard');if(!d||!d.success||!d.data)return;allDash=d.data;renderDash(d.data)}
 function renderDash(data){
   if(data.length<2){$('dBd').innerHTML='<tr><td colspan="7" class="empty">ไม่มีข้อมูล</td></tr>';return}
   let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&(data[i][0].toString().includes('ID')||data[i][0].toString().includes('รหัส'))){hi=i;break}}
   const h=data[hi]||['ID','ชื่อ','ตำแหน่ง','เข้า','สถานะ','สาย','หมายเหตุ'];
   $('dHd').innerHTML='<tr>'+h.map(x=>'<th>'+(x||'')+'</th>').join('')+'</tr>';
   const rows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim());
-  $('dBd').innerHTML=rows.map(r=>{
-    const st=(r[4]||'').toString();let bc='x';
-    if(st.includes('ทำงาน')||st.includes('เลิกงาน')||st.includes('พัก')||st.includes('ละหมาด'))bc='w';
-    else if(st.includes('ขาด'))bc='a';else if(st.includes('ลา'))bc='l';
-    else if(st.includes('ลืม')||st.includes('⚠️'))bc='f';else if(st.includes('วันหยุด'))bc='h';
-    const late=parseInt(r[5])||0;const lc=late>60?'danger':late>0?'la':'';
-    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+(r[0]||'')+'</td><td><b>'+(r[1]||'')+'</b></td><td>'+(r[2]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[3]||'-')+'</td><td><span class="sb0 '+bc+'">'+st+'</span></td><td>'+(late>0?'<span class="sb0 '+lc+'">'+late+' นาที'+(late>60?' ⚠️':'')+'</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[6]||'')+'</td></tr>';
+  $('dBd').innerHTML=rows.map(r=>{const st=(r[4]||'').toString();let bc='x';
+    if(st.includes('ทำงาน')||st.includes('เลิกงาน'))bc='w';else if(st.includes('ขาด'))bc='a';
+    else if(st.includes('ลา'))bc='l';else if(st.includes('ลืม')||st.includes('⚠️'))bc='f';else if(st.includes('วันหยุด'))bc='h';
+    const lt=parseInt(r[5])||0;const lc=lt>60?'danger':lt>0?'la':'';
+    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+(r[0]||'')+'</td><td><b>'+(r[1]||'')+'</b></td><td>'+(r[2]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[3]||'-')+'</td><td><span class="sb0 '+bc+'">'+st+'</span></td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m'+(lt>60?' ⚠️':'')+'</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[6]||'')+'</td></tr>';
   }).join('');
 }
 function filterDash(){const q=$('dSrch').value.toLowerCase();if(!q){renderDash(allDash);return}
   const f=[allDash[0],...allDash.slice(1).filter(r=>r&&r.some(c=>c&&c.toString().toLowerCase().includes(q)))];renderDash(f)}
-// EMPLOYEES
-async function loadEmp(){const d=await apiFetch('employees');if(!d||!d.success)return;renderTbl('eHd','eBd',d.data)}
-// FORGOT SCAN
-async function loadAlerts(){
-  const d=await apiFetch('alerts');if(!d||!d.success||!d.data)return;
-  renderTbl('fHd','fBd',d.data,r=>{const s=(r[5]||'').toString();return(s==='รอแก้ไข'||s==='รอดำเนินการ')?'background:rgba(245,158,11,.06)':''});
-  const pending=d.data.filter((r,i)=>i>0&&(r[5]==='รอแก้ไข'||r[5]==='รอดำเนินการ'));
-  $('bScan').textContent=pending.length;$('bScan').style.display=pending.length>0?'inline':'none';
-  $('alertL').innerHTML=pending.length===0?'<div class="empty"><div class="ei">✅</div>ไม่มีรายการ</div>'
-    :pending.map(r=>'<div class="ai"><span>⚠️</span><span class="at"><b>'+(r[2]||r[1])+'</b> — '+(r[3]||'')+'</span><span class="ad">'+r[0]+'</span></div>').join('');
+// ===== REST =====
+async function loadEmp(){const d=await apiGet('employees');if(!d||!d.success)return;renderTbl('eHd','eBd',d.data)}
+async function loadAlerts(){const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;renderTbl('fHd','fBd',d.data);
+  const p=d.data.filter((r,i)=>i>0&&(r[5]==='รอแก้ไข'||r[5]==='รอดำเนินการ'));$('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
+  $('alertL').innerHTML=p.length===0?'<div class="empty">ไม่มีรายการ</div>':p.map(r=>'<div class="ai"><span>⚠️</span><span class="at"><b>'+(r[2]||r[1])+'</b> — '+(r[3]||'')+'</span><span class="ad">'+r[0]+'</span></div>').join('')}
+async function loadLate(){const d=await apiGet('late_alerts');if(!d||!d.success||!d.data)return;
+  const fr=$('ltFrom').value,to=$('ltTo').value;const fl=d.data.filter(r=>{const dt=r.date||'';return(!fr||dt>=fr)&&(!to||dt<=to)});
+  const o60=fl.filter(r=>r.lateMins>60);$('bLate').textContent=o60.length;$('bLate').style.display=o60.length>0?'inline':'none';
+  $('lateAlertL').innerHTML=o60.length===0?'<div class="empty">ไม่มี</div>':o60.map(r=>'<div class="ai"><span>🚨</span><span class="at"><b>'+r.name+'</b> ('+r.empId+') — <b>'+r.lateMins+' นาที</b> '+(r.reason||'')+'</span><span class="ad">'+r.date+'</span></div>').join('');
+  $('ltBd').innerHTML=fl.length?fl.map(r=>{const c=r.lateMins>60?'danger':r.lateMins>30?'la':'';const y=r.deductYN==='N'?'w':r.deductYN==='Y'?'a':'x';
+    return'<tr'+(r.lateMins>60?' style="background:rgba(239,68,68,.06)"':'')+'><td style="font-family:JetBrains Mono;font-size:11px">'+r.date+'</td><td>'+r.empId+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+c+'">'+r.lateMins+'m'+(r.lateMins>60?' ⚠️':'')+'</span></td><td style="font-size:11px">'+(r.reason||'-')+'</td><td><span class="sb0 '+y+'">'+(r.deductYN==='Y'?'หัก':r.deductYN==='N'?'ไม่หัก':'รอ')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt+'฿':'—')+'</td><td>'+(r.warning?'<span class="sb0 danger">เรียกคุย</span>':'')+'</td></tr>';
+  }).join(''):'<tr><td colspan="8" class="empty">ไม่มีข้อมูล</td></tr>'}
+async function loadAtt(){const d=await apiGet('attendance',{from:$('atFrom').value,to:$('atTo').value});if(!d||!d.success)return;renderTbl('atHd','atBd',d.data)}
+async function loadPay(){const p=$('payP').value.trim();const d=await apiGet('payroll',p?{period:p}:{});if(!d||!d.success)return;renderTbl('pyHd','pyBd',d.data)}
+async function loadHol(){const d=await apiGet('holidays');if(!d||!d.success)return;renderTbl('hlHd','hlBd',d.data)}
+async function loadPrayer(){const d=await apiGet('prayer_log');if(!d||!d.success)return;renderTbl('prHd','prBd',d.data)}
+
+// ===== USER MANAGEMENT =====
+async function loadUsers(){
+  const d=await apiPost({action:'get_users'});if(!d||!d.success)return;
+  $('umBd').innerHTML=d.users.map(u=>'<tr><td><b>'+u.username+'</b></td><td>'+u.displayName+'</td><td><span class="sb0 '+(u.role==='admin'?'a':u.role==='hr'?'l':'w')+'">'+u.role+'</span></td><td><button onclick="editUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-right:4px">✏️</button><button onclick="deleteUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">🗑️</button></td></tr>').join('');
 }
-// LATE ALERTS
-async function loadLate(){
-  const d=await apiFetch('late_alerts');if(!d||!d.success||!d.data)return;
-  const from=$('ltFrom').value,to=$('ltTo').value;
-  const filtered=d.data.filter(r=>{const dt=(r.date||'').toString();return(!from||dt>=from)&&(!to||dt<=to)});
-  const over60=filtered.filter(r=>r.lateMins>60);
-  $('bLate').textContent=over60.length;$('bLate').style.display=over60.length>0?'inline':'none';
-  $('lateAlertL').innerHTML=over60.length===0?'<div class="empty"><div class="ei">✅</div>ไม่มีพนักงานสายเกิน 60 นาที</div>'
-    :over60.map(r=>'<div class="ai"><span>🚨</span><span class="at"><b>'+r.name+'</b> ('+r.empId+') — สาย <b>'+r.lateMins+' นาที</b> '+(r.reason?'เหตุผล: '+r.reason:'')+'</span><span class="ad">'+r.date+'</span></div>').join('');
-  $('ltBd').innerHTML=filtered.length?filtered.map(r=>{
-    const cls=r.lateMins>60?'danger':r.lateMins>30?'la':'';const ynCls=r.deductYN==='N'?'w':r.deductYN==='Y'?'a':'x';
-    return'<tr'+(r.lateMins>60?' style="background:rgba(239,68,68,.06)"':'')+'><td style="font-family:JetBrains Mono;font-size:11px">'+r.date+'</td><td>'+r.empId+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+cls+'">'+r.lateMins+' นาที'+(r.lateMins>60?' ⚠️':'')+'</span></td><td style="font-size:11px">'+(r.reason||'<span style="color:var(--t3)">ยังไม่ระบุ</span>')+'</td><td><span class="sb0 '+ynCls+'">'+(r.deductYN==='Y'?'หัก':r.deductYN==='N'?'ไม่หัก':'รอกำหนด')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt.toLocaleString()+' ฿':'—')+'</td><td>'+(r.warning?'<span class="sb0 danger">'+r.warning+'</span>':'')+'</td></tr>';
-  }).join(''):'<tr><td colspan="8" class="empty">ไม่มีข้อมูลสาย</td></tr>';
+async function addUser(){
+  const u=$('nuUser').value.trim(),n=$('nuName').value.trim(),p=$('nuPass').value.trim(),r=$('nuRole').value;
+  if(!u||!p){alert('กรุณากรอก Username และ Password');return;}
+  const d=await apiPost({action:'add_user',username:u,displayName:n,password:p,role:r});
+  alert(d.message);if(d.success){$('nuUser').value='';$('nuName').value='';$('nuPass').value='';loadUsers();}
 }
-// ATTENDANCE
-async function loadAtt(){const d=await apiFetch('attendance',{from:$('atFrom').value,to:$('atTo').value});if(!d||!d.success)return;
-  renderTbl('atHd','atBd',d.data,r=>{const s=(r[9]||'').toString();const l=parseInt(r[11])||0;
-    if(s.includes('ขาด')||s.includes('ลืม'))return'background:rgba(239,68,68,.06)';if(l>60)return'background:rgba(251,146,60,.08)';if(l>0)return'background:rgba(245,158,11,.04)';return''})}
-// PAYROLL
-async function loadPay(){const p=$('payP').value.trim();const d=await apiFetch('payroll',p?{period:p}:{});if(!d||!d.success)return;renderTbl('pyHd','pyBd',d.data)}
-// HOLIDAYS
-async function loadHol(){const d=await apiFetch('holidays');if(!d||!d.success)return;renderTbl('hlHd','hlBd',d.data)}
-// PRAYER
-async function loadPrayer(){const d=await apiFetch('prayer_log');if(!d||!d.success)return;
-  renderTbl('prHd','prBd',d.data,r=>{const o=(r[8]||'').toString();return o.includes('เกิน')?'background:rgba(239,68,68,.06)':''})}
-// GENERIC TABLE
-function renderTbl(hId,bId,data,rowFn){
-  if(!data||data.length<1){$(hId).innerHTML='';$(bId).innerHTML='<tr><td class="empty"><div class="ei">📭</div>ไม่มีข้อมูล</td></tr>';return}
+async function editUser(username){
+  const np=prompt('รหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน):');
+  const nr=prompt('สิทธิ์ใหม่ (admin/hr/manager/employee):');
+  const body={action:'edit_user',username};
+  if(np)body.password=np;if(nr)body.role=nr;
+  const d=await apiPost(body);alert(d.message);loadUsers();
+}
+async function deleteUser(username){
+  if(!confirm('ลบผู้ใช้ '+username+'?'))return;
+  const d=await apiPost({action:'delete_user',username});alert(d.message);loadUsers();
+}
+
+// ===== GENERIC TABLE =====
+function renderTbl(hId,bId,data){
+  if(!data||data.length<1){$(hId).innerHTML='';$(bId).innerHTML='<tr><td class="empty">ไม่มีข้อมูล</td></tr>';return}
   $(hId).innerHTML='<tr>'+data[0].map(h=>'<th>'+(h||'')+'</th>').join('')+'</tr>';
   const rows=data.slice(1).filter(r=>r&&r[0]!==undefined&&r[0]!=='');
-  $(bId).innerHTML=rows.map(r=>{const st=rowFn?rowFn(r):'';
-    return'<tr style="'+st+'">'+r.map(c=>{let v=c===null||c===undefined?'':c;const s=v.toString();
-      if(s.includes('✅')||s.includes('ทำงาน')||s.includes('เลิกงาน')||s==='ACTIVE'||s==='อนุมัติ'||s==='แก้ไขแล้ว'||s.includes('ปกติ'))return'<td><span class="sb0 w">'+s+'</span></td>';
-      if(s.includes('❌')||s.includes('ขาด')||s==='ไม่อนุมัติ'||s==='INACTIVE'||s==='RESIGNED')return'<td><span class="sb0 a">'+s+'</span></td>';
-      if(s.includes('📅')||s.includes('ลา'))return'<td><span class="sb0 l">'+s+'</span></td>';
-      if(s.includes('⚠️')||s.includes('ลืม')||s.includes('เกิน'))return'<td><span class="sb0 f">'+s+'</span></td>';
-      if(s==='รออนุมัติ'||s==='รอแก้ไข'||s==='รอดำเนินการ')return'<td><span class="sb0 la">'+s+'</span></td>';
-      if(s.includes('วันหยุด')||s.includes('🎉'))return'<td><span class="sb0 h">'+s+'</span></td>';
-      return'<td>'+v+'</td>';}).join('')+'</tr>';
-  }).join('');
-}
-function connectUrl(){
-  const url=$('setupUrl').value.trim();
-  if(!url){$('setupError').style.display='block';$('setupError').textContent='❌ กรุณาวาง URL';return;}
-  API=url;REF=60;
-  localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref','60');
-  $('setupPage').style.display='none';
-  $('apiUrl').value=API;
-  startRef();loadAll();
+  $(bId).innerHTML=rows.map(r=>'<tr>'+r.map(c=>{let v=c===null||c===undefined?'':c;const s=v.toString();
+    if(s.includes('✅')||s==='ACTIVE'||s==='อนุมัติ'||s==='แก้ไขแล้ว'||s.includes('ปกติ'))return'<td><span class="sb0 w">'+s+'</span></td>';
+    if(s.includes('❌')||s==='INACTIVE'||s==='RESIGNED'||s==='ไม่อนุมัติ')return'<td><span class="sb0 a">'+s+'</span></td>';
+    if(s.includes('ลา')||s.includes('📅'))return'<td><span class="sb0 l">'+s+'</span></td>';
+    if(s.includes('⚠️')||s.includes('ลืม')||s.includes('เกิน'))return'<td><span class="sb0 f">'+s+'</span></td>';
+    if(s==='รออนุมัติ'||s==='รอแก้ไข'||s==='รอดำเนินการ')return'<td><span class="sb0 la">'+s+'</span></td>';
+    if(s.includes('วันหยุด')||s.includes('🎉'))return'<td><span class="sb0 h">'+s+'</span></td>';
+    return'<td>'+v+'</td>';}).join('')+'</tr>').join('');
 }
 </script>
 </body>
