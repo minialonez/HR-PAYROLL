@@ -174,7 +174,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
   <label style="font-size:11px;font-weight:600;color:var(--t2)">Web App URL</label>
   <input id="apiUrl" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0 10px">
   <label style="font-size:11px;font-weight:600;color:var(--t2)">Auto Refresh (วินาที)</label>
-  <input id="refInt" type="number" value="60" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0">
+  <input id="refInt" type="number" value="30" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0">
   <div style="display:flex;gap:8px;margin-top:16px">
     <button onclick="document.getElementById('setMo').style.display='none'" style="flex:1;padding:8px;background:var(--s3);color:var(--t2);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">ยกเลิก</button>
     <button onclick="saveSt()" style="flex:1;padding:8px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">💾 บันทึก</button>
@@ -183,13 +183,13 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 </div>
 
 <script>
-let API='',REF=60,timer=null,allDash=[],curUser=null;
+let API='',REF=30,timer=null,allDash=[],curUser=null;
 const $=id=>document.getElementById(id);
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded',()=>{
   API=localStorage.getItem('hr_api')||'';
-  REF=parseInt(localStorage.getItem('hr_ref')||'60');
+  REF=parseInt(localStorage.getItem('hr_ref')||'30');
   const sess=localStorage.getItem('hr_session');
   if(sess)try{curUser=JSON.parse(sess)}catch(e){}
 
@@ -203,12 +203,12 @@ document.addEventListener('DOMContentLoaded',()=>{
 function saveSetup(){
   API=$('setupUrl').value.trim();
   if(!API){alert('กรุณาวาง URL');return;}
-  localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref','60');
+  localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref','30');
   $('setupScreen').style.display='none';
   $('loginScreen').style.display='flex';
 }
 function showSettings(){$('setMo').style.display='flex';$('apiUrl').value=API;$('refInt').value=REF}
-function saveSt(){API=$('apiUrl').value.trim();REF=parseInt($('refInt').value)||60;localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref',REF);$('setMo').style.display='none';startRef();loadAll()}
+function saveSt(){API=$('apiUrl').value.trim();REF=parseInt($('refInt').value)||30;localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref',REF);$('setMo').style.display='none';startRef();loadAll()}
 
 // ===== LOGIN =====
 async function doLogin(){
