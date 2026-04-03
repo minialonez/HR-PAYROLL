@@ -68,6 +68,30 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="meta"><span id="lastUpd">—</span><span class="dot" id="sDot" style="display:none"></span><span id="connSt" style="font-size:10px;color:var(--t3)">ยังไม่เชื่อมต่อ</span></div>
   </div>
   <div class="content">
+    <!-- ===== SETUP PAGE - หน้าใหญ่กลางจอ ===== -->
+    <div id="setupPage" style="display:none;position:fixed;inset:0;z-index:999;background:#0f1117;align-items:center;justify-content:center">
+      <div style="text-align:center;max-width:520px;padding:40px">
+        <div style="font-size:64px;margin-bottom:16px">🔗</div>
+        <h1 style="font-size:24px;font-weight:700;color:#e4e6f0;margin-bottom:8px">เชื่อมต่อ Web App</h1>
+        <p style="font-size:14px;color:#9ca0b0;margin-bottom:24px">วาง Google Apps Script URL ด้านล่างเพื่อเริ่มใช้งาน Dashboard</p>
+        <input id="setupUrl" placeholder="วาง URL ที่นี่... https://script.google.com/macros/s/xxxxx/exec"
+          style="width:100%;padding:14px 16px;background:#1a1d27;border:2px solid #3b82f6;border-radius:10px;color:#e4e6f0;font-size:15px;font-family:inherit;text-align:center;margin-bottom:12px">
+        <button onclick="connectUrl()"
+          style="width:100%;padding:14px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:16px">
+          🚀 เชื่อมต่อเลย!
+        </button>
+        <div style="background:#1a1d27;border:1px solid #353849;border-radius:10px;padding:16px;text-align:left">
+          <p style="font-size:12px;color:#9ca0b0;margin-bottom:8px;font-weight:600">📋 วิธีหา URL:</p>
+          <p style="font-size:12px;color:#6b7084;line-height:1.8">
+            1. เปิด Google Sheets ที่ติดตั้ง HR System<br>
+            2. เมนู <b style="color:#e4e6f0">Extensions → Apps Script</b><br>
+            3. กด <b style="color:#e4e6f0">Deploy → Manage deployments</b><br>
+            4. Copy URL ที่ขึ้นว่า <b style="color:#60a5fa">Web App URL</b>
+          </p>
+        </div>
+        <p id="setupError" style="color:#ef4444;font-size:13px;margin-top:12px;display:none"></p>
+      </div>
+    </div>
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="cards">
@@ -132,7 +156,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     const p=n.dataset.page;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
     $('page-'+p).classList.add('active');$('pageTitle').textContent=n.textContent.trim();loadPage(p);$('sidebar').classList.remove('open');
   }));
-  if(API){startRef();loadAll();}else showSettings();
+  if(API){startRef();loadAll();$('setupPage').style.display='none';}
+  else{$('setupPage').style.display='flex';}
 });
 function fmt(d){return d.getFullYear()+'-'+(''+(d.getMonth()+1)).padStart(2,'0')+'-'+(''+(d.getDate())).padStart(2,'0')}
 function showSettings(){$('setMo').style.display='flex';$('apiUrl').value=API;$('refInt').value=REF}
@@ -234,6 +259,15 @@ function renderTbl(hId,bId,data,rowFn){
       if(s.includes('วันหยุด')||s.includes('🎉'))return'<td><span class="sb0 h">'+s+'</span></td>';
       return'<td>'+v+'</td>';}).join('')+'</tr>';
   }).join('');
+}
+function connectUrl(){
+  const url=$('setupUrl').value.trim();
+  if(!url){$('setupError').style.display='block';$('setupError').textContent='❌ กรุณาวาง URL';return;}
+  API=url;REF=60;
+  localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref','60');
+  $('setupPage').style.display='none';
+  $('apiUrl').value=API;
+  startRef();loadAll();
 }
 </script>
 </body>
