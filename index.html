@@ -524,8 +524,8 @@ function loadPage(p){
 async function loadSum(){
   const d=await apiGet('summary');if(!d||!d.success)return;
   $('cTot').textContent=d.totalEmployees||0;
-  $('cJkn').textContent=d.totalJKN||0;
-  $('cFc').textContent=d.totalFC||0;
+  $('cJkn').textContent=d.jknCount||0;
+  $('cFc').textContent=d.fcCount||0;
   $('cWrk').textContent=d.atWork||0;$('cAbs').textContent=d.absent||0;
   $('cLv').textContent=d.leave||0;$('cFgt').textContent=d.pendingForgotScan||0;
   $('cLt60').textContent=d.lateOver60Today||0;$('cFri').textContent=d.isFriday?'🟢':'—';
@@ -555,18 +555,25 @@ function renderDash(data){
   if(!data||data.length<2){
     $('dBd').innerHTML='<tr><td colspan="11" class="empty">ไม่มีข้อมูล</td></tr>';return;
   }
-  const h=data[0]||['ID','ชื่อ','บริษัท','ตำแหน่ง','เข้า','ออกพัก','กลับพัก','เลิกงาน','สถานะ','สาย','หมายเหตุ'];
+  // หา header row (row ที่มี 'Employee ID' หรือ 'ID' ในคอลัมน์แรก)
+  let hi=0;
+  for(let i=0;i<data.length;i++){
+    const c=(data[i]&&data[i][0])?data[i][0].toString():'';
+    if(c.includes('Employee ID')||c.includes('ID')||c.includes('รหัส')){hi=i;break;}
+  }
+  const h=data[hi]||['ID','ชื่อ','บริษัท','ตำแหน่ง','เข้า','ออกพัก','กลับพัก','เลิกงาน','สถานะ','สาย','หมายเหตุ'];
   $('dHd').innerHTML='<tr>'+h.map(x=>'<th>'+(x||'')+'</th>').join('')+'</tr>';
-  const rows=data.slice(1).filter(r=>r&&r[0]&&r[0].toString().trim());
+  const rows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim()&&!r[0].toString().includes('📊')&&!r[0].toString().includes('อัปเดต'));
   $('dBd').innerHTML=rows.map(r=>{
     const st=(r[8]||'').toString();
     const co=(r[2]||'').toString().toUpperCase();
     let stCls='st-pending',stLbl=st||'ยังไม่มา';
-    if(st.includes('กำลังทำงาน'))     {stCls='st-work';stLbl='🟢 ทำงาน'}
-    else if(st.includes('พักกลางวัน')){stCls='st-break';stLbl='🍜 พัก'}
+    if(st.includes('ทำงาน')&&!st.includes('นอกสถานที่')){stCls='st-work';stLbl='🟢 ทำงาน'}
+    else if(st.includes('พัก')&&!st.includes('ลาพัก')){stCls='st-break';stLbl='🍜 พัก'}
     else if(st.includes('ละหมาด'))    {stCls='st-prayer';stLbl='🕌 ละหมาด'}
     else if(st.includes('เลิกงาน'))   {stCls='st-done';stLbl='🔵 เลิก'}
     else if(st.includes('ขาด'))       {stCls='st-absent';stLbl='❌ ขาด'}
+    else if(st.includes('ลืมสแกน'))   {stCls='st-absent';stLbl='⚠️ ลืมสแกน'}
     else if(st.includes('ลา'))        {stCls='st-leave';stLbl='📅 ลา'}
     else if(st.includes('วันหยุด'))   {stCls='st-holiday';stLbl='🎉 หยุด'}
     const lt=parseInt(r[9])||0;
@@ -724,7 +731,7 @@ async function loadEmp(){
 async function loadAlerts(){
   const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;
   renderTbl('fHd','fBd',d.data);
-  const p=d.data.filter((r,i)=>i>0&&(r[5]==='รอแก้ไข'||r[5]==='รอดำเนินการ'));
+  const p=d.data.filter((r,i)=>i>0&&(r[6]==='รอแก้ไข'||r[6]==='รอดำเนินการ'));
   $('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
   $('alertL').innerHTML=p.length===0?'<div class="empty">ไม่มีรายการ</div>':
     p.map(r=>'<div class="ai"><span>⚠️</span><span class="at"><b>'+(r[2]||r[1])+'</b> — '+(r[3]||'')+'</span><span class="ad">'+r[0]+'</span></div>').join('');
@@ -772,7 +779,7 @@ async function loadProfile(){
   const d=await apiGet('employee_profile',{empId});
   if(!d||!d.success){$('profileContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล: '+(d?d.message:'')+'</div>';return;}
   const p=d.profile||{};
-  const stats=d.stats30d||{};
+  const stats=p.stats30d||{};
   const savings=d.recentSavings||[];
   const loans=d.recentLoans||[];
   const co=(p.company||'').toUpperCase();
@@ -782,17 +789,22 @@ async function loadProfile(){
       <div class="profile-avatar">👤</div>
       <div class="profile-info">
         <h2>${p.name||'—'} ${coBadge}</h2>
-        <p>${p.empId||'—'} · ${p.position||'—'} · เข้าทำงาน ${p.startDate||'—'}</p>
-        <p style="margin-top:4px;color:var(--grn);font-family:JetBrains Mono;font-size:14px">${(p.salary||0).toLocaleString()} ฿/เดือน</p>
+        <p>${p.id||'—'} · ${p.position||'—'} · เข้าทำงาน ${p.startDate||'—'}</p>
+        <p style="margin-top:4px;color:var(--grn);font-family:JetBrains Mono;font-size:14px">${(p.wage||0).toLocaleString()} ฿/เดือน</p>
       </div>
     </div>
     <div class="profile-stats">
-      <div class="pstat"><div class="pv" style="color:var(--grn)">${stats.workDays||0}</div><div class="pl">วันทำงาน (30 วัน)</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--red)">${stats.absentDays||0}</div><div class="pl">วันขาด</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--pur)">${stats.leaveDays||0}</div><div class="pl">วันลา</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--amb)">${stats.lateTimes||0}</div><div class="pl">ครั้งที่สาย</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--ora)">${stats.lateMinutes||0}</div><div class="pl">นาทีที่สาย</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--blue)">${(stats.totalDeduct||0).toLocaleString()}</div><div class="pl">หักรวม (฿)</div></div>
+      <div class="pstat"><div class="pv" style="color:var(--red)">${stats.absentCount||0}</div><div class="pl">วันขาด (30 วัน)</div></div>
+      <div class="pstat"><div class="pv" style="color:var(--pur)">${stats.leaveCount||0}</div><div class="pl">วันลา</div></div>
+      <div class="pstat"><div class="pv" style="color:var(--amb)">${stats.lateCount||0}</div><div class="pl">ครั้งที่สาย</div></div>
+      <div class="pstat"><div class="pv" style="color:var(--ora)">${stats.lateTotalMins||0}</div><div class="pl">นาทีที่สาย</div></div>
+      <div class="pstat"><div class="pv" style="color:var(--cyn)">${stats.prayerCount||0}</div><div class="pl">ละหมาด</div></div>
+      <div class="pstat"><div class="pv" style="color:var(--grn)">${p.remainLeave||0}</div><div class="pl">ลาคงเหลือ (วัน)</div></div>
+    </div>
+    <div class="profile-stats" style="margin-top:0">
+      <div class="pstat"><div class="pv" style="color:var(--grn)">${(p.sumSavings||0).toLocaleString()}</div><div class="pl">เงินออม (฿)</div></div>
+      <div class="pstat"><div class="pv" style="color:var(--red)">${(p.sumLoan||0).toLocaleString()}</div><div class="pl">หนี้คงเหลือ (฿)</div></div>
+      <div class="pstat"><div class="pv" style="color:var(--blue)">${(p.sumInsurance||0).toLocaleString()}</div><div class="pl">ประกัน (฿)</div></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="tw" style="margin:0">
