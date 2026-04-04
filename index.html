@@ -552,6 +552,7 @@ function filterDash(){
   renderDash([allDash[0],...rows]);
 }
 function renderDash(data){
+  const isAdmin = curUser && curUser.role === 'admin';
   if(!data||data.length<2){
     $('dBd').innerHTML='<tr><td colspan="11" class="empty">ไม่มีข้อมูล</td></tr>';return;
   }
@@ -562,7 +563,7 @@ function renderDash(data){
     if(c.includes('Employee ID')||c.includes('ID')||c.includes('รหัส')){hi=i;break;}
   }
   const h=data[hi]||['ID','ชื่อ','บริษัท','ตำแหน่ง','เข้า','ออกพัก','กลับพัก','เลิกงาน','สถานะ','สาย','หมายเหตุ'];
-  $('dHd').innerHTML='<tr>'+h.map(x=>'<th>'+(x||'')+'</th>').join('')+'</tr>';
+  $('dHd').innerHTML='<tr>'+h.map(x=>'<th>'+(x||'')+'</th>').join('')+(isAdmin?'<th>แก้ไข</th>':'')+'</tr>';
   const rows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim()&&!r[0].toString().includes('📊')&&!r[0].toString().includes('อัปเดต'));
   $('dBd').innerHTML=rows.map(r=>{
     const st=(r[8]||'').toString();
@@ -598,6 +599,7 @@ function renderDash(data){
       '<td>'+statusCell+'</td>'+
       '<td>'+(lt>0?'<span class="sb0 '+(lt>60?'danger':'la')+'">'+lt+'m'+(lt>60?' ⚠️':'')+'</span>':'—')+'</td>'+
       '<td style="font-size:11px;color:var(--t2);max-width:200px;overflow:hidden;text-overflow:ellipsis">'+(r[10]||'')+'</td>'+
+      (isAdmin?'<td><button onclick="showEditTime(\''+eid+'\',\''+ename.replace(/'/g,"\\'")+'\',\''+((r[4]||'').toString().replace(':00',''))+'\',\''+((r[5]||'').toString().replace(':00',''))+'\',\''+((r[6]||'').toString().replace(':00',''))+'\',\''+((r[7]||'').toString().replace(':00',''))+'\')" style="background:none;border:none;cursor:pointer;font-size:14px" title="แก้ไขเวลา">✏️</button></td>':'')+
       '</tr>';
   }).join('');
 }
@@ -720,6 +722,57 @@ async function savePrayer(){
   const d=await apiGet('record_friday_prayer',{empId,dateStr:date,timeOut:tOut,timeIn:tIn});
   if(d&&d.success){alert('✅ บันทึกละหมาดแล้ว');loadPrayer();}
   else alert('Error: '+(d?d.message:'ไม่ได้'));
+}
+
+// ===== EDIT TIME MODAL (Admin Only) =====
+function showEditTime(eid,name,tIn,tLO,tLI,tOut){
+  const today=new Date().toISOString().slice(0,10);
+  const clean=v=>(v&&v!=='—'&&v!=='-')?v:'';
+  const mkField=(id,label,val)=>
+    '<div><label style="font-size:11px;font-weight:600;color:var(--t2)">'+label+'</label>'+
+    '<input id="'+id+'" type="time" value="'+clean(val)+'" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin-top:4px"></div>';
+  const html='<div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:440px;max-width:90vw">'+
+    '<h3 style="font-size:15px;font-weight:600;margin-bottom:4px">✏️ แก้ไขเวลา</h3>'+
+    '<p style="font-size:12px;color:var(--t2);margin-bottom:14px"><b>'+eid+'</b> — '+name+'</p>'+
+    '<input id="etDate" type="date" value="'+today+'" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin-bottom:12px">'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
+    mkField('etIn','สแกนเข้า',tIn)+
+    mkField('etLO','ออกพัก',tLO)+
+    mkField('etLI','กลับพัก',tLI)+
+    mkField('etPO','ออกละหมาด','')+
+    mkField('etPI','กลับละหมาด','')+
+    mkField('etOut','สแกนออก',tOut)+
+    '</div>'+
+    '<div style="display:flex;gap:8px">'+
+    '<button onclick="closeEditTime()" style="flex:1;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">ยกเลิก</button>'+
+    '<button onclick="saveEditTime(\''+eid+'\')" style="flex:1;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">💾 บันทึก</button>'+
+    '</div></div>';
+  const mo=document.createElement('div');mo.id='etMo';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center';
+  mo.onclick=ev=>{if(ev.target===mo)closeEditTime()};
+  mo.innerHTML=html;document.body.appendChild(mo);
+}
+function closeEditTime(){const m=$('etMo');if(m)m.remove()}
+async function saveEditTime(eid){
+  const date=$('etDate').value;
+  if(!date){alert('กรุณาระบุวันที่');return;}
+  const body={
+    action:'edit_time',empId:eid,date:date,
+    tIn:$('etIn').value||'-',
+    tLO:$('etLO').value||'-',
+    tLI:$('etLI').value||'-',
+    tPO:$('etPO').value||'-',
+    tPI:$('etPI').value||'-',
+    tOut:$('etOut').value||'-',
+    editBy:curUser?curUser.username:'admin'
+  };
+  closeEditTime();
+  try{
+    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d&&d.success){alert('✅ '+d.message);loadDash();}
+    else alert('❌ '+(d?d.message:'บันทึกไม่สำเร็จ'));
+  }catch(e){alert('❌ Error: '+e.message)}
 }
 
 // ===== LOAD FUNCTIONS =====
