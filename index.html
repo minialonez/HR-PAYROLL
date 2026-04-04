@@ -301,8 +301,50 @@ function renderDash(data){
     if(st.includes('ทำงาน')||st.includes('เลิกงาน'))bc='w';else if(st.includes('ขาด'))bc='a';
     else if(st.includes('ลา'))bc='l';else if(st.includes('ลืม')||st.includes('⚠️'))bc='f';else if(st.includes('วันหยุด'))bc='h';
     const lt=parseInt(r[5])||0;const lc=lt>60?'danger':lt>0?'la':'';
-    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+(r[0]||'')+'</td><td><b>'+(r[1]||'')+'</b></td><td>'+(r[2]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[3]||'-')+'</td><td><span class="sb0 '+bc+'">'+st+'</span></td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m'+(lt>60?' ⚠️':'')+'</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[6]||'')+'</td></tr>';
+    const eid=r[0]||'';const ename=r[1]||'';
+    // ถ้า "ยังไม่มา" → แสดงปุ่มกดเลือกเหตุผล
+    let statusCell;
+    if(st.includes('ยังไม่มา')){
+      statusCell='<span class="sb0 la" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="กดเพื่อใส่เหตุผล">❓ ยังไม่มา ✏️</span>';
+    } else {
+      statusCell='<span class="sb0 '+bc+'">'+st+'</span>';
+    }
+    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+eid+'</td><td><b>'+ename+'</b></td><td>'+(r[2]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[3]||'-')+'</td><td>'+statusCell+'</td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m'+(lt>60?' ⚠️':'')+'</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[6]||'')+'</td></tr>';
   }).join('');
+}
+
+// ===== ABSENT MODAL — ใส่เหตุผลคนไม่มา =====
+function showAbsentModal(empId, empName){
+  const html='<div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:380px;max-width:90vw">'+
+    '<h3 style="font-size:15px;font-weight:600;margin-bottom:6px">📝 '+empId+' — '+empName+'</h3>'+
+    '<p style="font-size:12px;color:var(--t2);margin-bottom:14px">เลือกสถานะและใส่เหตุผล</p>'+
+    '<label style="font-size:11px;font-weight:600;color:var(--t2)">สถานะ</label>'+
+    '<select id="absSt" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:13px;font-family:inherit;margin:4px 0 10px">'+
+    '<option value="📅 ลาพักร้อน">📅 ลาพักร้อน</option>'+
+    '<option value="🤒 ลาป่วย">🤒 ลาป่วย</option>'+
+    '<option value="📋 ลากิจ">📋 ลากิจ</option>'+
+    '<option value="❌ ขาดงาน">❌ ขาดงาน</option>'+
+    '<option value="🏠 ทำงานนอกสถานที่">🏠 ทำงานนอกสถานที่</option>'+
+    '<option value="📝 อื่นๆ">📝 อื่นๆ</option>'+
+    '</select>'+
+    '<label style="font-size:11px;font-weight:600;color:var(--t2)">เหตุผล / หมายเหตุ</label>'+
+    '<input id="absReason" placeholder="เช่น ลาพักร้อน 1 วัน, ไม่สบาย..." style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0">'+
+    '<div style="display:flex;gap:8px;margin-top:16px">'+
+    '<button onclick="closeAbsModal()" style="flex:1;padding:8px;background:var(--s3);color:var(--t2);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">ยกเลิก</button>'+
+    '<button onclick="saveAbsent(\''+empId+'\')" style="flex:1;padding:8px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">💾 บันทึก</button>'+
+    '</div></div>';
+  const mo=document.createElement('div');
+  mo.id='absMo';mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center';
+  mo.onclick=function(ev){if(ev.target===mo)closeAbsModal()};
+  mo.innerHTML=html;document.body.appendChild(mo);
+}
+function closeAbsModal(){const m=$('absMo');if(m)m.remove()}
+async function saveAbsent(empId){
+  const st=$('absSt').value;const reason=$('absReason').value.trim()||st;
+  closeAbsModal();
+  const d=await apiGet('set_status',{empId,status:st,reason:encodeURIComponent(reason)});
+  if(d&&d.success){loadSum();loadDash();}
+  else alert('Error: '+(d?d.message:'ไม่ได้'));
 }
 function filterDash(){const q=$('dSrch').value.toLowerCase();if(!q){renderDash(allDash);return}
   const f=[allDash[0],...allDash.slice(1).filter(r=>r&&r.some(c=>c&&c.toString().toLowerCase().includes(q)))];renderDash(f)}
