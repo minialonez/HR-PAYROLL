@@ -731,10 +731,10 @@ async function loadEmp(){
 async function loadAlerts(){
   const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;
   renderTbl('fHd','fBd',d.data);
-  const p=d.data.filter((r,i)=>i>0&&(r[6]==='รอแก้ไข'||r[6]==='รอดำเนินการ'));
+  const p=d.data.filter((r,i)=>i>0&&(r[7]==='รอแก้ไข'||r[7]==='รอดำเนินการ'));
   $('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
   $('alertL').innerHTML=p.length===0?'<div class="empty">ไม่มีรายการ</div>':
-    p.map(r=>'<div class="ai"><span>⚠️</span><span class="at"><b>'+(r[2]||r[1])+'</b> — '+(r[3]||'')+'</span><span class="ad">'+r[0]+'</span></div>').join('');
+    p.map(r=>'<div class="ai"><span>⚠️</span><span class="at"><b>'+(r[3]||r[2])+'</b> — '+(r[4]||'')+'</span><span class="ad">'+r[0]+' '+r[1]+'</span></div>').join('');
 }
 async function loadLate(){
   const d=await apiGet('late_alerts');if(!d||!d.success||!d.data)return;
