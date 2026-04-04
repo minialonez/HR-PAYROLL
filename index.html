@@ -767,12 +767,9 @@ async function saveEditTime(eid){
     editBy:curUser?curUser.username:'admin'
   };
   closeEditTime();
-  try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const d=await r.json();
-    if(d&&d.success){alert('✅ '+d.message);loadDash();}
-    else alert('❌ '+(d?d.message:'บันทึกไม่สำเร็จ'));
-  }catch(e){alert('❌ Error: '+e.message)}
+  const d=await apiPost(body);
+  if(d&&d.success){alert('✅ '+d.message);loadDash();}
+  else alert('❌ '+(d?d.message:'บันทึกไม่สำเร็จ'));
 }
 
 // ===== LOAD FUNCTIONS =====
