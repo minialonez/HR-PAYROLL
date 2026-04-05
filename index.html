@@ -419,14 +419,17 @@ async function startCheckinFlow(){
   identifiedEmp=null;capturedPhoto=null;gpsData=null;
   $('ciStep1').style.display='block';$('ciStep2').style.display='none';$('ciStep3').style.display='none';
   $('manualIdArea').style.display='none';
+  $('faceStatus').innerHTML='🤖 กำลังเตรียมระบบ...';
   const ok=await startCamera($('camVideo'));
   if(!ok){$('camStatus').textContent='❌ เปิดกล้องไม่ได้';return;}
   $('camStatus').textContent='📸 กล้องพร้อม';
   startGPS();
+  // Reload face data fresh
+  await loadAllFaces();
   const modelsOk=await loadFaceModels();
   if(!modelsOk){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">โหลด Face Model ไม่สำเร็จ — กรุณากรอกรหัสแทน</span>';return;}
   if(allFaceDescriptors.length===0){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">ยังไม่มีใบหน้าในระบบ — ลงทะเบียนก่อน หรือกรอกรหัสแทน</span>';return;}
-  $('faceStatus').innerHTML='🤖 <span style="color:var(--cyn)">กำลังสแกน... หันหน้าเข้ากล้อง</span>';
+  $('faceStatus').innerHTML='🤖 <span style="color:var(--cyn)">กำลังสแกน... (ใบหน้าในระบบ: '+allFaceDescriptors.length+' คน)</span>';
   // Start continuous face scanning
   scanInterval=setInterval(async()=>{await scanFace();},1500);
 }
@@ -441,7 +444,7 @@ async function scanFace(){
   ctx.drawImage(video,0,0);
   ctx.setTransform(1,0,0,1,0,0);
   try{
-    const detection=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions({scoreThreshold:0.5})).withFaceLandmarks(true).withFaceDescriptor();
+    const detection=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions({scoreThreshold:0.3})).withFaceLandmarks(true).withFaceDescriptor();
     if(!detection){$('camStatus').textContent='🔍 กำลังหาใบหน้า...';return;}
     // Compare with all registered faces
     let bestMatch=null,bestDist=999;
@@ -449,15 +452,18 @@ async function scanFace(){
       const dist=faceapi.euclideanDistance(detection.descriptor,face.descriptor);
       if(dist<bestDist){bestDist=dist;bestMatch=face;}
     }
-    if(bestMatch&&bestDist<0.55){
+    if(bestMatch&&bestDist<0.6){
       // MATCHED!
       clearInterval(scanInterval);scanInterval=null;
       identifiedEmp={empId:bestMatch.empId,name:bestMatch.name,company:bestMatch.company,faceScore:Math.max(0,1-bestDist)};
       capturedPhoto=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
       $('camStatus').textContent='✅ พบ: '+bestMatch.name;
+      $('faceStatus').innerHTML='✅ <span style="color:var(--grn)">จับคู่สำเร็จ! '+bestMatch.name+' ('+Math.round((1-bestDist)*100)+'%)</span>';
       setTimeout(()=>showStep2(),500);
+    }else if(bestMatch){
+      $('camStatus').textContent='🔍 ใกล้เคียง: '+bestMatch.name+' ('+Math.round((1-bestDist)*100)+'%) — หันหน้าให้ชัดขึ้น';
     }else{
-      $('camStatus').textContent='🔍 ยังไม่ตรง... ('+Math.round((1-bestDist)*100)+'%)';
+      $('camStatus').textContent='🔍 กำลังหาใบหน้า...';
     }
   }catch(e){$('camStatus').textContent='⚠️ สแกนผิดพลาด';}
 }
@@ -557,9 +563,16 @@ async function frCapture(){
 async function frSubmit(){
   const empId=$('frEmpId').value.trim();if(!empId){alert('กรอก Employee ID');return;}
   $('frResult').innerHTML='<span style="color:var(--amb)">กำลังบันทึก...</span>';
-  const avgDesc=frDescriptors.length>0?JSON.stringify(frDescriptors[0]):JSON.stringify([]);
+  // Average all descriptors for better accuracy
+  let avgDesc='[]';
+  if(frDescriptors.length>0){
+    const len=frDescriptors[0].length;const avg=new Array(len).fill(0);
+    for(const desc of frDescriptors){for(let i=0;i<len;i++)avg[i]+=desc[i];}
+    for(let i=0;i<len;i++)avg[i]/=frDescriptors.length;
+    avgDesc=JSON.stringify(avg);
+  }
   const d=await apiPost({action:'face_register',empId,descriptor:avgDesc,photos:frPhotos});
-  if(d&&d.success){$('frResult').innerHTML='<span style="color:var(--grn)">✅ ลงทะเบียนสำเร็จ!</span>';loadAllFaces();}
+  if(d&&d.success){$('frResult').innerHTML='<span style="color:var(--grn)">✅ ลงทะเบียนสำเร็จ! (เฉลี่ย '+frDescriptors.length+' รูป)</span>';await loadAllFaces();}
   else{$('frResult').innerHTML='<span style="color:var(--red)">❌ '+(d?d.message:'ผิดพลาด')+'</span>';}
 }
 
