@@ -339,8 +339,8 @@ function startRef(){if(timer)clearInterval(timer);timer=setInterval(()=>loadAll(
 async function apiGet(action,params={}){
   if(!API)return null;const u=new URL(API);u.searchParams.set('action',action);
   for(const[k,v]of Object.entries(params))if(v)u.searchParams.set(k,v);
-  try{const r=await fetch(u);const d=await r.json();$('sDot').style.display='inline-block';$('connSt').textContent='เชื่อมต่อแล้ว';$('lastUpd').textContent=new Date().toLocaleString('th-TH');return d;}
-  catch(e){$('sDot').style.display='none';$('connSt').textContent='❌ ไม่ได้';return null}
+  try{const r=await fetch(u);const d=await r.json();$('sDot').style.display='inline-block';$('connSt').textContent='Connected';$('lastUpd').textContent=new Date().toLocaleString('th-TH');return d;}
+  catch(e){$('sDot').style.display='none';$('connSt').textContent='❌ Disconnected';return null}
 }
 async function apiPost(body){try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});return await r.json();}catch(e){return{success:false,message:e.toString()};}}
 
@@ -360,25 +360,25 @@ async function loadSum(){
   $('cFgt').textContent=d.pendingForgotScan||0;$('cLt60').textContent=d.lateOver60Today||0;
   $('bScan').textContent=d.pendingForgotScan||0;$('bScan').style.display=(d.pendingForgotScan>0)?'inline':'none';
   const lt=d.lateOver60Today||0;$('bLate').textContent=lt;$('bLate').style.display=lt>0?'inline':'none';
-  let al='';if(d.isHoliday)al+='<div class="ap" style="border-color:var(--cyn)"><h3 style="color:var(--cyn)">🎉 วันหยุดบริษัท</h3></div>';
-  if(lt>0)al+='<div class="ap danger"><h3>🚨 สายเกิน 60 นาที '+lt+' คน</h3></div>';
+  let al='';if(d.isHoliday)al+='<div class="ap" style="border-color:var(--cyn)"><h3 style="color:var(--cyn)">🎉 Company Holiday</h3></div>';
+  if(lt>0)al+='<div class="ap danger"><h3>🚨 Late over 60 min: '+lt+' employees</h3></div>';
   $('dashAlerts').innerHTML=al;
 }
 
 // ===== DASHBOARD =====
 async function loadDash(){const d=await apiGet('dashboard');if(!d||!d.success||!d.data)return;allDash=d.data;renderDash(d.data)}
 function renderDash(data){
-  if(data.length<2){$('dBd').innerHTML='<tr><td colspan="11" class="empty">ไม่มีข้อมูล</td></tr>';return}
+  if(data.length<2){$('dBd').innerHTML='<tr><td colspan="11" class="empty">No data</td></tr>';return}
   let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&(data[i][0].toString().includes('ID')||data[i][0].toString().includes('รหัส'))){hi=i;break}}
-  const h=data[hi]||['ID','ชื่อ','บริษัท','ตำแหน่ง','เข้างาน','ไปพัก','กลับพัก','เลิกงาน','สถานะ','สาย','หมายเหตุ'];
+  const h=data[hi]||['ID','Name','Company','Position','Clock In','Break Out','Break In','Clock Out','Status','Late','Remarks'];
   $('dHd').innerHTML='<tr>'+h.map(x=>'<th>'+(x||'')+'</th>').join('')+'</tr>';
   const rows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim());
   $('dBd').innerHTML=rows.map(r=>{const st=(r[8]||'').toString();let bc='x';
-    if(st.includes('ทำงาน')||st.includes('เลิกงาน'))bc='w';else if(st.includes('ขาด'))bc='a';
-    else if(st.includes('ลา'))bc='l';else if(st.includes('ลืม')||st.includes('⚠️'))bc='f';else if(st.includes('วันหยุด'))bc='h';
+    if(st.includes('Working')||st.includes('Left'))bc='w';else if(st.includes('Absent'))bc='a';
+    else if(st.includes('eave'))bc='l';else if(st.includes('Missed')||st.includes('⚠️'))bc='f';else if(st.includes('Holiday'))bc='h';
     const lt=parseInt(r[9])||0;const lc=lt>60?'danger':lt>0?'la':'';const eid=r[0]||'';const ename=r[1]||'';
     let statusCell;
-    if(st.includes('ยังไม่มา')){statusCell='<span class="sb0 la" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="กดเพื่อใส่เหตุผล">❓ ยังไม่มา ✏️</span>';}
+    if(st.includes('Not arrived')){statusCell='<span class="sb0 la" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="Click to set status">❓ Not arrived ✏️</span>';}
     else{statusCell='<span class="sb0 '+bc+'">'+st+'</span>';}
     return'<tr><td style="font-family:JetBrains Mono;font-size:11px;cursor:pointer;color:var(--blue)" onclick="showProfile(\''+eid+'\')">'+eid+'</td><td><b style="cursor:pointer" onclick="showProfile(\''+eid+'\')">'+ename+'</b></td><td><span class="sb0 '+(r[2]==='JKN'?'h':'l')+'">'+(r[2]||'')+'</span></td><td>'+(r[3]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[4]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[5]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[6]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[7]||'-')+'</td><td>'+statusCell+'</td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[10]||'')+'</td></tr>';
   }).join('');
@@ -388,7 +388,7 @@ function filterDash(){const q=$('dSrch').value.toLowerCase(),c=$('dComp').value;
 
 // ===== ABSENT MODAL =====
 function showAbsentModal(empId,empName){
-  const html='<div class="modal-box"><h3>📝 '+empId+' — '+empName+'</h3><p style="font-size:12px;color:var(--t2);margin-bottom:14px">เลือกสถานะและใส่เหตุผล</p><label>สถานะ</label><select id="absSt"><option value="📅 ลาพักร้อน">📅 ลาพักร้อน</option><option value="🤒 ลาป่วย">🤒 ลาป่วย</option><option value="📋 ลากิจ">📋 ลากิจ</option><option value="❌ ขาดงาน">❌ ขาดงาน</option></select><label>เหตุผล</label><input id="absReason" placeholder="ระบุเหตุผล..."><div class="modal-btns"><button onclick="closeAbsModal()" style="background:var(--s3);color:var(--t2)">ยกเลิก</button><button onclick="saveAbsent(\''+empId+'\')" style="background:var(--blue);color:#fff">💾 บันทึก</button></div></div>';
+  const html='<div class="modal-box"><h3>📝 '+empId+' — '+empName+'</h3><p style="font-size:12px;color:var(--t2);margin-bottom:14px">Select status and reason</p><label>Status</label><select id="absSt"><option value="📅 Leave">📅 Leave</option><option value="🤒 Sick leave">🤒 Sick leave</option><option value="📋 Personal leave">📋 Personal leave</option><option value="❌ Absent">❌ Absent</option></select><label>Reason</label><input id="absReason" placeholder="Enter reason..."><div class="modal-btns"><button onclick="closeAbsModal()" style="background:var(--s3);color:var(--t2)">Cancel</button><button onclick="saveAbsent(\''+empId+'\')" style="background:var(--blue);color:#fff">💾 Save</button></div></div>';
   const mo=document.createElement('div');mo.id='absMo';mo.className='modal-overlay';mo.onclick=function(ev){if(ev.target===mo)closeAbsModal()};mo.innerHTML=html;document.body.appendChild(mo);
 }
 function closeAbsModal(){const m=$('absMo');if(m)m.remove()}
@@ -538,14 +538,14 @@ async function showProfile(empId){
 async function loadEmp(){const c=$('empComp')?$('empComp').value:'';const d=await apiGet('employees');if(!d||!d.success)return;
   let data=d.data;if(c)data=[data[0],...data.slice(1).filter(r=>r[1]===c)];renderTbl('eHd','eBd',data)}
 async function loadAlerts(){const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;renderTbl('fHd','fBd',d.data);
-  const p=d.data.filter((r,i)=>i>0&&(r[6]==='รอแก้ไข'||r[6]==='รอดำเนินการ'));$('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
+  const p=d.data.filter((r,i)=>i>0&&(r[6]==='Pending'||r[6]==='รอแก้ไข'||r[6]==='รอดำเนินการ'));$('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
   $('alertL').innerHTML=p.length===0?'<div class="empty">ไม่มี</div>':p.map(r=>'<div class="ai"><span>⚠️</span><span style="flex:1"><b>'+(r[2]||r[1])+'</b> ('+(r[3]||'')+') — '+(r[4]||'')+'</span><span style="font-size:10px;color:var(--t3)">'+r[0]+'</span></div>').join('')}
 async function loadLate(){const d=await apiGet('late_alerts');if(!d||!d.success||!d.data)return;
   const fr=$('ltFrom').value,to=$('ltTo').value;const fl=d.data.filter(r=>{const dt=r.date||'';return(!fr||dt>=fr)&&(!to||dt<=to)});
   const o60=fl.filter(r=>r.lateMins>60);$('bLate').textContent=o60.length;$('bLate').style.display=o60.length>0?'inline':'none';
   $('lateAlertL').innerHTML=o60.length===0?'<div class="empty">ไม่มี</div>':o60.map(r=>'<div class="ai"><span>🚨</span><span style="flex:1"><b>'+r.name+'</b> ('+r.empId+' '+r.company+') — <b>'+r.lateMins+'m</b></span><span style="font-size:10px;color:var(--t3)">'+r.date+'</span></div>').join('');
   $('ltBd').innerHTML=fl.length?fl.map(r=>{const c=r.lateMins>60?'danger':r.lateMins>30?'la':'';const y=r.deductYN==='N'?'w':r.deductYN==='Y'?'a':'x';
-    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+r.date+'</td><td>'+r.empId+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+(r.company==='JKN'?'h':'l')+'">'+r.company+'</span></td><td><span class="sb0 '+c+'">'+r.lateMins+'m</span></td><td style="font-size:11px">'+(r.reason||'-')+'</td><td><span class="sb0 '+y+'">'+(r.deductYN==='Y'?'หัก':r.deductYN==='N'?'ไม่หัก':'รอ')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt+'฿':'—')+'</td><td>'+(r.warning||'')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">ไม่มี</td></tr>'}
+    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+r.date+'</td><td>'+r.empId+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+(r.company==='JKN'?'h':'l')+'">'+r.company+'</span></td><td><span class="sb0 '+c+'">'+r.lateMins+'m</span></td><td style="font-size:11px">'+(r.reason||'-')+'</td><td><span class="sb0 '+y+'">'+(r.deductYN==='Y'?'Deduct':r.deductYN==='N'?'No':'Pending')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt+'฿':'—')+'</td><td>'+(r.warning||'')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No data</td></tr>'}
 async function loadAtt(){const d=await apiGet('attendance',{from:$('atFrom').value,to:$('atTo').value,company:$('atComp')?$('atComp').value:''});if(!d||!d.success)return;renderTbl('atHd','atBd',d.data)}
 async function loadPay(){const p=$('payP').value.trim();const d=await apiGet('payroll',p?{period:p,company:$('payComp')?$('payComp').value:''}:{company:$('payComp')?$('payComp').value:''});if(!d||!d.success)return;renderTbl('pyHd','pyBd',d.data)}
 async function loadHol(){const d=await apiGet('holidays');if(!d||!d.success)return;renderTbl('hlHd','hlBd',d.data)}
@@ -560,16 +560,16 @@ async function deleteUser(username){if(!confirm('ลบ '+username+'?'))return;c
 
 // ===== TABLE RENDERER =====
 function renderTbl(hId,bId,data){
-  if(!data||data.length<1){$(hId).innerHTML='';$(bId).innerHTML='<tr><td class="empty">ไม่มีข้อมูล</td></tr>';return}
+  if(!data||data.length<1){$(hId).innerHTML='';$(bId).innerHTML='<tr><td class="empty">No data</td></tr>';return}
   $(hId).innerHTML='<tr>'+data[0].map(h=>'<th>'+(h||'')+'</th>').join('')+'</tr>';
   const rows=data.slice(1).filter(r=>r&&r[0]!==undefined&&r[0]!=='');
   $(bId).innerHTML=rows.map(r=>'<tr>'+r.map(c=>{let v=c===null||c===undefined?'':c;const s=v.toString();
-    if(s.includes('✅')||s==='ACTIVE'||s==='อนุมัติ'||s.includes('ปกติ'))return'<td><span class="sb0 w">'+s+'</span></td>';
+    if(s.includes('✅')||s==='ACTIVE'||s==='Approved'||s.includes('ปกติ'))return'<td><span class="sb0 w">'+s+'</span></td>';
     if(s.includes('❌')||s==='INACTIVE'||s==='RESIGNED')return'<td><span class="sb0 a">'+s+'</span></td>';
-    if(s.includes('ลา')||s.includes('📅'))return'<td><span class="sb0 l">'+s+'</span></td>';
-    if(s.includes('⚠️')||s.includes('ลืม')||s.includes('เกิน'))return'<td><span class="sb0 f">'+s+'</span></td>';
-    if(s==='รออนุมัติ'||s==='รอแก้ไข')return'<td><span class="sb0 la">'+s+'</span></td>';
-    if(s.includes('วันหยุด')||s.includes('🎉'))return'<td><span class="sb0 h">'+s+'</span></td>';
+    if(s.includes('eave')||s.includes('📅')||s.includes('ลา'))return'<td><span class="sb0 l">'+s+'</span></td>';
+    if(s.includes('⚠️')||s.includes('Missed')||s.includes('Over'))return'<td><span class="sb0 f">'+s+'</span></td>';
+    if(s==='Pending'||s==='รอแก้ไข')return'<td><span class="sb0 la">'+s+'</span></td>';
+    if(s.includes('Holiday')||s.includes('🎉'))return'<td><span class="sb0 h">'+s+'</span></td>';
     if(s==='JKN')return'<td><span class="sb0 h">JKN</span></td>';
     if(s==='FC')return'<td><span class="sb0 l">FC</span></td>';
     if(s==='Y')return'<td><span class="sb0 w">Y</span></td>';
