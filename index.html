@@ -187,7 +187,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           <p style="text-align:center;font-size:11px;color:var(--t3);margin-top:8px">หันหน้าเข้ากล้องให้ชัด ระบบจะจดจำให้อัตโนมัติ</p>
           <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:12px;cursor:pointer;font-family:inherit" onclick="showManualId()">🔑 กรอกรหัสพนักงานแทน</button>
           <div id="manualIdArea" style="display:none;margin-top:12px">
-            <input id="ciManualId" placeholder="รหัสพนักงาน เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:8px">
+            <input id="ciManualId" placeholder="รหัสพนักงาน เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:8px;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
             <button class="btn-checkin" onclick="manualIdentify()">➡️ ตรวจสอบ</button>
           </div>
         </div>
@@ -242,7 +242,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">ระบบจะบันทึกวิดีโอใบหน้าหลายมุม เพื่อความแม่นยำในการจดจำ</p>
           <div style="margin-bottom:12px">
             <label style="font-size:11px;color:var(--t2)">Employee ID</label>
-            <input id="frEmpId" placeholder="เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit">
+            <input id="frEmpId" placeholder="เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
           </div>
           <div class="camera-area">
             <video id="frVideo" autoplay playsinline muted></video>
@@ -412,11 +412,27 @@ function startGPS(){
 }
 
 // ===== FACE MODELS =====
+async function waitForFaceApi(){
+  for(let i=0;i<30;i++){if(typeof faceapi!=='undefined')return true;await new Promise(r=>setTimeout(r,500));}
+  return false;
+}
 async function loadFaceModels(){
   if(faceModelsLoaded)return true;
-  try{const MODEL_URL='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
-  await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)]);
-  faceModelsLoaded=true;return true;}catch(e){return false;}
+  if(typeof faceapi==='undefined'){
+    const ready=await waitForFaceApi();
+    if(!ready)return false;
+  }
+  const MODEL_URL='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+  for(let attempt=1;attempt<=3;attempt++){
+    try{
+      await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)]);
+      faceModelsLoaded=true;return true;
+    }catch(e){
+      console.log('Face model load attempt '+attempt+' failed:',e);
+      if(attempt<3)await new Promise(r=>setTimeout(r,2000));
+    }
+  }
+  return false;
 }
 
 // ===== CHECKIN FLOW: Face Scan → Identify → Select Reason =====
@@ -432,8 +448,9 @@ async function startCheckinFlow(){
   startGPS();
   // Reload face data fresh
   await loadAllFaces();
+  $('faceStatus').innerHTML='🤖 กำลังโหลด Face Model... (รอสักครู่)';
   const modelsOk=await loadFaceModels();
-  if(!modelsOk){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">โหลด Face Model ไม่สำเร็จ — กรุณากรอกรหัสแทน</span>';return;}
+  if(!modelsOk){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">โหลด Face Model ไม่สำเร็จ — ลองรีเฟรชหน้าเว็บ หรือกรอกรหัสแทน</span>';return;}
   if(allFaceDescriptors.length===0){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">ยังไม่มีใบหน้าในระบบ — ลงทะเบียนก่อน หรือกรอกรหัสแทน</span>';return;}
   $('faceStatus').innerHTML='🤖 <span style="color:var(--cyn)">กำลังสแกน... (ใบหน้าในระบบ: '+allFaceDescriptors.length+' คน)</span>';
   // Start continuous face scanning
@@ -572,8 +589,9 @@ async function frStartScan(){
   try{frStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
   $('frVideo').srcObject=frStream;}catch(e){$('frCamStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;return;}
   // Load models
+  $('frCamStatus').textContent='🤖 กำลังโหลด Face Model... (รอสักครู่)';
   const ok=await loadFaceModels();
-  if(!ok){$('frCamStatus').textContent='⚠️ โหลด Face Model ไม่สำเร็จ';return;}
+  if(!ok){$('frCamStatus').textContent='⚠️ โหลด Face Model ไม่สำเร็จ — ลองรีเฟรชหน้าเว็บ';$('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';return;}
   $('frStartBtn').style.display='none';$('frInstruction').style.display='block';
   frDescriptors=[];frPhotos=[];frScanning=true;
   // Go through each pose
