@@ -720,7 +720,8 @@ function renderDash(data){
     else if(st.includes('eave'))bc='l';else if(st.includes('Missed')||st.includes('⚠️'))bc='f';else if(st.includes('Holiday'))bc='h';
     const lt=parseInt(r[11])||0;const lc=lt>60?'danger':lt>0?'la':'';const eid=r[0]||'';const ename=r[1]||'';
     let statusCell;
-    if(st.includes('Not arrived')){statusCell='<span class="sb0 la" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="Click to set status">❓ Not arrived ✏️</span>';}
+    if(st.includes('Not arrived')&&st.includes('late')){statusCell='<span class="sb0 danger" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="Click to set status">⚠️ สายมาก ✏️</span>';}
+    else if(st.includes('Not arrived')){statusCell='<span class="sb0 la" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="Click to set status">⏳ ยังไม่มา ✏️</span>';}
     else{statusCell='<span class="sb0 '+bc+'">'+st+'</span>';}
     return'<tr><td style="font-family:JetBrains Mono;font-size:11px;cursor:pointer;color:var(--blue)" onclick="showProfile(\''+eid+'\')">'+eid+'</td><td><b style="cursor:pointer" onclick="showProfile(\''+eid+'\')">'+ename+'</b></td><td><span class="sb0 '+(r[2]==='JKN'?'h':'l')+'">'+(r[2]||'')+'</span></td><td>'+(r[3]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[4]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[5]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[6]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[7]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[8]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[9]||'-')+'</td><td>'+statusCell+'</td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[12]||'')+'</td></tr>';
   }).join('');
