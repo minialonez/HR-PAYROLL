@@ -1031,6 +1031,8 @@ async function loadPayslip(){
   for(let i=1;i<pay.data.length;i++){if(pay.data[i][0]&&pay.data[i][0].toString().trim().toUpperCase()===empId.toUpperCase()){row=pay.data[i];break;}}
   if(!row){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบ Payroll ของ '+empId+' งวด '+period+'</div>';return;}
   renderPayslip(prof.profile,row);
+  // Log payslip view
+  apiPost({action:'log_payslip_view',viewer:curUser.username,viewerRole:curUser.role,empId:empId,period:period});
 }
 
 function renderPayslip(p,r){
