@@ -2,118 +2,128 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>HR Dashboard v4</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1117">
+<title>HR & Payroll v4</title>
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <style>
-:root{--bg:#0f1117;--s1:#1a1d27;--s2:#242736;--s3:#2d3143;--bd:#353849;--t1:#e4e6f0;--t2:#9ca0b0;--t3:#6b7084;--blue:#3b82f6;--grn:#22c55e;--grn-bg:rgba(34,197,94,.12);--red:#ef4444;--red-bg:rgba(239,68,68,.12);--amb:#f59e0b;--amb-bg:rgba(245,158,11,.12);--pur:#a78bfa;--pur-bg:rgba(167,139,250,.12);--cyn:#22d3ee;--cyn-bg:rgba(34,211,238,.12);--ora:#fb923c;--ora-bg:rgba(251,146,60,.12);--jkn:#8b5cf6;--jkn-bg:rgba(139,92,246,.12);--fc:#06b6d4;--fc-bg:rgba(6,182,212,.12)}
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
-a{color:var(--blue);text-decoration:none}
-.sidebar{width:220px;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
-.sidebar .logo{padding:20px 16px;border-bottom:1px solid var(--bd)}.sidebar .logo h1{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}.sidebar .logo p{font-size:10px;color:var(--t3);margin-top:3px}
+:root{--bg:#0f1117;--s1:#1a1d27;--s2:#242736;--s3:#2d3143;--bd:#353849;--t1:#e4e6f0;--t2:#9ca0b0;--t3:#6b7084;--blue:#3b82f6;--grn:#22c55e;--grn-bg:rgba(34,197,94,.12);--red:#ef4444;--red-bg:rgba(239,68,68,.12);--amb:#f59e0b;--amb-bg:rgba(245,158,11,.12);--pur:#a78bfa;--pur-bg:rgba(167,139,250,.12);--cyn:#22d3ee;--cyn-bg:rgba(34,211,238,.12);--ora:#fb923c;--ora-bg:rgba(251,146,60,.12);--teal:#14b8a6;--teal-bg:rgba(20,184,166,.12)}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}a{color:var(--blue);text-decoration:none}
+.sidebar{width:230px;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
+.sidebar .logo{padding:18px 16px;border-bottom:1px solid var(--bd)}.sidebar .logo h1{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}.sidebar .logo p{font-size:9px;color:var(--t3);margin-top:2px;letter-spacing:.5px}
 .sidebar nav{flex:1;padding:8px;overflow-y:auto}.sl{font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1px;padding:14px 8px 4px}
 .ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;color:var(--t2);cursor:pointer;font-size:12px;font-weight:500;transition:.15s}.ni:hover{background:var(--s2);color:var(--t1)}.ni.active{background:var(--blue);color:#fff}
 .ni .ic{font-size:14px;width:20px;text-align:center}.ni .badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:700}
 .sidebar .sb{padding:10px;border-top:1px solid var(--bd)}.sidebar .sb .user-info{font-size:11px;color:var(--t2);margin-bottom:6px;display:flex;align-items:center;gap:6px}
 .sidebar .sb button{width:100%;padding:6px;background:var(--s2);border:1px solid var(--bd);border-radius:5px;color:var(--t2);font-size:10px;cursor:pointer;font-family:inherit;margin-top:4px}
-.app{display:flex;min-height:100vh}.main{margin-left:220px;flex:1;min-height:100vh}
+.app{display:flex;min-height:100vh}.main{margin-left:230px;flex:1;min-height:100vh}
 .topbar{padding:12px 24px;background:var(--s1);border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
 .topbar h2{font-size:15px;font-weight:600}.topbar .meta{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:10px}
 .topbar .dot{width:7px;height:7px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.content{padding:20px 24px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
 .card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}.card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.card.grn::after{background:var(--grn)}.card.red::after{background:var(--red)}.card.amb::after{background:var(--amb)}.card.pur::after{background:var(--pur)}.card.cyn::after{background:var(--cyn)}.card.bl::after{background:var(--blue)}.card.ora::after{background:var(--ora)}.card.jkn::after{background:var(--jkn)}.card.fc::after{background:var(--fc)}
-.card .ci{font-size:22px;margin-bottom:6px}.card .cv{font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace}.card .cl{font-size:11px;color:var(--t2);margin-top:3px}
+.card.grn::after{background:var(--grn)}.card.red::after{background:var(--red)}.card.amb::after{background:var(--amb)}.card.pur::after{background:var(--pur)}.card.cyn::after{background:var(--cyn)}.card.bl::after{background:var(--blue)}.card.ora::after{background:var(--ora)}.card.tl::after{background:var(--teal)}
+.card .ci{font-size:20px;margin-bottom:4px}.card .cv{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace}.card .cl{font-size:10px;color:var(--t2);margin-top:2px}
 .tw{background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:20px}
 .th_{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);flex-wrap:wrap;gap:8px}.th_ h3{font-size:13px;font-weight:600}.th_ .fl{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .th_ input,.th_ select{padding:5px 8px;background:var(--s2);border:1px solid var(--bd);border-radius:5px;color:var(--t1);font-size:11px;font-family:inherit}
 table{width:100%;border-collapse:collapse;font-size:12px}thead{background:var(--s2)}th{padding:8px 10px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--t2);white-space:nowrap}
 td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover td{background:var(--s2)}
-tr.row-jkn{background:rgba(139,92,246,.05)}tr.row-fc{background:rgba(6,182,212,.05)}
 .sb0{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:14px;font-size:10px;font-weight:600}
 .sb0.w{background:var(--grn-bg);color:var(--grn)}.sb0.a{background:var(--red-bg);color:var(--red)}.sb0.l{background:var(--pur-bg);color:var(--pur)}.sb0.la{background:var(--amb-bg);color:var(--amb)}
 .sb0.f{background:var(--amb-bg);color:var(--amb);animation:blink 1.5s infinite}.sb0.h{background:var(--cyn-bg);color:var(--cyn)}.sb0.x{background:var(--s3);color:var(--t3)}
 .sb0.danger{background:var(--red-bg);color:var(--red);animation:blink 1s infinite}
-.sb0.jkn{background:var(--jkn-bg);color:var(--jkn)}.sb0.fc{background:var(--fc-bg);color:var(--fc)}
-/* status 4 levels */
-.st-work{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
-.st-break{background:rgba(34,211,238,.15);color:#22d3ee;border:1px solid rgba(34,211,238,.3)}
-.st-prayer{background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.3)}
-.st-done{background:rgba(107,114,128,.15);color:#9ca0b0;border:1px solid rgba(107,114,128,.3)}
-.st-absent{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
-.st-pending{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);animation:blink 1.5s infinite}
-.st-leave{background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.3)}
-.st-holiday{background:rgba(34,211,238,.15);color:#22d3ee;border:1px solid rgba(34,211,238,.3)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
 .ap{background:var(--s1);border:1px solid var(--amb);border-left:4px solid var(--amb);border-radius:10px;padding:14px 16px;margin-bottom:20px}
 .ap h3{font-size:13px;font-weight:600;color:var(--amb);margin-bottom:8px}.ap.danger{border-color:var(--red)}.ap.danger h3{color:var(--red)}
-.ai{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px}.ai:last-child{border-bottom:none}.ai .at{flex:1}.ai .ad{font-size:10px;color:var(--t3);font-family:'JetBrains Mono',monospace}
+.ai{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px}.ai:last-child{border-bottom:none}
 .page{display:none}.page.active{display:block}.empty{text-align:center;padding:30px;color:var(--t3);font-size:12px}
 .mt{display:none;background:none;border:none;color:var(--t1);font-size:20px;cursor:pointer}
 @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.mt{display:block}.cards{grid-template-columns:repeat(2,1fr)}}
 
-/* ===== LOGIN ===== */
-#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .6s,transform .6s}
-#loginScreen.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+/* Login */
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .6s}
+#loginScreen.fade-out{opacity:0;pointer-events:none}
 .login-box{width:380px;max-width:90vw;text-align:center}
-.login-box .avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px}
-.login-box h2{font-size:22px;font-weight:700;margin-bottom:4px}
-.login-box p{font-size:13px;color:var(--t2);margin-bottom:24px}
-.login-box input{width:100%;padding:12px 14px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:10px;transition:border .2s}
-.login-box input:focus{outline:none;border-color:var(--blue)}
-.login-box .btn-login{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s}
-.login-box .btn-login:hover{background:#2563eb}
+.login-box .avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#14b8a6);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px}
+.login-box h2{font-size:22px;font-weight:700;margin-bottom:4px}.login-box p{font-size:13px;color:var(--t2);margin-bottom:24px}
+.login-box input{width:100%;padding:12px 14px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:10px}
+.login-box .btn-login{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
 .login-box .err{color:var(--red);font-size:12px;margin-top:8px;min-height:18px}
 
-/* ===== SETUP ===== */
+/* Setup */
 #setupScreen{position:fixed;inset:0;z-index:9998;background:var(--bg);display:flex;align-items:center;justify-content:center}
-.setup-box{width:460px;max-width:90vw;text-align:center}
-.setup-box h2{font-size:22px;font-weight:700;margin-bottom:8px}
+.setup-box{width:460px;max-width:90vw;text-align:center}.setup-box h2{font-size:22px;font-weight:700;margin-bottom:8px}
 .setup-box p{font-size:13px;color:var(--t2);margin-bottom:20px}
-.setup-box input{width:100%;padding:12px 14px;background:var(--s1);border:2px solid var(--blue);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:12px;text-align:center}
+.setup-box input{width:100%;padding:12px;background:var(--s1);border:2px solid var(--blue);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:12px;text-align:center}
 .setup-box button{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
 
-/* ===== USER MGMT ===== */
-.um-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+/* Checkin Page */
+.checkin-container{max-width:500px;margin:0 auto}
+.checkin-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:24px;margin-bottom:16px}
+.checkin-card h3{font-size:16px;font-weight:700;margin-bottom:16px;text-align:center}
+.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.reason-btn{padding:14px 10px;background:var(--s2);border:2px solid var(--bd);border-radius:12px;color:var(--t1);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;transition:.2s}
+.reason-btn:hover{border-color:var(--blue);background:rgba(59,130,246,.1)}
+.reason-btn.selected{border-color:var(--blue);background:rgba(59,130,246,.15);color:var(--blue)}
+.reason-btn .emoji{font-size:24px;display:block;margin-bottom:4px}
+.camera-area{position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:12px;overflow:hidden;margin:16px 0}
+.camera-area video,.camera-area canvas{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+.camera-area .overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:180px;height:220px;border:3px solid rgba(59,130,246,.6);border-radius:50%;pointer-events:none;z-index:5}
+.camera-area .status{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;z-index:5}
+.gps-status{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s2);border-radius:8px;margin:12px 0;font-size:12px}
+.gps-status.ok{border:1px solid var(--grn);color:var(--grn)}.gps-status.fail{border:1px solid var(--red);color:var(--red)}.gps-status.loading{border:1px solid var(--amb);color:var(--amb)}
+.btn-checkin{width:100%;padding:16px;background:linear-gradient(135deg,#3b82f6,#14b8a6);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;margin-top:12px}
+.btn-checkin:disabled{opacity:.4;cursor:not-allowed}
+.btn-checkin:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(59,130,246,.3)}
+.checkin-result{text-align:center;padding:32px 16px}.checkin-result .big{font-size:64px;margin-bottom:16px}.checkin-result h3{font-size:18px;margin-bottom:8px}
+/* Absent form */
+.absent-form{margin-top:16px}.absent-form label{font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px}
+.absent-form select,.absent-form input,.absent-form textarea{width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:13px;font-family:inherit;margin-bottom:12px}
+/* Profile */
+.profile-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:24px;margin-bottom:16px}
+.profile-header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.profile-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--teal));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700}
+.profile-info h3{font-size:18px;font-weight:700}.profile-info p{font-size:12px;color:var(--t2)}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.profile-item{background:var(--s2);padding:12px;border-radius:8px}.profile-item .label{font-size:10px;color:var(--t3);text-transform:uppercase;margin-bottom:4px}.profile-item .value{font-size:14px;font-weight:600}
+/* User mgmt */
+.um-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;padding:16px}
 .um-form input,.um-form select{padding:8px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit}
 .um-form button{grid-column:span 2;padding:8px;background:var(--grn);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
-
-/* ===== PROFILE ===== */
-.profile-header{display:flex;align-items:center;gap:20px;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px 24px;margin-bottom:16px}
-.profile-avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--pur));display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
-.profile-info h2{font-size:18px;font-weight:700}.profile-info p{font-size:12px;color:var(--t2);margin-top:2px}
-.profile-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
-.pstat{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center}
-.pstat .pv{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace}.pstat .pl{font-size:10px;color:var(--t2);margin-top:2px}
-
-/* ===== FINANCE TABS ===== */
-.ftabs{display:flex;gap:4px;margin-bottom:12px}.ftab{padding:7px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bd);color:var(--t2);background:var(--s2)}.ftab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.fin-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;padding:16px;border-bottom:1px solid var(--bd);background:var(--s2)}
-.fin-form input,.fin-form select{padding:7px 10px;background:var(--s1);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit}
-.fin-form button{padding:8px 14px;background:var(--grn);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center}
+.modal-box{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:400px;max-width:90vw}
+.modal-box h3{font-size:15px;font-weight:600;margin-bottom:12px}
+.modal-box label{font-size:11px;font-weight:600;color:var(--t2);display:block;margin-top:8px}
+.modal-box input,.modal-box select,.modal-box textarea{width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0}
+.modal-btns{display:flex;gap:8px;margin-top:16px}.modal-btns button{flex:1;padding:8px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body>
 
-<!-- ===== SETUP SCREEN ===== -->
+<!-- SETUP -->
 <div id="setupScreen" style="display:none">
 <div class="setup-box">
-  <div style="font-size:48px;margin-bottom:12px">🔗</div>
-  <h2>ตั้งค่า Web App URL</h2>
+  <div style="font-size:48px;margin-bottom:12px">📸</div>
+  <h2>HR & Payroll v4</h2>
   <p>วาง Google Apps Script URL เพื่อเริ่มใช้งาน</p>
   <input id="setupUrl" placeholder="https://script.google.com/macros/s/.../exec">
-  <button onclick="saveSetup()">🚀 บันทึก & ดำเนินการ</button>
-  <p style="font-size:11px;color:var(--t3);margin-top:10px">URL ได้จาก Apps Script > Deploy > Web App</p>
+  <button onclick="saveSetup()">🚀 บันทึก & เริ่มใช้งาน</button>
 </div>
 </div>
 
-<!-- ===== LOGIN SCREEN ===== -->
+<!-- LOGIN -->
 <div id="loginScreen" style="display:none">
 <div class="login-box">
-  <div class="avatar">🏢</div>
-  <h2>HR Dashboard v4</h2>
-  <p>JKN & FC — Attendance & Payroll</p>
+  <div class="avatar">📸</div>
+  <h2>HR & Payroll v4</h2>
+  <p>ถ่ายรูปเช็คอิน + จดจำใบหน้า</p>
   <input id="loginUser" placeholder="👤 Username" autofocus>
   <input id="loginPass" placeholder="🔒 Password" type="password" onkeydown="if(event.key==='Enter')doLogin()">
   <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
@@ -121,35 +131,28 @@ tr.row-jkn{background:rgba(139,92,246,.05)}tr.row-fc{background:rgba(6,182,212,.
 </div>
 </div>
 
-<!-- ===== APP ===== -->
+<!-- APP -->
 <div class="app" id="appScreen" style="display:none">
 <aside class="sidebar" id="sidebar">
-  <div class="logo">
-    <h1><span>🏢</span> HR Dashboard</h1>
-    <p>JKN + FC · PAYROLL v4</p>
-  </div>
+  <div class="logo"><h1><span>📸</span> HR v4</h1><p>PHOTO CHECKIN & FACE RECOGNITION</p></div>
   <nav>
     <div class="sl">ภาพรวม</div>
     <div class="ni active" data-page="dashboard"><span class="ic">📊</span>Dashboard</div>
+    <div class="ni" data-page="checkin"><span class="ic">📸</span>เช็คอิน</div>
     <div class="ni" data-page="employees"><span class="ic">👥</span>พนักงาน</div>
-    <div class="ni" data-page="profile"><span class="ic">🪪</span>Profile พนักงาน</div>
     <div class="sl">แจ้งเตือน</div>
-    <div class="ni" data-page="alerts"><span class="ic">⚠️</span>ลืมสแกน <span class="badge" id="bScan" style="display:none">0</span></div>
-    <div class="ni" data-page="late"><span class="ic">⏰</span>สาย / หักเงิน <span class="badge" id="bLate" style="background:var(--ora);display:none">0</span></div>
+    <div class="ni" data-page="alerts"><span class="ic">⚠️</span>ลืมสแกน <span class="badge" id="bScan">0</span></div>
+    <div class="ni" data-page="late"><span class="ic">⏰</span>สาย/หักเงิน <span class="badge" id="bLate" style="background:var(--ora)">0</span></div>
     <div class="ni" data-page="prayer"><span class="ic">🕌</span>ละหมาดศุกร์</div>
     <div class="sl">ข้อมูล</div>
     <div class="ni" data-page="attendance"><span class="ic">📋</span>บันทึกเวลา</div>
     <div class="ni" data-page="payroll"><span class="ic">💰</span>เงินเดือน</div>
     <div class="ni" data-page="holidays"><span class="ic">📅</span>วันหยุดบริษัท</div>
-    <div class="sl">การเงิน</div>
-    <div class="ni" data-page="savings"><span class="ic">🏦</span>เงินออม</div>
-    <div class="ni" data-page="loans"><span class="ic">📑</span>เงินยืม</div>
-    <div class="ni" data-page="insurance"><span class="ic">🛡️</span>เงินประกัน</div>
-    <div class="sl role-admin" style="display:none">ผู้ดูแลระบบ</div>
+    <div class="sl role-admin" style="display:none">ผู้ดูแล</div>
     <div class="ni role-admin" data-page="users" style="display:none"><span class="ic">🔐</span>จัดการผู้ใช้</div>
   </nav>
   <div class="sb">
-    <div class="user-info"><span>👤</span><span id="userDisplay">-</span><span class="sb0 x" id="userRole">-</span></div>
+    <div class="user-info"><span>👤</span> <span id="userDisplay">-</span> <span class="sb0 x" id="userRole">-</span></div>
     <button onclick="showSettings()">⚙️ ตั้งค่า URL</button>
     <button onclick="doLogout()" style="background:var(--red-bg);color:var(--red);border-color:rgba(239,68,68,.3)">🚪 ออกจากระบบ</button>
   </div>
@@ -157,250 +160,133 @@ tr.row-jkn{background:rgba(139,92,246,.05)}tr.row-fc{background:rgba(6,182,212,.
 
 <div class="main">
   <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="mt" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
-      <h2 id="pageTitle">📊 Dashboard</h2>
-    </div>
-    <div class="meta">
-      <span id="lastUpd">—</span>
-      <span class="dot" id="sDot" style="display:none"></span>
-      <span id="connSt" style="font-size:10px">ยังไม่เชื่อมต่อ</span>
-    </div>
+    <div style="display:flex;align-items:center;gap:10px"><button class="mt" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><h2 id="pageTitle">📊 Dashboard</h2></div>
+    <div class="meta"><span id="lastUpd">—</span><span class="dot" id="sDot" style="display:none"></span><span id="connSt" style="font-size:10px">ยังไม่เชื่อมต่อ</span></div>
   </div>
   <div class="content">
 
-    <!-- ===== DASHBOARD ===== -->
+    <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="cards">
-        <div class="card bl"><div class="ci">👥</div><div class="cv" id="cTot">—</div><div class="cl">พนักงานทั้งหมด</div></div>
-        <div class="card jkn"><div class="ci">🟣</div><div class="cv" id="cJkn">—</div><div class="cl">JKN</div></div>
-        <div class="card fc"><div class="ci">🔵</div><div class="cv" id="cFc">—</div><div class="cl">FC</div></div>
+        <div class="card bl"><div class="ci">👥</div><div class="cv" id="cTot">—</div><div class="cl">พนักงาน</div></div>
+        <div class="card tl"><div class="ci">🏢</div><div class="cv" id="cJKN">—</div><div class="cl">JKN</div></div>
+        <div class="card tl"><div class="ci">🏭</div><div class="cv" id="cFC">—</div><div class="cl">FACAI</div></div>
         <div class="card grn"><div class="ci">✅</div><div class="cv" id="cWrk">—</div><div class="cl">มาทำงาน</div></div>
         <div class="card red"><div class="ci">❌</div><div class="cv" id="cAbs">—</div><div class="cl">ขาดงาน</div></div>
         <div class="card pur"><div class="ci">📅</div><div class="cv" id="cLv">—</div><div class="cl">ลา</div></div>
         <div class="card amb"><div class="ci">⚠️</div><div class="cv" id="cFgt">—</div><div class="cl">ลืมสแกน</div></div>
-        <div class="card ora"><div class="ci">⏰</div><div class="cv" id="cLt60">—</div><div class="cl">สาย&gt;60นาที</div></div>
-        <div class="card cyn"><div class="ci">🕌</div><div class="cv" id="cFri">—</div><div class="cl">วันศุกร์</div></div>
+        <div class="card ora"><div class="ci">⏰</div><div class="cv" id="cLt60">—</div><div class="cl">สาย>60นาที</div></div>
       </div>
       <div id="dashAlerts"></div>
-      <div class="tw">
-        <div class="th_">
-          <h3>📋 สถานะพนักงานวันนี้</h3>
-          <div class="fl">
-            <select id="dComp" onchange="filterDash()">
-              <option value="">ทุกบริษัท</option>
-              <option value="JKN">JKN</option>
-              <option value="FC">FC</option>
-            </select>
-            <input type="text" id="dSrch" placeholder="🔍 ค้นหา..." oninput="filterDash()">
+      <div class="tw"><div class="th_"><h3>📋 สถานะพนักงานวันนี้</h3><div class="fl"><input type="text" id="dSrch" placeholder="🔍 ค้นหา..." oninput="filterDash()"><select id="dComp" onchange="filterDash()"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select></div></div>
+        <div style="overflow-x:auto"><table><thead id="dHd"></thead><tbody id="dBd"></tbody></table></div></div>
+    </div>
+
+    <!-- CHECKIN -->
+    <div class="page" id="page-checkin">
+      <div class="checkin-container">
+        <div id="checkinStep1" class="checkin-card">
+          <h3>📸 เช็คอิน — เลือกเหตุผล</h3>
+          <div style="margin-bottom:12px"><label style="font-size:11px;color:var(--t2)">Employee ID</label><input id="ciEmpId" placeholder="เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit"></div>
+          <div class="reason-grid">
+            <button class="reason-btn" data-reason="เข้างาน" onclick="selectReason(this)"><span class="emoji">🟢</span>เข้างาน</button>
+            <button class="reason-btn" data-reason="ไปพัก" onclick="selectReason(this)"><span class="emoji">🍽️</span>ไปพัก</button>
+            <button class="reason-btn" data-reason="กลับจากพัก" onclick="selectReason(this)"><span class="emoji">🔙</span>กลับจากพัก</button>
+            <button class="reason-btn" data-reason="เลิกงาน" onclick="selectReason(this)"><span class="emoji">🏠</span>เลิกงาน</button>
+            <button class="reason-btn" data-reason="ไปละหมาด" onclick="selectReason(this)"><span class="emoji">🕌</span>ไปละหมาด</button>
+            <button class="reason-btn" data-reason="กลับจากละหมาด" onclick="selectReason(this)"><span class="emoji">🤲</span>กลับจากละหมาด</button>
+            <button class="reason-btn" data-reason="กลับก่อนเวลา" onclick="selectReason(this)"><span class="emoji">🔶</span>กลับก่อนเวลา</button>
+            <button class="reason-btn" data-reason="ลาขาด" onclick="selectReason(this)"><span class="emoji">📋</span>ลา / ขาดงาน</button>
+          </div>
+          <div id="absentFormArea" style="display:none" class="absent-form">
+            <label>ประเภท</label>
+            <select id="absentType"><option>ลาป่วย</option><option>ลากิจ</option></select>
+            <label>วันที่ลา</label>
+            <input type="date" id="absentDate">
+            <label>หมายเหตุ (ลาป่วยเป็นอะไร / ลากิจไปไหน)</label>
+            <textarea id="absentRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
+            <button class="btn-checkin" onclick="submitAbsent()">📋 บันทึกการลา</button>
+          </div>
+          <div id="normalCheckinBtn" style="display:none">
+            <div id="earlyLeaveForm" style="display:none" class="absent-form">
+              <label>เหตุผลกลับก่อน</label>
+              <select id="earlyType"><option>ลาป่วย</option><option>ลากิจ</option></select>
+              <label>หมายเหตุ</label>
+              <textarea id="earlyRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
+            </div>
+            <button class="btn-checkin" onclick="goToCamera()">📸 ถัดไป — ถ่ายรูปยืนยัน</button>
           </div>
         </div>
-        <div style="overflow-x:auto"><table><thead id="dHd"></thead><tbody id="dBd"></tbody></table></div>
-      </div>
-    </div>
 
-    <!-- ===== EMPLOYEES ===== -->
-    <div class="page" id="page-employees">
-      <div class="tw">
-        <div class="th_">
-          <h3>👥 พนักงาน</h3>
-          <div class="fl">
-            <select id="eComp" onchange="loadEmp()">
-              <option value="">ทุกบริษัท</option>
-              <option value="JKN">JKN</option>
-              <option value="FC">FC</option>
-            </select>
+        <div id="checkinStep2" class="checkin-card" style="display:none">
+          <h3>📸 ถ่ายรูป Selfie</h3>
+          <div class="camera-area">
+            <video id="camVideo" autoplay playsinline muted></video>
+            <canvas id="camCanvas" style="display:none"></canvas>
+            <div class="overlay"></div>
+            <div class="status" id="camStatus">กำลังเปิดกล้อง...</div>
           </div>
+          <div class="gps-status loading" id="gpsStatus">📍 กำลังตรวจ GPS...</div>
+          <div id="faceStatus" style="padding:8px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:12px;color:var(--t2)">🤖 กำลังโหลดระบบจดจำใบหน้า...</div>
+          <button class="btn-checkin" id="btnCapture" onclick="captureAndCheckin()" disabled>📸 ถ่ายรูป & เช็คอิน</button>
+          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="backToStep1()">← ย้อนกลับ</button>
         </div>
-        <div style="overflow-x:auto"><table><thead id="eHd"></thead><tbody id="eBd"></tbody></table></div>
-      </div>
-    </div>
 
-    <!-- ===== EMPLOYEE PROFILE ===== -->
-    <div class="page" id="page-profile">
-      <div class="tw" style="margin-bottom:16px">
-        <div class="th_">
-          <h3>🪪 Profile พนักงาน</h3>
-          <div class="fl">
-            <input id="profId" placeholder="รหัสพนักงาน เช่น JK001" style="width:180px">
-            <button onclick="loadProfile()" style="padding:5px 12px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px">🔍 ค้นหา</button>
-          </div>
-        </div>
-      </div>
-      <div id="profileContent"><div class="empty">กรอกรหัสพนักงานแล้วกดค้นหา</div></div>
-    </div>
-
-    <!-- ===== ALERTS (ลืมสแกน) ===== -->
-    <div class="page" id="page-alerts">
-      <div class="ap"><h3>⚠️ ลืมสแกน (รอแก้ไข)</h3><div id="alertL"><div class="empty">ไม่มีรายการ</div></div></div>
-      <div class="tw">
-        <div class="th_">
-          <h3>📋 ประวัติลืมสแกน</h3>
-          <div class="fl">
-            <button onclick="showForgotModal()" style="padding:5px 12px;background:var(--amb);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600">➕ แจ้งลืมสแกน</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto"><table><thead id="fHd"></thead><tbody id="fBd"></tbody></table></div>
-      </div>
-    </div>
-
-    <!-- ===== LATE ===== -->
-    <div class="page" id="page-late">
-      <div class="ap danger"><h3>🚨 สายเกิน 60 นาที</h3><div id="lateAlertL"></div></div>
-      <div class="tw">
-        <div class="th_">
-          <h3>⏰ รายการสาย</h3>
-          <div class="fl">
-            <input type="date" id="ltFrom" onchange="loadLate()">
-            <input type="date" id="ltTo" onchange="loadLate()">
-          </div>
-        </div>
-        <div style="overflow-x:auto">
-          <table><thead><tr><th>วันที่</th><th>ID</th><th>บริษัท</th><th>ชื่อ</th><th>สาย</th><th>เหตุผล</th><th>หัก?</th><th>฿</th><th>สถานะ</th></tr></thead><tbody id="ltBd"></tbody></table>
+        <div id="checkinResult" class="checkin-card" style="display:none">
+          <div class="checkin-result" id="resultContent"></div>
+          <button class="btn-checkin" onclick="resetCheckin()">📸 เช็คอินอีกครั้ง</button>
         </div>
       </div>
     </div>
 
-    <!-- ===== PRAYER ===== -->
-    <div class="page" id="page-prayer">
-      <div class="tw">
-        <div class="th_">
-          <h3>🕌 ละหมาดศุกร์</h3>
-          <div class="fl">
-            <input type="date" id="prayerDate" style="width:140px">
-            <button onclick="loadPrayer()" style="padding:5px 10px;background:var(--pur);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px">โหลด</button>
-            <button onclick="showPrayerModal()" style="padding:5px 12px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600">➕ บันทึกละหมาด</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto"><table><thead id="prHd"></thead><tbody id="prBd"></tbody></table></div>
-      </div>
-    </div>
+    <!-- EMPLOYEES -->
+    <div class="page" id="page-employees"><div class="tw"><div class="th_"><h3>👥 พนักงาน</h3><div class="fl"><select id="empComp" onchange="loadEmp()"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select></div></div><div style="overflow-x:auto"><table><thead id="eHd"></thead><tbody id="eBd"></tbody></table></div></div></div>
 
-    <!-- ===== ATTENDANCE ===== -->
-    <div class="page" id="page-attendance">
-      <div class="tw">
-        <div class="th_">
-          <h3>📋 บันทึกเวลา</h3>
-          <div class="fl">
-            <input type="date" id="atFrom" onchange="loadAtt()">
-            <input type="date" id="atTo" onchange="loadAtt()">
-          </div>
-        </div>
-        <div style="overflow-x:auto"><table><thead id="atHd"></thead><tbody id="atBd"></tbody></table></div>
-      </div>
-    </div>
+    <!-- PROFILE -->
+    <div class="page" id="page-profile"><div id="profileContent"></div></div>
 
-    <!-- ===== PAYROLL ===== -->
-    <div class="page" id="page-payroll">
-      <div class="tw">
-        <div class="th_">
-          <h3>💰 เงินเดือน</h3>
-          <div class="fl">
-            <input type="text" id="payP" placeholder="เช่น 03/2026 → 04/2026" style="width:180px">
-            <select id="payComp">
-              <option value="">ทุกบริษัท</option>
-              <option value="JKN">JKN</option>
-              <option value="FC">FC</option>
-            </select>
-            <button onclick="loadPay()" style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px">คำนวณ</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto"><table><thead id="pyHd"></thead><tbody id="pyBd"></tbody></table></div>
-      </div>
-    </div>
+    <!-- ALERTS -->
+    <div class="page" id="page-alerts"><div class="ap"><h3>⚠️ ลืมสแกน</h3><div id="alertL"><div class="empty">ไม่มีรายการ</div></div></div><div class="tw"><div class="th_"><h3>📋 ประวัติ</h3></div><div style="overflow-x:auto"><table><thead id="fHd"></thead><tbody id="fBd"></tbody></table></div></div></div>
 
-    <!-- ===== HOLIDAYS ===== -->
-    <div class="page" id="page-holidays">
-      <div class="tw"><div class="th_"><h3>📅 วันหยุดบริษัท</h3></div><div style="overflow-x:auto"><table><thead id="hlHd"></thead><tbody id="hlBd"></tbody></table></div></div>
-    </div>
+    <!-- LATE -->
+    <div class="page" id="page-late"><div class="ap danger"><h3>🚨 สายเกิน 60 นาที</h3><div id="lateAlertL"></div></div><div class="tw"><div class="th_"><h3>⏰ รายการสาย</h3><div class="fl"><input type="date" id="ltFrom" onchange="loadLate()"><input type="date" id="ltTo" onchange="loadLate()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>วันที่</th><th>ID</th><th>ชื่อ</th><th>บริษัท</th><th>สาย</th><th>เหตุผล</th><th>หัก?</th><th>฿</th><th>สถานะ</th></tr></thead><tbody id="ltBd"></tbody></table></div></div></div>
 
-    <!-- ===== SAVINGS (เงินออม) ===== -->
-    <div class="page" id="page-savings">
-      <div class="tw">
-        <div class="th_"><h3>🏦 เงินออม</h3></div>
-        <div class="fin-form">
-          <input id="savEmp" placeholder="รหัสพนักงาน">
-          <select id="savType">
-            <option>ฝาก</option><option>ถอน</option><option>หักเดือนนี้</option><option>ปรับยอด</option>
-          </select>
-          <input id="savAmt" type="number" placeholder="จำนวนเงิน (บาท)">
-          <input id="savNote" placeholder="หมายเหตุ">
-          <button onclick="saveSavings()">💾 บันทึก</button>
-        </div>
-        <div style="overflow-x:auto"><table><thead id="savHd"></thead><tbody id="savBd"></tbody></table></div>
-      </div>
-    </div>
+    <!-- PRAYER -->
+    <div class="page" id="page-prayer"><div class="tw"><div class="th_"><h3>🕌 ละหมาดศุกร์</h3></div><div style="overflow-x:auto"><table><thead id="prHd"></thead><tbody id="prBd"></tbody></table></div></div></div>
 
-    <!-- ===== LOANS (เงินยืม) ===== -->
-    <div class="page" id="page-loans">
-      <div class="tw">
-        <div class="th_"><h3>📑 เงินยืม</h3></div>
-        <div class="fin-form">
-          <input id="lnEmp" placeholder="รหัสพนักงาน">
-          <select id="lnType">
-            <option>ยืมใหม่</option><option>ชำระงวด</option><option>ปิดหนี้</option>
-          </select>
-          <input id="lnAmt" type="number" placeholder="จำนวนเงิน (บาท)">
-          <input id="lnInstall" type="number" placeholder="ผ่อน/เดือน (ถ้ายืมใหม่)">
-          <input id="lnNote" placeholder="หมายเหตุ">
-          <button onclick="saveLoan()">💾 บันทึก</button>
-        </div>
-        <div style="overflow-x:auto"><table><thead id="lnHd"></thead><tbody id="lnBd"></tbody></table></div>
-      </div>
-    </div>
+    <!-- ATTENDANCE -->
+    <div class="page" id="page-attendance"><div class="tw"><div class="th_"><h3>📋 บันทึกเวลา</h3><div class="fl"><input type="date" id="atFrom" onchange="loadAtt()"><input type="date" id="atTo" onchange="loadAtt()"><select id="atComp" onchange="loadAtt()"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select></div></div><div style="overflow-x:auto"><table><thead id="atHd"></thead><tbody id="atBd"></tbody></table></div></div></div>
 
-    <!-- ===== INSURANCE (เงินประกัน) ===== -->
-    <div class="page" id="page-insurance">
-      <div class="tw">
-        <div class="th_"><h3>🛡️ เงินประกัน</h3></div>
-        <div class="fin-form">
-          <input id="insEmp" placeholder="รหัสพนักงาน">
-          <input id="insType" placeholder="ประเภทประกัน เช่น ประกันสังคม">
-          <input id="insAmt" type="number" placeholder="จำนวนเงิน (บาท)">
-          <input id="insNote" placeholder="หมายเหตุ">
-          <button onclick="saveInsurance()">💾 บันทึก</button>
-        </div>
-        <div style="overflow-x:auto"><table><thead id="insHd"></thead><tbody id="insBd"></tbody></table></div>
-      </div>
-    </div>
+    <!-- PAYROLL -->
+    <div class="page" id="page-payroll"><div class="tw"><div class="th_"><h3>💰 เงินเดือน</h3><div class="fl"><input type="text" id="payP" placeholder="เช่น 03/2026 → 04/2026" style="width:180px"><select id="payComp"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select><button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPay()">โหลด</button></div></div><div style="overflow-x:auto"><table><thead id="pyHd"></thead><tbody id="pyBd"></tbody></table></div></div></div>
 
-    <!-- ===== USERS ===== -->
-    <div class="page" id="page-users">
-      <div class="tw"><div class="th_"><h3>🔐 จัดการผู้ใช้ Dashboard</h3></div>
-        <div style="padding:16px">
-          <div class="um-form">
-            <input id="nuUser" placeholder="Username"><input id="nuName" placeholder="ชื่อแสดง">
-            <input id="nuPass" placeholder="Password" type="text">
-            <select id="nuRole"><option>employee</option><option>manager</option><option>hr</option><option>admin</option></select>
-            <button onclick="addUser()">➕ เพิ่มผู้ใช้ใหม่</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto"><table><thead><tr><th>Username</th><th>ชื่อแสดง</th><th>สิทธิ์</th><th>จัดการ</th></tr></thead><tbody id="umBd"></tbody></table></div>
-      </div>
-    </div>
+    <!-- HOLIDAYS -->
+    <div class="page" id="page-holidays"><div class="tw"><div class="th_"><h3>📅 วันหยุดบริษัท</h3></div><div style="overflow-x:auto"><table><thead id="hlHd"></thead><tbody id="hlBd"></tbody></table></div></div></div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
-</div><!-- /app -->
+    <!-- USERS -->
+    <div class="page" id="page-users"><div class="tw"><div class="th_"><h3>🔐 จัดการผู้ใช้</h3></div>
+      <div class="um-form"><input id="nuUser" placeholder="Username"><input id="nuName" placeholder="ชื่อแสดง"><input id="nuPass" placeholder="Password"><select id="nuRole"><option>employee</option><option>manager</option><option>hr</option><option>admin</option></select><button onclick="addUser()">➕ เพิ่มผู้ใช้</button></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Username</th><th>ชื่อ</th><th>สิทธิ์</th><th>จัดการ</th></tr></thead><tbody id="umBd"></tbody></table></div></div></div>
 
-<!-- ===== SETTINGS MODAL ===== -->
-<div id="setMo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
-<div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:400px;max-width:90vw">
-  <h3 style="font-size:15px;font-weight:600;margin-bottom:14px">⚙️ ตั้งค่า</h3>
-  <label style="font-size:11px;font-weight:600;color:var(--t2)">Web App URL</label>
-  <input id="apiUrl" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0 10px">
-  <label style="font-size:11px;font-weight:600;color:var(--t2)">Auto Refresh (วินาที)</label>
-  <input id="refInt" type="number" value="30" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0">
-  <div style="display:flex;gap:8px;margin-top:16px">
-    <button onclick="document.getElementById('setMo').style.display='none'" style="flex:1;padding:8px;background:var(--s3);color:var(--t2);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">ยกเลิก</button>
-    <button onclick="saveSt()" style="flex:1;padding:8px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">💾 บันทึก</button>
   </div>
 </div>
 </div>
 
+<!-- Settings Modal -->
+<div id="setMo" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
+<div class="modal-box">
+  <h3>⚙️ ตั้งค่า</h3>
+  <label>Web App URL</label><input id="apiUrl">
+  <label>Auto Refresh (วินาที)</label><input id="refInt" type="number" value="30">
+  <div class="modal-btns"><button onclick="$('setMo').style.display='none'" style="background:var(--s3);color:var(--t2)">ยกเลิก</button><button onclick="saveSt()" style="background:var(--blue);color:#fff">💾 บันทึก</button></div>
+</div>
+</div>
+
 <script>
-let API='',REF=30,timer=null,allDash=[],curUser=null;
+// ===== GLOBALS =====
+let API='',REF=30,timer=null,allDash=[],curUser=null,selectedReason='',gpsData=null,faceModelsLoaded=false,camStream=null;
 const $=id=>document.getElementById(id);
+const API_KEY='HR PAYROLL TOPPY';
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded',()=>{
@@ -408,73 +294,40 @@ document.addEventListener('DOMContentLoaded',()=>{
   REF=parseInt(localStorage.getItem('hr_ref')||'30');
   const sess=localStorage.getItem('hr_session');
   if(sess)try{curUser=JSON.parse(sess)}catch(e){}
+  $('absentDate').value=new Date().toISOString().split('T')[0];
   if(!API){$('setupScreen').style.display='flex';return;}
   if(!curUser){$('loginScreen').style.display='flex';return;}
   showApp();
-  // Set default prayer date to last Friday
-  setPrayerDefault();
 });
 
-function setPrayerDefault(){
-  const t=new Date(),dow=t.getDay();
-  const diff=(dow>=5)?(dow-5):(dow+2);
-  const fri=new Date(t);fri.setDate(t.getDate()-diff);
-  if($('prayerDate'))$('prayerDate').value=fmt(fri);
-}
-
-// ===== SETUP / SETTINGS =====
-function saveSetup(){
-  API=$('setupUrl').value.trim();
-  if(!API){alert('กรุณาวาง URL');return;}
-  localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref','30');
-  $('setupScreen').style.display='none';$('loginScreen').style.display='flex';
-}
+// ===== SETUP & LOGIN =====
+function saveSetup(){API=$('setupUrl').value.trim();if(!API){alert('กรุณาวาง URL');return;}localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref','30');$('setupScreen').style.display='none';$('loginScreen').style.display='flex';}
 function showSettings(){$('setMo').style.display='flex';$('apiUrl').value=API;$('refInt').value=REF}
-function saveSt(){
-  API=$('apiUrl').value.trim();REF=parseInt($('refInt').value)||30;
-  localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref',REF);
-  $('setMo').style.display='none';startRef();loadAll();
-}
+function saveSt(){API=$('apiUrl').value.trim();REF=parseInt($('refInt').value)||30;localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref',REF);$('setMo').style.display='none';startRef();loadAll()}
 
-// ===== LOGIN =====
 async function doLogin(){
   const u=$('loginUser').value.trim(),p=$('loginPass').value;
   if(!u||!p){$('loginErr').textContent='กรุณากรอก Username และ Password';return;}
   $('loginErr').textContent='กำลังเข้าสู่ระบบ...';
-  try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'login',username:u,password:p})});
-    const d=await r.json();
-    if(d.success){
-      curUser=d.user;localStorage.setItem('hr_session',JSON.stringify(curUser));
-      $('loginScreen').classList.add('fade-out');
-      setTimeout(()=>{$('loginScreen').style.display='none';showApp();},600);
-    }else{$('loginErr').textContent='❌ '+d.message;}
-  }catch(e){$('loginErr').textContent='❌ เชื่อมต่อไม่ได้ ตรวจสอบ URL';}
+  try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'login',username:u,password:p})});const d=await r.json();
+  if(d.success){curUser=d.user;localStorage.setItem('hr_session',JSON.stringify(curUser));$('loginScreen').classList.add('fade-out');setTimeout(()=>{$('loginScreen').style.display='none';showApp();},500);}
+  else $('loginErr').textContent='❌ '+d.message;}catch(e){$('loginErr').textContent='❌ เชื่อมต่อไม่ได้';}
 }
-function doLogout(){curUser=null;localStorage.removeItem('hr_session');location.reload();}
+function doLogout(){curUser=null;localStorage.removeItem('hr_session');stopCamera();location.reload();}
 
 // ===== APP =====
 function showApp(){
-  $('appScreen').style.display='flex';
-  $('userDisplay').textContent=curUser.displayName||curUser.username;
-  $('userRole').textContent=curUser.role;
-  if(curUser.role==='admin'){
-    document.querySelectorAll('.role-admin').forEach(e=>e.style.display='');
-  }
-  if(curUser.role==='employee'){
-    document.querySelectorAll('[data-page="payroll"],[data-page="late"]').forEach(e=>e.style.display='none');
-  }
+  $('appScreen').style.display='flex';$('userDisplay').textContent=curUser.displayName||curUser.username;$('userRole').textContent=curUser.role;
+  if(curUser.role==='admin')document.querySelectorAll('.role-admin').forEach(e=>e.style.display='');
+  if(curUser.role==='employee')document.querySelectorAll('[data-page="payroll"],[data-page="late"]').forEach(e=>e.style.display='none');
   const t=new Date(),d26=new Date(t.getFullYear(),t.getMonth()-1,26);
   if($('atFrom'))$('atFrom').value=fmt(d26);if($('atTo'))$('atTo').value=fmt(t);
   if($('ltFrom'))$('ltFrom').value=fmt(d26);if($('ltTo'))$('ltTo').value=fmt(t);
   document.querySelectorAll('.ni').forEach(n=>n.addEventListener('click',()=>{
-    document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
-    n.classList.add('active');
-    const p=n.dataset.page;
-    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-    $('page-'+p).classList.add('active');
-    $('pageTitle').textContent=n.textContent.trim();
-    loadPage(p);$('sidebar').classList.remove('open');
+    document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));n.classList.add('active');
+    const p=n.dataset.page;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    $('page-'+p).classList.add('active');$('pageTitle').textContent=n.textContent.trim();loadPage(p);$('sidebar').classList.remove('open');
+    if(p!=='checkin')stopCamera();
   }));
   startRef();loadAll();
 }
@@ -484,467 +337,244 @@ function startRef(){if(timer)clearInterval(timer);timer=setInterval(()=>loadAll(
 
 // ===== API =====
 async function apiGet(action,params={}){
-  if(!API)return null;
-  const u=new URL(API);u.searchParams.set('action',action);
-  for(const[k,v]of Object.entries(params))if(v!==undefined&&v!=='')u.searchParams.set(k,v);
-  try{
-    const r=await fetch(u);const d=await r.json();
-    $('sDot').style.display='inline-block';$('connSt').textContent='เชื่อมต่อแล้ว';
-    $('lastUpd').textContent=new Date().toLocaleString('th-TH');return d;
-  }catch(e){$('sDot').style.display='none';$('connSt').textContent='❌ ไม่ได้';return null}
+  if(!API)return null;const u=new URL(API);u.searchParams.set('action',action);
+  for(const[k,v]of Object.entries(params))if(v)u.searchParams.set(k,v);
+  try{const r=await fetch(u);const d=await r.json();$('sDot').style.display='inline-block';$('connSt').textContent='เชื่อมต่อแล้ว';$('lastUpd').textContent=new Date().toLocaleString('th-TH');return d;}
+  catch(e){$('sDot').style.display='none';$('connSt').textContent='❌ ไม่ได้';return null}
 }
-async function apiPost(body){
-  try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
-    return await r.json();
-  }catch(e){return{success:false,message:e.toString()}}
-}
+async function apiPost(body){try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});return await r.json();}catch(e){return{success:false,message:e.toString()};}}
 
 async function loadAll(){loadSum();loadDash();loadAlerts();loadLate()}
 function loadPage(p){
-  const M={
-    dashboard:()=>{loadSum();loadDash()},
-    employees:loadEmp,
-    profile:()=>{},
-    alerts:loadAlerts,
-    late:loadLate,
-    prayer:loadPrayer,
-    attendance:loadAtt,
-    payroll:loadPay,
-    holidays:loadHol,
-    savings:loadSavings,
-    loans:loadLoans,
-    insurance:loadInsurance,
-    users:loadUsers,
-  };
-  if(M[p])M[p]();
+  if(p==='dashboard'){loadSum();loadDash()}else if(p==='checkin'){resetCheckin()}
+  else if(p==='employees')loadEmp();else if(p==='alerts')loadAlerts();
+  else if(p==='late')loadLate();else if(p==='attendance')loadAtt();else if(p==='payroll')loadPay();
+  else if(p==='holidays')loadHol();else if(p==='prayer')loadPrayer();else if(p==='users')loadUsers();
 }
 
 // ===== SUMMARY =====
 async function loadSum(){
   const d=await apiGet('summary');if(!d||!d.success)return;
-  $('cTot').textContent=d.totalEmployees||0;
-  $('cJkn').textContent=d.jknCount||0;
-  $('cFc').textContent=d.fcCount||0;
-  $('cWrk').textContent=d.atWork||0;$('cAbs').textContent=d.absent||0;
-  $('cLv').textContent=d.leave||0;$('cFgt').textContent=d.pendingForgotScan||0;
-  $('cLt60').textContent=d.lateOver60Today||0;$('cFri').textContent=d.isFriday?'🟢':'—';
-  const fs=d.pendingForgotScan||0;
-  $('bScan').textContent=fs;$('bScan').style.display=fs>0?'inline':'none';
+  $('cTot').textContent=d.totalEmployees||0;$('cJKN').textContent=d.totalJKN||0;$('cFC').textContent=d.totalFC||0;
+  $('cWrk').textContent=d.atWork||0;$('cAbs').textContent=d.absent||0;$('cLv').textContent=d.leave||0;
+  $('cFgt').textContent=d.pendingForgotScan||0;$('cLt60').textContent=d.lateOver60Today||0;
+  $('bScan').textContent=d.pendingForgotScan||0;$('bScan').style.display=(d.pendingForgotScan>0)?'inline':'none';
   const lt=d.lateOver60Today||0;$('bLate').textContent=lt;$('bLate').style.display=lt>0?'inline':'none';
-  let al='';
-  if(d.isHoliday)al+='<div class="ap" style="border-color:var(--cyn)"><h3 style="color:var(--cyn)">🎉 วันหยุดบริษัท</h3></div>';
+  let al='';if(d.isHoliday)al+='<div class="ap" style="border-color:var(--cyn)"><h3 style="color:var(--cyn)">🎉 วันหยุดบริษัท</h3></div>';
   if(lt>0)al+='<div class="ap danger"><h3>🚨 สายเกิน 60 นาที '+lt+' คน</h3></div>';
   $('dashAlerts').innerHTML=al;
 }
 
 // ===== DASHBOARD =====
-async function loadDash(){
-  const d=await apiGet('dashboard');if(!d||!d.success||!d.data)return;
-  allDash=d.data;renderDash(d.data);
-}
-function filterDash(){
-  const q=$('dSrch').value.toLowerCase();
-  const comp=$('dComp').value;
-  let rows=allDash.slice(1).filter(r=>r&&r[0]);
-  if(comp)rows=rows.filter(r=>(r[2]||'').toString().toUpperCase()===comp);
-  if(q)rows=rows.filter(r=>r.some(c=>c&&c.toString().toLowerCase().includes(q)));
-  renderDash([allDash[0],...rows]);
-}
+async function loadDash(){const d=await apiGet('dashboard');if(!d||!d.success||!d.data)return;allDash=d.data;renderDash(d.data)}
 function renderDash(data){
-  const isAdmin = curUser && curUser.role === 'admin';
-  if(!data||data.length<2){
-    $('dBd').innerHTML='<tr><td colspan="11" class="empty">ไม่มีข้อมูล</td></tr>';return;
-  }
-  // หา header row (row ที่มี 'Employee ID' หรือ 'ID' ในคอลัมน์แรก)
-  let hi=0;
-  for(let i=0;i<data.length;i++){
-    const c=(data[i]&&data[i][0])?data[i][0].toString():'';
-    if(c.includes('Employee ID')||c.includes('ID')||c.includes('รหัส')){hi=i;break;}
-  }
-  const h=data[hi]||['ID','ชื่อ','บริษัท','ตำแหน่ง','เข้า','ออกพัก','กลับพัก','เลิกงาน','สถานะ','สาย','หมายเหตุ'];
-  $('dHd').innerHTML='<tr>'+h.map(x=>'<th>'+(x||'')+'</th>').join('')+(isAdmin?'<th>แก้ไข</th>':'')+'</tr>';
-  const rows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim()&&!r[0].toString().includes('📊')&&!r[0].toString().includes('อัปเดต'));
-  $('dBd').innerHTML=rows.map(r=>{
-    const st=(r[8]||'').toString();
-    const co=(r[2]||'').toString().toUpperCase();
-    let stCls='st-pending',stLbl=st||'ยังไม่มา';
-    if(st.includes('ทำงาน')&&!st.includes('นอกสถานที่')){stCls='st-work';stLbl='🟢 ทำงาน'}
-    else if(st.includes('พัก')&&!st.includes('ลาพัก')){stCls='st-break';stLbl='🍜 พัก'}
-    else if(st.includes('ละหมาด'))    {stCls='st-prayer';stLbl='🕌 ละหมาด'}
-    else if(st.includes('เลิกงาน'))   {stCls='st-done';stLbl='🔵 เลิก'}
-    else if(st.includes('ขาด'))       {stCls='st-absent';stLbl='❌ ขาด'}
-    else if(st.includes('ลืมสแกน'))   {stCls='st-absent';stLbl='⚠️ ลืมสแกน'}
-    else if(st.includes('ลา'))        {stCls='st-leave';stLbl='📅 ลา'}
-    else if(st.includes('วันหยุด'))   {stCls='st-holiday';stLbl='🎉 หยุด'}
-    const lt=parseInt(r[9])||0;
-    const eid=r[0]||'',ename=r[1]||'';
-    const rowCls=co==='JKN'?'row-jkn':co==='FC'?'row-fc':'';
+  if(data.length<2){$('dBd').innerHTML='<tr><td colspan="11" class="empty">ไม่มีข้อมูล</td></tr>';return}
+  let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&(data[i][0].toString().includes('ID')||data[i][0].toString().includes('รหัส'))){hi=i;break}}
+  const h=data[hi]||['ID','ชื่อ','บริษัท','ตำแหน่ง','เข้างาน','ไปพัก','กลับพัก','เลิกงาน','สถานะ','สาย','หมายเหตุ'];
+  $('dHd').innerHTML='<tr>'+h.map(x=>'<th>'+(x||'')+'</th>').join('')+'</tr>';
+  const rows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim());
+  $('dBd').innerHTML=rows.map(r=>{const st=(r[8]||'').toString();let bc='x';
+    if(st.includes('ทำงาน')||st.includes('เลิกงาน'))bc='w';else if(st.includes('ขาด'))bc='a';
+    else if(st.includes('ลา'))bc='l';else if(st.includes('ลืม')||st.includes('⚠️'))bc='f';else if(st.includes('วันหยุด'))bc='h';
+    const lt=parseInt(r[9])||0;const lc=lt>60?'danger':lt>0?'la':'';const eid=r[0]||'';const ename=r[1]||'';
     let statusCell;
-    if(st.includes('ยังไม่มา')||st===''){
-      statusCell='<span class="sb0 la" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="กดเพื่อใส่เหตุผล">❓ ยังไม่มา ✏️</span>';
-    }else{
-      statusCell='<span class="sb0 '+stCls+'">'+stLbl+'</span>';
-    }
-    const coBadge=co==='JKN'?'<span class="sb0 jkn">JKN</span>':co==='FC'?'<span class="sb0 fc">FC</span>':'—';
-    return '<tr class="'+rowCls+'">'+
-      '<td style="font-family:JetBrains Mono;font-size:11px">'+eid+'</td>'+
-      '<td><b>'+ename+'</b></td>'+
-      '<td>'+coBadge+'</td>'+
-      '<td style="font-size:11px;color:var(--t2)">'+(r[3]||'')+'</td>'+
-      '<td style="font-family:JetBrains Mono;font-size:11px;color:var(--grn)">'+(r[4]||'—')+'</td>'+
-      '<td style="font-family:JetBrains Mono;font-size:11px;color:var(--cyn)">'+(r[5]||'—')+'</td>'+
-      '<td style="font-family:JetBrains Mono;font-size:11px;color:var(--cyn)">'+(r[6]||'—')+'</td>'+
-      '<td style="font-family:JetBrains Mono;font-size:11px;color:var(--t3)">'+(r[7]||'—')+'</td>'+
-      '<td>'+statusCell+'</td>'+
-      '<td>'+(lt>0?'<span class="sb0 '+(lt>60?'danger':'la')+'">'+lt+'m'+(lt>60?' ⚠️':'')+'</span>':'—')+'</td>'+
-      '<td style="font-size:11px;color:var(--t2);max-width:200px;overflow:hidden;text-overflow:ellipsis">'+(r[10]||'')+'</td>'+
-      (isAdmin?'<td><button onclick="showEditTime(\''+eid+'\',\''+ename.replace(/'/g,"\\'")+'\',\''+((r[4]||'').toString().replace(':00',''))+'\',\''+((r[5]||'').toString().replace(':00',''))+'\',\''+((r[6]||'').toString().replace(':00',''))+'\',\''+((r[7]||'').toString().replace(':00',''))+'\')" style="background:none;border:none;cursor:pointer;font-size:14px" title="แก้ไขเวลา">✏️</button></td>':'')+
-      '</tr>';
+    if(st.includes('ยังไม่มา')){statusCell='<span class="sb0 la" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="กดเพื่อใส่เหตุผล">❓ ยังไม่มา ✏️</span>';}
+    else{statusCell='<span class="sb0 '+bc+'">'+st+'</span>';}
+    return'<tr><td style="font-family:JetBrains Mono;font-size:11px;cursor:pointer;color:var(--blue)" onclick="showProfile(\''+eid+'\')">'+eid+'</td><td><b style="cursor:pointer" onclick="showProfile(\''+eid+'\')">'+ename+'</b></td><td><span class="sb0 '+(r[2]==='JKN'?'h':'l')+'">'+(r[2]||'')+'</span></td><td>'+(r[3]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[4]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[5]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[6]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[7]||'-')+'</td><td>'+statusCell+'</td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[10]||'')+'</td></tr>';
   }).join('');
 }
+function filterDash(){const q=$('dSrch').value.toLowerCase(),c=$('dComp').value;if(!q&&!c){renderDash(allDash);return}
+  const f=[allDash[0],...allDash.slice(1).filter(r=>{if(!r)return false;const matchQ=!q||r.some(cl=>cl&&cl.toString().toLowerCase().includes(q));const matchC=!c||r[2]===c;return matchQ&&matchC;})];renderDash(f)}
 
 // ===== ABSENT MODAL =====
 function showAbsentModal(empId,empName){
-  const html='<div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:380px;max-width:90vw">'+
-    '<h3 style="font-size:15px;font-weight:600;margin-bottom:6px">📝 '+empId+' — '+empName+'</h3>'+
-    '<p style="font-size:12px;color:var(--t2);margin-bottom:14px">เลือกสถานะและใส่เหตุผล</p>'+
-    '<select id="absSt" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:13px;font-family:inherit;margin-bottom:10px">'+
-    '<option value="📅 ลาพักร้อน">📅 ลาพักร้อน</option>'+
-    '<option value="🤒 ลาป่วย">🤒 ลาป่วย</option>'+
-    '<option value="📋 ลากิจ">📋 ลากิจ</option>'+
-    '<option value="❌ ขาดงาน">❌ ขาดงาน</option>'+
-    '<option value="🏠 ทำงานนอกสถานที่">🏠 ทำงานนอกสถานที่</option>'+
-    '<option value="📝 อื่นๆ">📝 อื่นๆ</option>'+
-    '</select>'+
-    '<input id="absReason" placeholder="เหตุผล / หมายเหตุ..." style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin-bottom:16px">'+
-    '<div style="display:flex;gap:8px">'+
-    '<button onclick="closeAbsModal()" style="flex:1;padding:8px;background:var(--s3);color:var(--t2);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">ยกเลิก</button>'+
-    '<button onclick="saveAbsent(\''+empId+'\')" style="flex:1;padding:8px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">💾 บันทึก</button>'+
-    '</div></div>';
-  const mo=document.createElement('div');mo.id='absMo';
-  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center';
-  mo.onclick=ev=>{if(ev.target===mo)closeAbsModal()};
-  mo.innerHTML=html;document.body.appendChild(mo);
+  const html='<div class="modal-box"><h3>📝 '+empId+' — '+empName+'</h3><p style="font-size:12px;color:var(--t2);margin-bottom:14px">เลือกสถานะและใส่เหตุผล</p><label>สถานะ</label><select id="absSt"><option value="📅 ลาพักร้อน">📅 ลาพักร้อน</option><option value="🤒 ลาป่วย">🤒 ลาป่วย</option><option value="📋 ลากิจ">📋 ลากิจ</option><option value="❌ ขาดงาน">❌ ขาดงาน</option></select><label>เหตุผล</label><input id="absReason" placeholder="ระบุเหตุผล..."><div class="modal-btns"><button onclick="closeAbsModal()" style="background:var(--s3);color:var(--t2)">ยกเลิก</button><button onclick="saveAbsent(\''+empId+'\')" style="background:var(--blue);color:#fff">💾 บันทึก</button></div></div>';
+  const mo=document.createElement('div');mo.id='absMo';mo.className='modal-overlay';mo.onclick=function(ev){if(ev.target===mo)closeAbsModal()};mo.innerHTML=html;document.body.appendChild(mo);
 }
 function closeAbsModal(){const m=$('absMo');if(m)m.remove()}
-async function saveAbsent(empId){
-  const st=$('absSt').value;const reason=$('absReason').value.trim()||st;
-  closeAbsModal();
-  const d=await apiGet('set_status',{empId,status:st,reason:encodeURIComponent(reason)});
-  if(d&&d.success){loadSum();loadDash();}
-  else alert('Error: '+(d?d.message:'ไม่ได้'));
+async function saveAbsent(empId){const st=$('absSt').value;const reason=$('absReason').value.trim()||st;closeAbsModal();const d=await apiGet('set_status',{empId,status:st,reason:encodeURIComponent(reason)});if(d&&d.success){loadSum();loadDash();}else alert('Error: '+(d?d.message:'fail'));}
+
+// ===== CHECKIN =====
+function selectReason(btn){
+  document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');
+  selectedReason=btn.dataset.reason;
+  if(selectedReason==='ลาขาด'){$('absentFormArea').style.display='block';$('normalCheckinBtn').style.display='none';}
+  else{$('absentFormArea').style.display='none';$('normalCheckinBtn').style.display='block';
+    $('earlyLeaveForm').style.display=selectedReason==='กลับก่อนเวลา'?'block':'none';}
 }
 
-// ===== FORGOT SCAN MODAL =====
-function showForgotModal(){
-  const today=new Date();
-  const html='<div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:400px;max-width:90vw">'+
-    '<h3 style="font-size:15px;font-weight:600;margin-bottom:14px">⚠️ แจ้งลืมสแกน</h3>'+
-    '<label style="font-size:11px;font-weight:600;color:var(--t2)">วันที่ลืมสแกน</label>'+
-    '<input id="fgtDate" type="date" value="'+fmt(today)+'" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0 10px">'+
-    '<label style="font-size:11px;font-weight:600;color:var(--t2)">รหัสพนักงาน</label>'+
-    '<input id="fgtEmp" placeholder="เช่น JK001" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0 10px">'+
-    '<label style="font-size:11px;font-weight:600;color:var(--t2)">ประเภท</label>'+
-    '<select id="fgtType" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0 10px">'+
-    '<option value="ลืมสแกนเข้า">ลืมสแกนเข้า</option>'+
-    '<option value="ลืมสแกนออก">ลืมสแกนออก</option>'+
-    '<option value="ลืมสแกนทั้งวัน">ลืมสแกนทั้งวัน</option>'+
-    '</select>'+
-    '<label style="font-size:11px;font-weight:600;color:var(--t2)">หมายเหตุ</label>'+
-    '<input id="fgtNote" placeholder="เหตุผล..." style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0 16px">'+
-    '<div style="display:flex;gap:8px">'+
-    '<button onclick="closeFgtModal()" style="flex:1;padding:8px;background:var(--s3);color:var(--t2);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">ยกเลิก</button>'+
-    '<button onclick="saveForgot()" style="flex:1;padding:8px;background:var(--amb);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">💾 บันทึก</button>'+
-    '</div></div>';
-  const mo=document.createElement('div');mo.id='fgtMo';
-  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center';
-  mo.onclick=ev=>{if(ev.target===mo)closeFgtModal()};
-  mo.innerHTML=html;document.body.appendChild(mo);
-}
-function closeFgtModal(){const m=$('fgtMo');if(m)m.remove()}
-async function saveForgot(){
-  const date=$('fgtDate').value;const empId=$('fgtEmp').value.trim();
-  const type=$('fgtType').value;const note=$('fgtNote').value.trim();
-  if(!date||!empId){alert('กรุณากรอก วันที่ และ รหัสพนักงาน');return;}
-  closeFgtModal();
-  const d=await apiGet('report_forgot',{empId,date,type:encodeURIComponent(type),reason:encodeURIComponent(note)});
-  if(d&&d.success){alert('✅ บันทึกแล้ว');loadAlerts();}
-  else alert('Error: '+(d?d.message:'ไม่ได้'));
+async function submitAbsent(){
+  const empId=$('ciEmpId').value.trim();if(!empId){alert('กรอก Employee ID');return;}
+  const reason=$('absentType').value;const remarks=$('absentRemarks').value.trim();const date=$('absentDate').value;
+  if(!remarks){alert('กรุณาระบุเหตุผล');return;}
+  const d=await apiPost({action:'absent_checkin',apiKey:API_KEY,empId,reason,remarks,date});
+  if(d&&d.success){showResult(true,'บันทึก'+reason+'สำเร็จ',empId,reason);}else{showResult(false,d?d.message:'เชื่อมต่อไม่ได้');}
 }
 
-// ===== PRAYER MODAL =====
-function showPrayerModal(){
-  const lastFri=($('prayerDate')&&$('prayerDate').value)||getLastFriday();
-  const html='<div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:400px;max-width:90vw">'+
-    '<h3 style="font-size:15px;font-weight:600;margin-bottom:14px">🕌 บันทึกละหมาดศุกร์</h3>'+
-    '<label style="font-size:11px;font-weight:600;color:var(--t2)">วันที่ <span style="color:var(--t3);font-weight:400">(ไม่จำเป็นต้องเป็นศุกร์)</span></label>'+
-    '<input id="prDate" type="date" value="'+lastFri+'" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0 10px">'+
-    '<label style="font-size:11px;font-weight:600;color:var(--t2)">รหัสพนักงาน</label>'+
-    '<input id="prEmp" placeholder="เช่น JK001" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin:4px 0 10px">'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'+
-    '<div><label style="font-size:11px;font-weight:600;color:var(--t2)">เวลาออกละหมาด</label>'+
-    '<input id="prOut" type="time" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin-top:4px"></div>'+
-    '<div><label style="font-size:11px;font-weight:600;color:var(--t2)">เวลากลับละหมาด</label>'+
-    '<input id="prIn" type="time" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin-top:4px"></div>'+
-    '</div>'+
-    '<div id="prWarn" style="font-size:11px;color:var(--amb);min-height:16px;margin-bottom:8px"></div>'+
-    '<div style="display:flex;gap:8px">'+
-    '<button onclick="closePrayerModal()" style="flex:1;padding:8px;background:var(--s3);color:var(--t2);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">ยกเลิก</button>'+
-    '<button onclick="savePrayer()" style="flex:1;padding:8px;background:var(--pur);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">💾 บันทึก</button>'+
-    '</div></div>';
-  const mo=document.createElement('div');mo.id='prMo';
-  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center';
-  mo.onclick=ev=>{if(ev.target===mo)closePrayerModal()};
-  mo.innerHTML=html;document.body.appendChild(mo);
-  // Warn if not Friday
-  document.getElementById('prDate').addEventListener('change',function(){
-    const d=new Date(this.value+'T00:00:00');
-    const w=d.getDay();
-    const wn=['อา','จ','อ','พ','พฤ','ศ','ส'];
-    if(w!==5){document.getElementById('prWarn').textContent='⚠️ วันนี้เป็นวัน'+wn[w]+' (ไม่ใช่ศุกร์) แต่สามารถบันทึกได้';}
-    else{document.getElementById('prWarn').textContent='';}
+function goToCamera(){
+  const empId=$('ciEmpId').value.trim();if(!empId){alert('กรอก Employee ID');return;}if(!selectedReason){alert('เลือกเหตุผล');return;}
+  $('checkinStep1').style.display='none';$('checkinStep2').style.display='block';
+  startCamera();startGPS();
+}
+function backToStep1(){stopCamera();$('checkinStep2').style.display='none';$('checkinStep1').style.display='block';}
+
+async function startCamera(){
+  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
+  $('camVideo').srcObject=camStream;$('camStatus').textContent='📸 กล้องพร้อม';
+  $('btnCapture').disabled=false;loadFaceModels();}
+  catch(e){$('camStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;}
+}
+function stopCamera(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
+
+async function loadFaceModels(){
+  if(faceModelsLoaded){$('faceStatus').innerHTML='🤖 <span style="color:var(--grn)">ระบบจดจำใบหน้าพร้อม</span>';return;}
+  try{$('faceStatus').textContent='🤖 กำลังโหลด Face Recognition models...';
+  const MODEL_URL='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+  await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)]);
+  faceModelsLoaded=true;$('faceStatus').innerHTML='🤖 <span style="color:var(--grn)">ระบบจดจำใบหน้าพร้อม ✅</span>';
+  }catch(e){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">โหลด Face Model ไม่สำเร็จ — จะเช็คอินแบบรูปอย่างเดียว</span>';}
+}
+
+function startGPS(){
+  if(!navigator.geolocation){$('gpsStatus').className='gps-status fail';$('gpsStatus').textContent='❌ เบราว์เซอร์ไม่รองรับ GPS';return;}
+  $('gpsStatus').className='gps-status loading';$('gpsStatus').textContent='📍 กำลังตรวจ GPS...';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    gpsData={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
+    $('gpsStatus').className='gps-status ok';$('gpsStatus').textContent='📍 GPS พร้อม (±'+Math.round(gpsData.accuracy)+'m)';
+  },err=>{
+    $('gpsStatus').className='gps-status fail';$('gpsStatus').textContent='❌ ไม่สามารถดึง GPS: '+err.message;
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
+
+async function captureAndCheckin(){
+  const empId=$('ciEmpId').value.trim();if(!empId)return;
+  $('btnCapture').disabled=true;$('camStatus').textContent='📸 กำลังถ่ายรูป...';
+
+  // Capture photo
+  const video=$('camVideo'),canvas=$('camCanvas');
+  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const photoBase64=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
+
+  // Face detection
+  let faceScore=0;
+  if(faceModelsLoaded){
+    try{$('camStatus').textContent='🤖 กำลังตรวจใบหน้า...';
+    const detection=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true).withFaceDescriptor();
+    if(detection){
+      faceScore=detection.detection.score;
+      // Try to match with registered face
+      const faceData=await apiPost({action:'get_face_data',empId});
+      if(faceData&&faceData.success&&faceData.faces.length>0){
+        const stored=faceData.faces[0];try{
+          const storedDesc=new Float32Array(JSON.parse(stored.descriptor));
+          const dist=faceapi.euclideanDistance(detection.descriptor,storedDesc);
+          faceScore=Math.max(0,1-dist);
+          if(dist>0.6){stopCamera();showResult(false,'❌ ใบหน้าไม่ตรงกับที่ลงทะเบียน (ป้องกันสแกนแทนเพื่อน)');return;}
+        }catch(e){}
+      }
+      $('camStatus').textContent='✅ ตรวจใบหน้าสำเร็จ ('+Math.round(faceScore*100)+'%)';
+    }else{$('camStatus').textContent='⚠️ ไม่พบใบหน้า — ลองใหม่';$('btnCapture').disabled=false;return;}
+    }catch(e){$('camStatus').textContent='⚠️ Face detection error';}
+  }
+
+  // Build remarks
+  let remarks='';
+  if(selectedReason==='กลับก่อนเวลา'){remarks=($('earlyType').value||'')+': '+($('earlyRemarks').value||'');}
+
+  // Send to API
+  $('camStatus').textContent='📤 กำลังส่งข้อมูล...';
+  const result=await apiPost({
+    action:'photo_checkin',apiKey:API_KEY,empId,reason:selectedReason,
+    photo:photoBase64,gpsLat:gpsData?gpsData.lat:0,gpsLng:gpsData?gpsData.lng:0,
+    faceScore:faceScore,remarks:remarks
   });
-}
-function getLastFriday(){
-  const t=new Date(),dow=t.getDay();
-  const diff=(dow>=5)?(dow-5):(dow+2);
-  const fri=new Date(t);fri.setDate(t.getDate()-diff);return fmt(fri);
-}
-function closePrayerModal(){const m=$('prMo');if(m)m.remove()}
-async function savePrayer(){
-  const date=document.getElementById('prDate').value;
-  const empId=document.getElementById('prEmp').value.trim();
-  const tOut=document.getElementById('prOut').value;
-  const tIn=document.getElementById('prIn').value;
-  if(!date||!empId||!tOut||!tIn){alert('กรุณากรอกข้อมูลให้ครบ');return;}
-  closePrayerModal();
-  const d=await apiGet('record_friday_prayer',{empId,dateStr:date,timeOut:tOut,timeIn:tIn});
-  if(d&&d.success){alert('✅ บันทึกละหมาดแล้ว');loadPrayer();}
-  else alert('Error: '+(d?d.message:'ไม่ได้'));
+
+  stopCamera();
+  if(result&&result.success){showResult(true,result.message,empId,selectedReason,result.data);}
+  else{showResult(false,result?result.message:'เชื่อมต่อไม่ได้');}
 }
 
-// ===== EDIT TIME MODAL (Admin Only) =====
-function showEditTime(eid,name,tIn,tLO,tLI,tOut){
-  const today=new Date().toISOString().slice(0,10);
-  const clean=v=>(v&&v!=='—'&&v!=='-')?v:'';
-  const mkField=(id,label,val)=>
-    '<div><label style="font-size:11px;font-weight:600;color:var(--t2)">'+label+'</label>'+
-    '<input id="'+id+'" type="time" value="'+clean(val)+'" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin-top:4px"></div>';
-  const html='<div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:24px;width:440px;max-width:90vw">'+
-    '<h3 style="font-size:15px;font-weight:600;margin-bottom:4px">✏️ แก้ไขเวลา</h3>'+
-    '<p style="font-size:12px;color:var(--t2);margin-bottom:14px"><b>'+eid+'</b> — '+name+'</p>'+
-    '<input id="etDate" type="date" value="'+today+'" style="width:100%;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;margin-bottom:12px">'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
-    mkField('etIn','สแกนเข้า',tIn)+
-    mkField('etLO','ออกพัก',tLO)+
-    mkField('etLI','กลับพัก',tLI)+
-    mkField('etPO','ออกละหมาด','')+
-    mkField('etPI','กลับละหมาด','')+
-    mkField('etOut','สแกนออก',tOut)+
-    '</div>'+
-    '<div style="display:flex;gap:8px">'+
-    '<button onclick="closeEditTime()" style="flex:1;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">ยกเลิก</button>'+
-    '<button onclick="saveEditTime(\''+eid+'\')" style="flex:1;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">💾 บันทึก</button>'+
-    '</div></div>';
-  const mo=document.createElement('div');mo.id='etMo';
-  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center';
-  mo.onclick=ev=>{if(ev.target===mo)closeEditTime()};
-  mo.innerHTML=html;document.body.appendChild(mo);
-}
-function closeEditTime(){const m=$('etMo');if(m)m.remove()}
-async function saveEditTime(eid){
-  const date=$('etDate').value;
-  if(!date){alert('กรุณาระบุวันที่');return;}
-  const body={
-    action:'edit_time',empId:eid,date:date,
-    tIn:$('etIn').value||'-',
-    tLO:$('etLO').value||'-',
-    tLI:$('etLI').value||'-',
-    tPO:$('etPO').value||'-',
-    tPI:$('etPI').value||'-',
-    tOut:$('etOut').value||'-',
-    editBy:curUser?curUser.username:'admin'
-  };
-  closeEditTime();
-  const d=await apiPost(body);
-  if(d&&d.success){alert('✅ '+d.message);loadDash();}
-  else alert('❌ '+(d?d.message:'บันทึกไม่สำเร็จ'));
+function showResult(success,message,empId,reason,data){
+  $('checkinStep1').style.display='none';$('checkinStep2').style.display='none';$('checkinResult').style.display='block';
+  $('resultContent').innerHTML=success
+    ?'<div class="big">✅</div><h3 style="color:var(--grn)">'+message+'</h3><p style="color:var(--t2);margin-top:8px">'+(data?data.name+' — '+data.company:'')+'</p><p style="font-family:JetBrains Mono;font-size:20px;color:var(--t1);margin-top:12px">'+(data?data.time:'')+'</p><p style="font-size:12px;color:var(--t3);margin-top:4px">'+(data?data.date:'')+'</p>'
+    :'<div class="big">❌</div><h3 style="color:var(--red)">ไม่สำเร็จ</h3><p style="color:var(--t2);margin-top:8px">'+message+'</p>';
 }
 
-// ===== LOAD FUNCTIONS =====
-async function loadEmp(){
-  const comp=$('eComp').value;
-  const d=await apiGet('employees',comp?{company:comp}:{});
-  if(!d||!d.success)return;renderTbl('eHd','eBd',d.data);
-}
-async function loadAlerts(){
-  const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;
-  renderTbl('fHd','fBd',d.data);
-  const p=d.data.filter((r,i)=>i>0&&(r[7]==='รอแก้ไข'||r[7]==='รอดำเนินการ'));
-  $('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
-  $('alertL').innerHTML=p.length===0?'<div class="empty">ไม่มีรายการ</div>':
-    p.map(r=>'<div class="ai"><span>⚠️</span><span class="at"><b>'+(r[3]||r[2])+'</b> — '+(r[4]||'')+'</span><span class="ad">'+r[0]+' '+r[1]+'</span></div>').join('');
-}
-async function loadLate(){
-  const d=await apiGet('late_alerts');if(!d||!d.success||!d.data)return;
-  const fr=$('ltFrom').value,to=$('ltTo').value;
-  const fl=d.data.filter(r=>{const dt=r.date||'';return(!fr||dt>=fr)&&(!to||dt<=to)});
-  const o60=fl.filter(r=>r.lateMins>60);
-  $('bLate').textContent=o60.length;$('bLate').style.display=o60.length>0?'inline':'none';
-  $('lateAlertL').innerHTML=o60.length===0?'<div class="empty">ไม่มี</div>':
-    o60.map(r=>'<div class="ai"><span>🚨</span><span class="at"><b>'+r.name+'</b> ('+r.empId+') — <b>'+r.lateMins+' นาที</b></span><span class="ad">'+r.date+'</span></div>').join('');
-  const co=(r)=>(r.company||'').toUpperCase();
-  $('ltBd').innerHTML=fl.length?fl.map(r=>{
-    const lc=r.lateMins>60?'danger':r.lateMins>30?'la':'';
-    const yn=r.deductYN==='N'?'w':r.deductYN==='Y'?'a':'x';
-    const coBadge=co(r)==='JKN'?'<span class="sb0 jkn">JKN</span>':co(r)==='FC'?'<span class="sb0 fc">FC</span>':'—';
-    return'<tr'+(r.lateMins>60?' style="background:rgba(239,68,68,.06)"':'')+'><td style="font-family:JetBrains Mono;font-size:11px">'+r.date+'</td><td>'+r.empId+'</td><td>'+coBadge+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+lc+'">'+r.lateMins+'m</span></td><td style="font-size:11px">'+(r.reason||'-')+'</td><td><span class="sb0 '+yn+'">'+(r.deductYN==='Y'?'หัก':r.deductYN==='N'?'ไม่หัก':'รอ')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt+'฿':'—')+'</td><td>'+(r.warning?'<span class="sb0 danger">เรียกคุย</span>':'')+'</td></tr>';
-  }).join(''):'<tr><td colspan="9" class="empty">ไม่มีข้อมูล</td></tr>';
-}
-async function loadPrayer(){
-  const date=$('prayerDate').value;
-  const d=await apiGet('prayer_log',date?{date}:{});
-  if(!d||!d.success)return;renderTbl('prHd','prBd',d.data);
-}
-async function loadAtt(){
-  const d=await apiGet('attendance',{from:$('atFrom').value,to:$('atTo').value});
-  if(!d||!d.success)return;renderTbl('atHd','atBd',d.data);
-}
-async function loadPay(){
-  const p=$('payP').value.trim();const comp=$('payComp').value;
-  const params={};if(p)params.period=p;if(comp)params.company=comp;
-  const d=await apiGet('payroll',params);if(!d||!d.success)return;
-  renderTbl('pyHd','pyBd',d.data);
-}
-async function loadHol(){
-  const d=await apiGet('holidays');if(!d||!d.success)return;renderTbl('hlHd','hlBd',d.data);
+function resetCheckin(){
+  stopCamera();selectedReason='';gpsData=null;
+  document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));
+  $('checkinStep1').style.display='block';$('checkinStep2').style.display='none';$('checkinResult').style.display='none';
+  $('absentFormArea').style.display='none';$('normalCheckinBtn').style.display='none';
+  $('absentRemarks').value='';$('earlyRemarks').value='';
 }
 
 // ===== EMPLOYEE PROFILE =====
-async function loadProfile(){
-  const empId=$('profId').value.trim();
-  if(!empId){alert('กรุณากรอกรหัสพนักงาน');return;}
-  $('profileContent').innerHTML='<div class="empty">⏳ กำลังโหลด...</div>';
-  const d=await apiGet('employee_profile',{empId});
-  if(!d||!d.success){$('profileContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล: '+(d?d.message:'')+'</div>';return;}
-  const p=d.profile||{};
-  const stats=p.stats30d||{};
-  const savings=d.recentSavings||[];
-  const loans=d.recentLoans||[];
-  const co=(p.company||'').toUpperCase();
-  const coBadge=co==='JKN'?'<span class="sb0 jkn">JKN</span>':co==='FC'?'<span class="sb0 fc">FC</span>':'—';
+async function showProfile(empId){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('page-profile').classList.add('active');
+  $('pageTitle').textContent='👤 โปรไฟล์พนักงาน';$('profileContent').innerHTML='<div class="empty">กำลังโหลด...</div>';
+  const d=await apiGet('employee_profile',{empId});if(!d||!d.success){$('profileContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล</div>';return;}
+  const p=d.profile;
   $('profileContent').innerHTML=`
-    <div class="profile-header">
-      <div class="profile-avatar">👤</div>
-      <div class="profile-info">
-        <h2>${p.name||'—'} ${coBadge}</h2>
-        <p>${p.id||'—'} · ${p.position||'—'} · เข้าทำงาน ${p.startDate||'—'}</p>
-        <p style="margin-top:4px;color:var(--grn);font-family:JetBrains Mono;font-size:14px">${(p.wage||0).toLocaleString()} ฿/เดือน</p>
-      </div>
-    </div>
-    <div class="profile-stats">
-      <div class="pstat"><div class="pv" style="color:var(--red)">${stats.absentCount||0}</div><div class="pl">วันขาด (30 วัน)</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--pur)">${stats.leaveCount||0}</div><div class="pl">วันลา</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--amb)">${stats.lateCount||0}</div><div class="pl">ครั้งที่สาย</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--ora)">${stats.lateTotalMins||0}</div><div class="pl">นาทีที่สาย</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--cyn)">${stats.prayerCount||0}</div><div class="pl">ละหมาด</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--grn)">${p.remainLeave||0}</div><div class="pl">ลาคงเหลือ (วัน)</div></div>
-    </div>
-    <div class="profile-stats" style="margin-top:0">
-      <div class="pstat"><div class="pv" style="color:var(--grn)">${(p.sumSavings||0).toLocaleString()}</div><div class="pl">เงินออม (฿)</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--red)">${(p.sumLoan||0).toLocaleString()}</div><div class="pl">หนี้คงเหลือ (฿)</div></div>
-      <div class="pstat"><div class="pv" style="color:var(--blue)">${(p.sumInsurance||0).toLocaleString()}</div><div class="pl">ประกัน (฿)</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="tw" style="margin:0">
-        <div class="th_"><h3>🏦 เงินออม (ล่าสุด)</h3></div>
-        ${savings.length?'<table><thead><tr><th>วันที่</th><th>ประเภท</th><th>จำนวน</th><th>คงเหลือ</th></tr></thead><tbody>'+savings.map(s=>'<tr><td>'+s[0]+'</td><td>'+s[4]+'</td><td style="font-family:JetBrains Mono">'+s[5]+'</td><td style="font-family:JetBrains Mono;color:var(--grn)">'+s[6]+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">ไม่มีข้อมูล</div>'}
-      </div>
-      <div class="tw" style="margin:0">
-        <div class="th_"><h3>📑 เงินยืม (ล่าสุด)</h3></div>
-        ${loans.length?'<table><thead><tr><th>วันที่</th><th>ประเภท</th><th>จำนวน</th><th>คงเหลือ</th></tr></thead><tbody>'+loans.map(l=>'<tr><td>'+l[0]+'</td><td>'+l[4]+'</td><td style="font-family:JetBrains Mono">'+l[5]+'</td><td style="font-family:JetBrains Mono;color:var(--red)">'+l[8]+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">ไม่มีข้อมูล</div>'}
-      </div>
-    </div>`;
+  <div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(p.nickname||p.name||'?')[0]}</div><div class="profile-info"><h3>${p.name} ${p.surname}</h3><p>${p.id} — ${p.company} — ${p.position||'-'}</p><p>${p.nickname||''} | ${p.gender||''} | ${p.religion||''}</p></div></div>
+  <div class="profile-grid">
+    <div class="profile-item"><div class="label">สถานะ</div><div class="value"><span class="sb0 ${p.status==='ACTIVE'?'w':'a'}">${p.status}</span></div></div>
+    <div class="profile-item"><div class="label">วันเริ่มงาน</div><div class="value">${p.startDate||'-'}</div></div>
+    <div class="profile-item"><div class="label">เงินเดือน</div><div class="value">${(p.wage||0).toLocaleString()} ฿</div></div>
+    <div class="profile-item"><div class="label">ประเภท</div><div class="value">${p.wageType||'-'}</div></div>
+    <div class="profile-item"><div class="label">โควตาลา</div><div class="value">${p.quotaLeave||0} วัน</div></div>
+    <div class="profile-item"><div class="label">ลาคงเหลือ</div><div class="value">${p.remainLeave||0} วัน</div></div>
+    <div class="profile-item"><div class="label">เงินออม</div><div class="value">${(p.sumSavings||0).toLocaleString()} ฿</div></div>
+    <div class="profile-item"><div class="label">เงินยืม</div><div class="value">${(p.sumLoan||0).toLocaleString()} ฿</div></div>
+    <div class="profile-item"><div class="label">ประกัน</div><div class="value">${(p.sumInsurance||0).toLocaleString()} ฿</div></div>
+    <div class="profile-item"><div class="label">ลงทะเบียนใบหน้า</div><div class="value"><span class="sb0 ${p.faceRegistered==='Y'?'w':'a'}">${p.faceRegistered==='Y'?'✅ แล้ว':'❌ ยังไม่ได้'}</span></div></div>
+    <div class="profile-item"><div class="label">เบอร์โทร</div><div class="value">${p.tel||'-'}</div></div>
+    <div class="profile-item"><div class="label">บริษัท</div><div class="value">${p.company}</div></div>
+  </div></div>`;
 }
 
-// ===== FINANCE =====
-async function loadSavings(){
-  const d=await apiGet('savings');if(!d||!d.success)return;renderTbl('savHd','savBd',d.data);
-}
-async function saveSavings(){
-  const empId=$('savEmp').value.trim();const type=$('savType').value;
-  const amount=parseFloat($('savAmt').value)||0;const note=$('savNote').value.trim();
-  if(!empId||!amount){alert('กรุณากรอก รหัสพนักงาน และ จำนวนเงิน');return;}
-  const d=await apiPost({action:'add_savings',empId,type,amount,note});
-  if(d&&d.success){alert('✅ บันทึกแล้ว: คงเหลือ '+d.balance+' บาท');$('savAmt').value='';$('savNote').value='';loadSavings();}
-  else alert('Error: '+(d?d.message:'ไม่ได้'));
-}
-async function loadLoans(){
-  const d=await apiGet('loans');if(!d||!d.success)return;renderTbl('lnHd','lnBd',d.data);
-}
-async function saveLoan(){
-  const empId=$('lnEmp').value.trim();const type=$('lnType').value;
-  const amount=parseFloat($('lnAmt').value)||0;
-  const installment=parseFloat($('lnInstall').value)||0;
-  const note=$('lnNote').value.trim();
-  if(!empId||!amount){alert('กรุณากรอก รหัสพนักงาน และ จำนวนเงิน');return;}
-  const d=await apiPost({action:'add_loan',empId,type,amount,installment,note});
-  if(d&&d.success){alert('✅ บันทึกแล้ว: คงเหลือ '+d.balance+' บาท');$('lnAmt').value='';$('lnInstall').value='';$('lnNote').value='';loadLoans();}
-  else alert('Error: '+(d?d.message:'ไม่ได้'));
-}
-async function loadInsurance(){
-  const d=await apiGet('insurance');if(!d||!d.success)return;renderTbl('insHd','insBd',d.data);
-}
-async function saveInsurance(){
-  const empId=$('insEmp').value.trim();const insType=$('insType').value.trim();
-  const amount=parseFloat($('insAmt').value)||0;const note=$('insNote').value.trim();
-  if(!empId||!insType||!amount){alert('กรุณากรอกข้อมูลให้ครบ');return;}
-  const d=await apiPost({action:'add_insurance',empId,insType,amount,note});
-  if(d&&d.success){alert('✅ บันทึกแล้ว');$('insAmt').value='';$('insNote').value='';loadInsurance();}
-  else alert('Error: '+(d?d.message:'ไม่ได้'));
-}
+// ===== REST =====
+async function loadEmp(){const c=$('empComp')?$('empComp').value:'';const d=await apiGet('employees');if(!d||!d.success)return;
+  let data=d.data;if(c)data=[data[0],...data.slice(1).filter(r=>r[1]===c)];renderTbl('eHd','eBd',data)}
+async function loadAlerts(){const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;renderTbl('fHd','fBd',d.data);
+  const p=d.data.filter((r,i)=>i>0&&(r[6]==='รอแก้ไข'||r[6]==='รอดำเนินการ'));$('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
+  $('alertL').innerHTML=p.length===0?'<div class="empty">ไม่มี</div>':p.map(r=>'<div class="ai"><span>⚠️</span><span style="flex:1"><b>'+(r[2]||r[1])+'</b> ('+(r[3]||'')+') — '+(r[4]||'')+'</span><span style="font-size:10px;color:var(--t3)">'+r[0]+'</span></div>').join('')}
+async function loadLate(){const d=await apiGet('late_alerts');if(!d||!d.success||!d.data)return;
+  const fr=$('ltFrom').value,to=$('ltTo').value;const fl=d.data.filter(r=>{const dt=r.date||'';return(!fr||dt>=fr)&&(!to||dt<=to)});
+  const o60=fl.filter(r=>r.lateMins>60);$('bLate').textContent=o60.length;$('bLate').style.display=o60.length>0?'inline':'none';
+  $('lateAlertL').innerHTML=o60.length===0?'<div class="empty">ไม่มี</div>':o60.map(r=>'<div class="ai"><span>🚨</span><span style="flex:1"><b>'+r.name+'</b> ('+r.empId+' '+r.company+') — <b>'+r.lateMins+'m</b></span><span style="font-size:10px;color:var(--t3)">'+r.date+'</span></div>').join('');
+  $('ltBd').innerHTML=fl.length?fl.map(r=>{const c=r.lateMins>60?'danger':r.lateMins>30?'la':'';const y=r.deductYN==='N'?'w':r.deductYN==='Y'?'a':'x';
+    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+r.date+'</td><td>'+r.empId+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+(r.company==='JKN'?'h':'l')+'">'+r.company+'</span></td><td><span class="sb0 '+c+'">'+r.lateMins+'m</span></td><td style="font-size:11px">'+(r.reason||'-')+'</td><td><span class="sb0 '+y+'">'+(r.deductYN==='Y'?'หัก':r.deductYN==='N'?'ไม่หัก':'รอ')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt+'฿':'—')+'</td><td>'+(r.warning||'')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">ไม่มี</td></tr>'}
+async function loadAtt(){const d=await apiGet('attendance',{from:$('atFrom').value,to:$('atTo').value,company:$('atComp')?$('atComp').value:''});if(!d||!d.success)return;renderTbl('atHd','atBd',d.data)}
+async function loadPay(){const p=$('payP').value.trim();const d=await apiGet('payroll',p?{period:p,company:$('payComp')?$('payComp').value:''}:{company:$('payComp')?$('payComp').value:''});if(!d||!d.success)return;renderTbl('pyHd','pyBd',d.data)}
+async function loadHol(){const d=await apiGet('holidays');if(!d||!d.success)return;renderTbl('hlHd','hlBd',d.data)}
+async function loadPrayer(){const d=await apiGet('prayer_log');if(!d||!d.success)return;renderTbl('prHd','prBd',d.data)}
 
-// ===== USER MANAGEMENT =====
-async function loadUsers(){
-  const d=await apiPost({action:'get_users'});if(!d||!d.success)return;
-  $('umBd').innerHTML=d.users.map(u=>'<tr><td><b>'+u.username+'</b></td><td>'+u.displayName+'</td><td><span class="sb0 '+(u.role==='admin'?'a':u.role==='hr'?'l':'w')+'">'+u.role+'</span></td><td><button onclick="editUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-right:4px">✏️</button><button onclick="deleteUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">🗑️</button></td></tr>').join('');
-}
-async function addUser(){
-  const u=$('nuUser').value.trim(),n=$('nuName').value.trim(),p=$('nuPass').value.trim(),r=$('nuRole').value;
-  if(!u||!p){alert('กรุณากรอก Username และ Password');return;}
-  const d=await apiPost({action:'add_user',username:u,displayName:n,password:p,role:r});
-  alert(d.message);if(d.success){$('nuUser').value='';$('nuName').value='';$('nuPass').value='';loadUsers();}
-}
-async function editUser(username){
-  const np=prompt('รหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน):');
-  const nr=prompt('สิทธิ์ใหม่ (admin/hr/manager/employee):');
-  const body={action:'edit_user',username};
-  if(np)body.password=np;if(nr)body.role=nr;
-  const d=await apiPost(body);alert(d.message);loadUsers();
-}
-async function deleteUser(username){
-  if(!confirm('ลบผู้ใช้ '+username+'?'))return;
-  const d=await apiPost({action:'delete_user',username});alert(d.message);loadUsers();
-}
+// ===== USERS =====
+async function loadUsers(){const d=await apiPost({action:'get_users'});if(!d||!d.success)return;
+  $('umBd').innerHTML=d.users.map(u=>'<tr><td><b>'+u.username+'</b></td><td>'+u.displayName+'</td><td><span class="sb0 '+(u.role==='admin'?'a':u.role==='hr'?'l':'w')+'">'+u.role+'</span></td><td><button onclick="editUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-right:4px">✏️</button><button onclick="deleteUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">🗑️</button></td></tr>').join('');}
+async function addUser(){const u=$('nuUser').value.trim(),n=$('nuName').value.trim(),p=$('nuPass').value.trim(),r=$('nuRole').value;if(!u||!p){alert('กรอก Username+Password');return;}const d=await apiPost({action:'add_user',username:u,displayName:n,password:p,role:r});alert(d.message);if(d.success){$('nuUser').value='';$('nuName').value='';$('nuPass').value='';loadUsers();}}
+async function editUser(username){const np=prompt('รหัสผ่านใหม่:');const nr=prompt('สิทธิ์ (admin/hr/manager/employee):');const body={action:'edit_user',username};if(np)body.password=np;if(nr)body.role=nr;const d=await apiPost(body);alert(d.message);loadUsers();}
+async function deleteUser(username){if(!confirm('ลบ '+username+'?'))return;const d=await apiPost({action:'delete_user',username});alert(d.message);loadUsers();}
 
-// ===== GENERIC TABLE =====
+// ===== TABLE RENDERER =====
 function renderTbl(hId,bId,data){
   if(!data||data.length<1){$(hId).innerHTML='';$(bId).innerHTML='<tr><td class="empty">ไม่มีข้อมูล</td></tr>';return}
   $(hId).innerHTML='<tr>'+data[0].map(h=>'<th>'+(h||'')+'</th>').join('')+'</tr>';
   const rows=data.slice(1).filter(r=>r&&r[0]!==undefined&&r[0]!=='');
-  $(bId).innerHTML=rows.map(r=>'<tr>'+r.map(c=>{
-    const v=c===null||c===undefined?'':c;const s=v.toString();
-    if(s==='JKN')return'<td><span class="sb0 jkn">JKN</span></td>';
-    if(s==='FC') return'<td><span class="sb0 fc">FC</span></td>';
-    if(s.includes('✅')||s==='ACTIVE'||s==='อนุมัติ'||s==='แก้ไขแล้ว'||s.includes('ปกติ'))return'<td><span class="sb0 w">'+s+'</span></td>';
-    if(s.includes('❌')||s==='INACTIVE'||s==='RESIGNED'||s==='ไม่อนุมัติ')return'<td><span class="sb0 a">'+s+'</span></td>';
+  $(bId).innerHTML=rows.map(r=>'<tr>'+r.map(c=>{let v=c===null||c===undefined?'':c;const s=v.toString();
+    if(s.includes('✅')||s==='ACTIVE'||s==='อนุมัติ'||s.includes('ปกติ'))return'<td><span class="sb0 w">'+s+'</span></td>';
+    if(s.includes('❌')||s==='INACTIVE'||s==='RESIGNED')return'<td><span class="sb0 a">'+s+'</span></td>';
     if(s.includes('ลา')||s.includes('📅'))return'<td><span class="sb0 l">'+s+'</span></td>';
     if(s.includes('⚠️')||s.includes('ลืม')||s.includes('เกิน'))return'<td><span class="sb0 f">'+s+'</span></td>';
-    if(s==='รออนุมัติ'||s==='รอแก้ไข'||s==='รอดำเนินการ')return'<td><span class="sb0 la">'+s+'</span></td>';
+    if(s==='รออนุมัติ'||s==='รอแก้ไข')return'<td><span class="sb0 la">'+s+'</span></td>';
     if(s.includes('วันหยุด')||s.includes('🎉'))return'<td><span class="sb0 h">'+s+'</span></td>';
-    return'<td>'+v+'</td>';
-  }).join('')+'</tr>').join('');
+    if(s==='JKN')return'<td><span class="sb0 h">JKN</span></td>';
+    if(s==='FC')return'<td><span class="sb0 l">FC</span></td>';
+    if(s==='Y')return'<td><span class="sb0 w">Y</span></td>';
+    if(s==='N'&&v!==0)return'<td><span class="sb0 a">N</span></td>';
+    return'<td>'+v+'</td>';}).join('')+'</tr>').join('');
 }
 </script>
 </body>
