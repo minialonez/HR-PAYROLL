@@ -189,52 +189,52 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           <h3>📸 Check-in — Select Reason</h3>
           <div style="margin-bottom:12px"><label style="font-size:11px;color:var(--t2)">Employee ID</label><input id="ciEmpId" placeholder="e.g. JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit"></div>
           <div class="reason-grid">
-            <button class="reason-btn" data-reason="Clock In" onclick="selectReason(this)"><span class="emoji">🟢</span>Clock In</button>
-            <button class="reason-btn" data-reason="Break Out" onclick="selectReason(this)"><span class="emoji">🍽️</span>Break Out</button>
-            <button class="reason-btn" data-reason="Break In" onclick="selectReason(this)"><span class="emoji">🔙</span>Break In</button>
-            <button class="reason-btn" data-reason="Clock Out" onclick="selectReason(this)"><span class="emoji">🏠</span>Clock Out</button>
-            <button class="reason-btn" data-reason="Prayer Out" onclick="selectReason(this)"><span class="emoji">🕌</span>Prayer Out</button>
-            <button class="reason-btn" data-reason="Prayer In" onclick="selectReason(this)"><span class="emoji">🤲</span>Prayer In</button>
-            <button class="reason-btn" data-reason="Early Leave" onclick="selectReason(this)"><span class="emoji">🔶</span>Early Leave</button>
-            <button class="reason-btn" data-reason="Leave/Absent" onclick="selectReason(this)"><span class="emoji">📋</span>Leave / Absent</button>
+            <button class="reason-btn" data-reason="Check In" onclick="selectReason(this)"><span class="emoji">🟢</span>เข้างาน</button>
+            <button class="reason-btn" data-reason="Break Out" onclick="selectReason(this)"><span class="emoji">🍽️</span>ไปพัก</button>
+            <button class="reason-btn" data-reason="Break In" onclick="selectReason(this)"><span class="emoji">🔙</span>กลับจากพัก</button>
+            <button class="reason-btn" data-reason="Prayer Out" onclick="selectReason(this)"><span class="emoji">🕌</span>ไปละหมาด</button>
+            <button class="reason-btn" data-reason="Prayer In" onclick="selectReason(this)"><span class="emoji">🤲</span>กลับจากละหมาด</button>
+            <button class="reason-btn" data-reason="Check Out" onclick="selectReason(this)"><span class="emoji">🏠</span>เลิกงาน</button>
+            <button class="reason-btn" data-reason="Early Leave" onclick="selectReason(this)"><span class="emoji">🔶</span>กลับก่อนเวลา</button>
+            <button class="reason-btn" data-reason="Leave/Absent" onclick="selectReason(this)"><span class="emoji">📋</span>ลา / ขาดงาน</button>
           </div>
           <div id="absentFormArea" style="display:none" class="absent-form">
-            <label>Type</label>
-            <select id="absentType"><option>Sick Leave</option><option>Personal Leave</option></select>
-            <label>Leave Date</label>
+            <label>ประเภท</label>
+            <select id="absentType"><option value="Sick Leave">ลาป่วย</option><option value="Personal Leave">ลากิจ</option></select>
+            <label>วันที่ลา</label>
             <input type="date" id="absentDate">
-            <label>Remarks (reason for leave)</label>
-            <textarea id="absentRemarks" rows="2" placeholder="Enter reason..."></textarea>
-            <button class="btn-checkin" onclick="submitAbsent()">📋 Submit Leave</button>
+            <label>หมายเหตุ</label>
+            <textarea id="absentRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
+            <button class="btn-checkin" onclick="submitAbsent()">📋 บันทึกการลา</button>
           </div>
           <div id="normalCheckinBtn" style="display:none">
             <div id="earlyLeaveForm" style="display:none" class="absent-form">
-              <label>Reason for early leave</label>
-              <select id="earlyType"><option>Sick Leave</option><option>Personal Leave</option></select>
-              <label>Remarks</label>
-              <textarea id="earlyRemarks" rows="2" placeholder="Enter reason..."></textarea>
+              <label>เหตุผลกลับก่อน</label>
+              <select id="earlyType"><option value="Sick Leave">ลาป่วย</option><option value="Personal Leave">ลากิจ</option></select>
+              <label>หมายเหตุ</label>
+              <textarea id="earlyRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
             </div>
-            <button class="btn-checkin" onclick="goToCamera()">📸 Next — Take Photo</button>
+            <button class="btn-checkin" onclick="goToCamera()">📸 ถัดไป — ถ่ายรูปยืนยัน</button>
           </div>
         </div>
 
         <div id="checkinStep2" class="checkin-card" style="display:none">
-          <h3>📸 Take Selfie</h3>
+          <h3>📸 ถ่ายรูป Selfie</h3>
           <div class="camera-area">
             <video id="camVideo" autoplay playsinline muted></video>
             <canvas id="camCanvas" style="display:none"></canvas>
             <div class="overlay"></div>
-            <div class="status" id="camStatus">Opening camera...</div>
+            <div class="status" id="camStatus">กำลังเปิดกล้อง...</div>
           </div>
-          <div class="gps-status loading" id="gpsStatus">📍 Checking GPS...</div>
-          <div id="faceStatus" style="padding:8px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:12px;color:var(--t2)">🤖 Loading face recognition...</div>
-          <button class="btn-checkin" id="btnCapture" onclick="captureAndCheckin()" disabled>📸 Capture & Check-in</button>
-          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="backToStep1()">← Go Back</button>
+          <div class="gps-status loading" id="gpsStatus">📍 กำลังตรวจ GPS...</div>
+          <div id="faceStatus" style="padding:8px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:12px;color:var(--t2)">🤖 กำลังโหลดระบบจดจำใบหน้า...</div>
+          <button class="btn-checkin" id="btnCapture" onclick="captureAndCheckin()" disabled>📸 ถ่ายรูป & เช็คอิน</button>
+          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="backToStep1()">← ย้อนกลับ</button>
         </div>
 
         <div id="checkinResult" class="checkin-card" style="display:none">
           <div class="checkin-result" id="resultContent"></div>
-          <button class="btn-checkin" onclick="resetCheckin()">📸 Check-in Again</button>
+          <button class="btn-checkin" onclick="resetCheckin()">📸 เช็คอินอีกครั้ง</button>
         </div>
       </div>
     </div>
@@ -370,19 +370,19 @@ async function loadSum(){
 // ===== DASHBOARD =====
 async function loadDash(){const d=await apiGet('dashboard');if(!d||!d.success||!d.data)return;allDash=d.data;renderDash(d.data)}
 function renderDash(data){
-  if(data.length<2){$('dBd').innerHTML='<tr><td colspan="11" class="empty">No data</td></tr>';return}
-  let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&(data[i][0].toString().includes('ID')||data[i][0].toString().includes('รหัส'))){hi=i;break}}
-  const h=data[hi]||['ID','Name','Company','Position','Clock In','Break Out','Break In','Clock Out','Status','Late','Remarks'];
+  if(data.length<2){$('dBd').innerHTML='<tr><td colspan="13" class="empty">No data</td></tr>';return}
+  let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&(data[i][0].toString().includes('ID'))){hi=i;break}}
+  const h=data[hi]||['ID','Name','Company','Position','Check In','Break Out','Break In','Pray Out','Pray In','Check Out','Status','Late','Remarks'];
   $('dHd').innerHTML='<tr>'+h.map(x=>'<th>'+(x||'')+'</th>').join('')+'</tr>';
   const rows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim());
-  $('dBd').innerHTML=rows.map(r=>{const st=(r[8]||'').toString();let bc='x';
+  $('dBd').innerHTML=rows.map(r=>{const st=(r[10]||'').toString();let bc='x';
     if(st.includes('Working')||st.includes('Left'))bc='w';else if(st.includes('Absent'))bc='a';
     else if(st.includes('eave'))bc='l';else if(st.includes('Missed')||st.includes('⚠️'))bc='f';else if(st.includes('Holiday'))bc='h';
-    const lt=parseInt(r[9])||0;const lc=lt>60?'danger':lt>0?'la':'';const eid=r[0]||'';const ename=r[1]||'';
+    const lt=parseInt(r[11])||0;const lc=lt>60?'danger':lt>0?'la':'';const eid=r[0]||'';const ename=r[1]||'';
     let statusCell;
     if(st.includes('Not arrived')){statusCell='<span class="sb0 la" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="Click to set status">❓ Not arrived ✏️</span>';}
     else{statusCell='<span class="sb0 '+bc+'">'+st+'</span>';}
-    return'<tr><td style="font-family:JetBrains Mono;font-size:11px;cursor:pointer;color:var(--blue)" onclick="showProfile(\''+eid+'\')">'+eid+'</td><td><b style="cursor:pointer" onclick="showProfile(\''+eid+'\')">'+ename+'</b></td><td><span class="sb0 '+(r[2]==='JKN'?'h':'l')+'">'+(r[2]||'')+'</span></td><td>'+(r[3]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[4]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[5]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[6]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[7]||'-')+'</td><td>'+statusCell+'</td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[10]||'')+'</td></tr>';
+    return'<tr><td style="font-family:JetBrains Mono;font-size:11px;cursor:pointer;color:var(--blue)" onclick="showProfile(\''+eid+'\')">'+eid+'</td><td><b style="cursor:pointer" onclick="showProfile(\''+eid+'\')">'+ename+'</b></td><td><span class="sb0 '+(r[2]==='JKN'?'h':'l')+'">'+(r[2]||'')+'</span></td><td>'+(r[3]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[4]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[5]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[6]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[7]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[8]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[9]||'-')+'</td><td>'+statusCell+'</td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[12]||'')+'</td></tr>';
   }).join('');
 }
 function filterDash(){const q=$('dSrch').value.toLowerCase(),c=$('dComp').value;if(!q&&!c){renderDash(allDash);return}
@@ -400,9 +400,9 @@ async function saveAbsent(empId){const st=$('absSt').value;const reason=$('absRe
 function selectReason(btn){
   document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');
   selectedReason=btn.dataset.reason;
-  if(selectedReason==='ลาขาด'){$('absentFormArea').style.display='block';$('normalCheckinBtn').style.display='none';}
+  if(selectedReason==='Leave/Absent'){$('absentFormArea').style.display='block';$('normalCheckinBtn').style.display='none';}
   else{$('absentFormArea').style.display='none';$('normalCheckinBtn').style.display='block';
-    $('earlyLeaveForm').style.display=selectedReason==='กลับก่อนเวลา'?'block':'none';}
+    $('earlyLeaveForm').style.display=selectedReason==='Early Leave'?'block':'none';}
 }
 
 async function submitAbsent(){
@@ -482,7 +482,7 @@ async function captureAndCheckin(){
 
   // Build remarks
   let remarks='';
-  if(selectedReason==='กลับก่อนเวลา'){remarks=($('earlyType').value||'')+': '+($('earlyRemarks').value||'');}
+  if(selectedReason==='Early Leave'){remarks=($('earlyType').value||'')+': '+($('earlyRemarks').value||'');}
 
   // Send to API
   $('camStatus').textContent='📤 กำลังส่งข้อมูล...';
