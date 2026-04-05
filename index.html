@@ -267,7 +267,25 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     </div>
 
     <!-- EMPLOYEES -->
-    <div class="page" id="page-employees"><div class="tw"><div class="th_"><h3>👥 Employees</h3><div class="fl"><select id="empComp" onchange="loadEmp()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select></div></div><div style="overflow-x:auto"><table><thead id="eHd"></thead><tbody id="eBd"></tbody></table></div></div></div>
+    <div class="page" id="page-employees"><div class="tw"><div class="th_"><h3>👥 Employees</h3><div class="fl"><select id="empComp" onchange="loadEmp()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select><button style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="$('addEmpForm').style.display=$('addEmpForm').style.display==='none'?'block':'none'">➕ Add Employee</button></div></div>
+      <div id="addEmpForm" style="display:none;padding:16px;border-bottom:1px solid var(--bd)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <input id="neEmpId" placeholder="Employee ID (e.g. JKN001)" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+          <select id="neComp" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit"><option>JKN</option><option>FC</option></select>
+          <select id="neGender" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit"><option>Male</option><option>Female</option></select>
+          <select id="neTitle" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit"><option>นาย</option><option>นาง</option><option>นางสาว</option><option>Mr.</option><option>Mrs.</option><option>Ms.</option></select>
+          <input id="neName" placeholder="Name (ชื่อ)" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
+          <input id="neSurname" placeholder="Surname (นามสกุล)" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
+          <input id="neNickname" placeholder="Nickname (ชื่อเล่น)" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
+          <select id="neReligion" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit"><option>Islam</option><option>Buddhist</option><option>Christian</option><option>Other</option></select>
+          <input id="nePosition" placeholder="Position (ตำแหน่ง)" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
+          <input id="neTel" placeholder="Phone" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
+          <input id="neWage" placeholder="Wage (Baht)" type="number" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
+          <div></div>
+        </div>
+        <button style="width:100%;padding:8px;background:var(--grn);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px" onclick="addEmployee()">✅ Add Employee</button>
+      </div>
+      <div style="overflow-x:auto"><table><thead id="eHd"></thead><tbody id="eBd"></tbody></table></div></div></div>
 
     <!-- PROFILE -->
     <div class="page" id="page-profile"><div id="profileContent"></div></div>
@@ -292,8 +310,8 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 
     <!-- USERS -->
     <div class="page" id="page-users"><div class="tw"><div class="th_"><h3>🔐 User Management</h3></div>
-      <div class="um-form"><input id="nuUser" placeholder="Username"><input id="nuName" placeholder="Display Name"><input id="nuPass" placeholder="Password"><select id="nuRole"><option>employee</option><option>manager</option><option>hr</option><option>admin</option></select><button onclick="addUser()">➕ Add User</button></div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Action</th></tr></thead><tbody id="umBd"></tbody></table></div></div></div>
+      <div class="um-form"><input id="nuUser" placeholder="Username"><input id="nuName" placeholder="Display Name"><input id="nuPass" placeholder="Password"><select id="nuRole"><option>employee</option><option>manager</option><option>hr</option><option>admin</option></select><input id="nuEmpId" placeholder="Employee ID (e.g. JKN001)" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"><button onclick="addUser()" style="grid-column:span 1">➕ Add User</button></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Employee ID</th><th>Action</th></tr></thead><tbody id="umBd"></tbody></table></div></div></div>
 
   </div>
 </div>
@@ -724,7 +742,7 @@ async function showProfile(empId){
   $('pageTitle').textContent='👤 Employee Profile';$('profileContent').innerHTML='<div class="empty">Loading...</div>';
   const d=await apiGet('employee_profile',{empId});if(!d||!d.success){$('profileContent').innerHTML='<div class="empty">❌ Not found</div>';return;}
   const p=d.profile;
-  $('profileContent').innerHTML=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(p.nickname||p.name||'?')[0]}</div><div class="profile-info"><h3>${p.name} ${p.surname}</h3><p>${p.id} — ${p.company} — ${p.position||'-'}</p></div></div>
+  $('profileContent').innerHTML=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(p.nickname||p.name||'?')[0]}</div><div class="profile-info"><h3>${p.title||''} ${p.name} ${p.surname}</h3><p>${p.id} — ${p.company} — ${p.position||'-'}</p><p style="font-size:11px;color:var(--t3)">${p.nickname||''} | ${p.gender||''} | ${p.religion||''}</p></div></div>
   <div class="profile-grid">
     <div class="profile-item"><div class="label">Status</div><div class="value"><span class="sb0 ${p.status==='ACTIVE'?'w':'a'}">${p.status}</span></div></div>
     <div class="profile-item"><div class="label">Start Date</div><div class="value">${p.startDate||'-'}</div></div>
@@ -744,6 +762,11 @@ async function showProfile(empId){
 // ===== REST =====
 async function loadEmp(){const c=$('empComp')?$('empComp').value:'';const d=await apiGet('employees');if(!d||!d.success)return;
   let data=d.data;if(c)data=[data[0],...data.slice(1).filter(r=>r[1]===c)];renderTbl('eHd','eBd',data)}
+async function addEmployee(){
+  const empId=$('neEmpId').value.trim();if(!empId){alert('กรุณากรอก Employee ID');return;}
+  const d=await apiPost({action:'add_employee',empId,company:$('neComp').value,gender:$('neGender').value,title:$('neTitle').value,name:$('neName').value.trim(),surname:$('neSurname').value.trim(),nickname:$('neNickname').value.trim(),religion:$('neReligion').value,position:$('nePosition').value.trim(),tel:$('neTel').value.trim(),wage:$('neWage').value||0,wageType:'Monthly',quotaLeave:6});
+  alert(d.message);if(d.success){$('neEmpId').value='';$('neName').value='';$('neSurname').value='';$('neNickname').value='';$('nePosition').value='';$('neTel').value='';$('neWage').value='';$('addEmpForm').style.display='none';loadEmp();}
+}
 async function loadAlerts(){const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;renderTbl('fHd','fBd',d.data);
   const p=d.data.filter((r,i)=>i>0&&(r[6]==='Pending'||r[6]==='รอแก้ไข'||r[6]==='รอดำเนินการ'));$('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
   $('alertL').innerHTML=p.length===0?'<div class="empty">No data</div>':p.map(r=>'<div class="ai"><span>⚠️</span><span style="flex:1"><b>'+(r[2]||r[1])+'</b> ('+(r[3]||'')+') — '+(r[4]||'')+'</span><span style="font-size:10px;color:var(--t3)">'+r[0]+'</span></div>').join('')}
@@ -760,8 +783,8 @@ async function loadPrayer(){const d=await apiGet('prayer_log');if(!d||!d.success
 
 // ===== USERS =====
 async function loadUsers(){const d=await apiPost({action:'get_users'});if(!d||!d.success)return;
-  $('umBd').innerHTML=d.users.map(u=>'<tr><td><b>'+u.username+'</b></td><td>'+u.displayName+'</td><td><span class="sb0 '+(u.role==='admin'?'a':u.role==='hr'?'l':'w')+'">'+u.role+'</span></td><td><button onclick="editUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-right:4px">✏️</button><button onclick="deleteUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">🗑️</button></td></tr>').join('');}
-async function addUser(){const u=$('nuUser').value.trim(),n=$('nuName').value.trim(),p=$('nuPass').value.trim(),r=$('nuRole').value;if(!u||!p){alert('Username+Password required');return;}const d=await apiPost({action:'add_user',username:u,displayName:n,password:p,role:r});alert(d.message);if(d.success){$('nuUser').value='';$('nuName').value='';$('nuPass').value='';loadUsers();}}
+  $('umBd').innerHTML=d.users.map(u=>'<tr><td><b>'+u.username+'</b></td><td>'+u.displayName+'</td><td><span class="sb0 '+(u.role==='admin'?'a':u.role==='hr'?'l':'w')+'">'+u.role+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(u.empId||'-')+'</td><td><button onclick="editUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-right:4px">✏️</button><button onclick="deleteUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">🗑️</button></td></tr>').join('');}
+async function addUser(){const u=$('nuUser').value.trim(),n=$('nuName').value.trim(),p=$('nuPass').value.trim(),r=$('nuRole').value,empId=$('nuEmpId').value.trim();if(!u||!p){alert('Username+Password required');return;}const d=await apiPost({action:'add_user',username:u,displayName:n,password:p,role:r,empId:empId});alert(d.message);if(d.success){$('nuUser').value='';$('nuName').value='';$('nuPass').value='';$('nuEmpId').value='';loadUsers();}}
 async function editUser(username){const np=prompt('New password:');const nr=prompt('Role (admin/hr/manager/employee):');const body={action:'edit_user',username};if(np)body.password=np;if(nr)body.role=nr;const d=await apiPost(body);alert(d.message);loadUsers();}
 async function deleteUser(username){if(!confirm('Delete '+username+'?'))return;const d=await apiPost({action:'delete_user',username});alert(d.message);loadUsers();}
 
