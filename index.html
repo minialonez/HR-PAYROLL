@@ -212,6 +212,13 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
             <button class="reason-btn" data-reason="Early Leave" onclick="showEarlyForm(this)"><span class="emoji">🔶</span>กลับก่อนเวลา</button>
             <button class="reason-btn" data-reason="Leave/Absent" onclick="showAbsentForm(this)"><span class="emoji">📋</span>ลางาน</button>
           </div>
+          <div style="border-top:1px solid var(--bd);padding-top:12px;margin-bottom:12px">
+            <p style="font-size:11px;color:var(--t3);margin-bottom:8px;text-align:center">⏰ ล่วงเวลา (OT) — ไม่จำกัดสถานที่ • Admin อนุมัติ</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button class="reason-btn" data-reason="OT In" onclick="selectAndSubmit(this)" style="border-color:var(--ora)"><span class="emoji">⏰</span>OT เข้า</button>
+              <button class="reason-btn" data-reason="OT Out" onclick="selectAndSubmit(this)" style="border-color:var(--ora)"><span class="emoji">🔚</span>OT ออก</button>
+            </div>
+          </div>
           <div id="earlyFormArea" style="display:none" class="absent-form">
             <label>เหตุผลกลับก่อน</label>
             <select id="earlyType"><option value="Sick Leave">ลาป่วย</option><option value="Personal Leave">ลากิจ</option></select>
@@ -656,16 +663,16 @@ function showAbsentForm(btn){document.querySelectorAll('.reason-btn').forEach(b=
 async function submitCheckin(reason){
   let remarks='';
   if(reason==='Early Leave')remarks=($('earlyType').value||'')+': '+($('earlyRemarks').value||'');
+  const isOT=(reason==='OT In'||reason==='OT Out');
   const result=await apiPost({
     action:'photo_checkin',apiKey:API_KEY,empId:identifiedEmp.empId,reason:reason,
     photo:capturedPhoto||'',gpsLat:gpsData?gpsData.lat:0,gpsLng:gpsData?gpsData.lng:0,
-    faceScore:identifiedEmp.faceScore||0,remarks:remarks
+    faceScore:identifiedEmp.faceScore||0,remarks:remarks,skipGps:isOT
   });
-  if(result&&result.success){showResult(true,result.message,result.data);}
+  if(result&&result.success){showResult(true,result.message+(isOT?'\n⏳ รอ Admin อนุมัติ':''),result.data);}
   else{
     const msg=result?result.message:'เชื่อมต่อไม่ได้';
-    if(msg.includes('Out of area')||msg.includes('นอกพื้นที่')||msg.includes('นอกเขต')){
-      // GPS out of range — show popup, stay on step 2
+    if(!isOT&&(msg.includes('Out of area')||msg.includes('นอกพื้นที่')||msg.includes('นอกเขต'))){
       alert('📍 คุณอยู่นอกเขตที่ Check-in ได้\nกรุณาเข้าใกล้จุดเช็คอินแล้วลองอีกครั้ง\n\n'+msg);
       document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));
     }else{
