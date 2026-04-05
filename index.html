@@ -112,9 +112,9 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 <div class="setup-box">
   <div style="font-size:48px;margin-bottom:12px">📸</div>
   <h2>HR & Payroll v4</h2>
-  <p>วาง Google Apps Script URL เพื่อเริ่มใช้งาน</p>
+  <p>Enter Google Apps Script URL to get started</p>
   <input id="setupUrl" placeholder="https://script.google.com/macros/s/.../exec">
-  <button onclick="saveSetup()">🚀 บันทึก & เริ่มใช้งาน</button>
+  <button onclick="saveSetup()">🚀 Save & Start</button>
 </div>
 </div>
 
@@ -123,10 +123,10 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 <div class="login-box">
   <div class="avatar">📸</div>
   <h2>HR & Payroll v4</h2>
-  <p>ถ่ายรูปเช็คอิน + จดจำใบหน้า</p>
+  <p>Photo Check-in + Face Recognition</p>
   <input id="loginUser" placeholder="👤 Username" autofocus>
   <input id="loginPass" placeholder="🔒 Password" type="password" onkeydown="if(event.key==='Enter')doLogin()">
-  <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+  <button class="btn-login" onclick="doLogin()">Sign In</button>
   <div class="err" id="loginErr"></div>
 </div>
 </div>
@@ -136,49 +136,49 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 <aside class="sidebar" id="sidebar">
   <div class="logo"><h1><span>📸</span> HR v4</h1><p>PHOTO CHECKIN & FACE RECOGNITION</p></div>
   <nav>
-    <div class="sl">ภาพรวม</div>
+    <div class="sl">Overview</div>
     <div class="ni active" data-page="dashboard"><span class="ic">📊</span>Dashboard</div>
-    <div class="ni" data-page="checkin"><span class="ic">📸</span>เช็คอิน</div>
-    <div class="ni" data-page="employees"><span class="ic">👥</span>พนักงาน</div>
-    <div class="sl">แจ้งเตือน</div>
-    <div class="ni" data-page="alerts"><span class="ic">⚠️</span>ลืมสแกน <span class="badge" id="bScan">0</span></div>
-    <div class="ni" data-page="late"><span class="ic">⏰</span>สาย/หักเงิน <span class="badge" id="bLate" style="background:var(--ora)">0</span></div>
-    <div class="ni" data-page="prayer"><span class="ic">🕌</span>ละหมาดศุกร์</div>
-    <div class="sl">ข้อมูล</div>
-    <div class="ni" data-page="attendance"><span class="ic">📋</span>บันทึกเวลา</div>
-    <div class="ni" data-page="payroll"><span class="ic">💰</span>เงินเดือน</div>
-    <div class="ni" data-page="holidays"><span class="ic">📅</span>วันหยุดบริษัท</div>
-    <div class="sl role-admin" style="display:none">ผู้ดูแล</div>
-    <div class="ni role-admin" data-page="users" style="display:none"><span class="ic">🔐</span>จัดการผู้ใช้</div>
+    <div class="ni" data-page="checkin"><span class="ic">📸</span>Check-in</div>
+    <div class="ni" data-page="employees"><span class="ic">👥</span>Employees</div>
+    <div class="sl">Alerts</div>
+    <div class="ni" data-page="alerts"><span class="ic">⚠️</span>Missed Scan <span class="badge" id="bScan">0</span></div>
+    <div class="ni" data-page="late"><span class="ic">⏰</span>Late / Deduct <span class="badge" id="bLate" style="background:var(--ora)">0</span></div>
+    <div class="ni" data-page="prayer"><span class="ic">🕌</span>Friday Prayer</div>
+    <div class="sl">Data</div>
+    <div class="ni" data-page="attendance"><span class="ic">📋</span>Time Records</div>
+    <div class="ni" data-page="payroll"><span class="ic">💰</span>Payroll</div>
+    <div class="ni" data-page="holidays"><span class="ic">📅</span>Holidays</div>
+    <div class="sl role-admin" style="display:none">Admin</div>
+    <div class="ni role-admin" data-page="users" style="display:none"><span class="ic">🔐</span>User Management</div>
   </nav>
   <div class="sb">
     <div class="user-info"><span>👤</span> <span id="userDisplay">-</span> <span class="sb0 x" id="userRole">-</span></div>
-    <button onclick="showSettings()">⚙️ ตั้งค่า URL</button>
-    <button onclick="doLogout()" style="background:var(--red-bg);color:var(--red);border-color:rgba(239,68,68,.3)">🚪 ออกจากระบบ</button>
+    <button onclick="showSettings()">⚙️ Settings</button>
+    <button onclick="doLogout()" style="background:var(--red-bg);color:var(--red);border-color:rgba(239,68,68,.3)">🚪 Sign Out</button>
   </div>
 </aside>
 
 <div class="main">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px"><button class="mt" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><h2 id="pageTitle">📊 Dashboard</h2></div>
-    <div class="meta"><span id="lastUpd">—</span><span class="dot" id="sDot" style="display:none"></span><span id="connSt" style="font-size:10px">ยังไม่เชื่อมต่อ</span></div>
+    <div class="meta"><span id="lastUpd">—</span><span class="dot" id="sDot" style="display:none"></span><span id="connSt" style="font-size:10px">Not connected</span></div>
   </div>
   <div class="content">
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="cards">
-        <div class="card bl"><div class="ci">👥</div><div class="cv" id="cTot">—</div><div class="cl">พนักงาน</div></div>
+        <div class="card bl"><div class="ci">👥</div><div class="cv" id="cTot">—</div><div class="cl">Employees</div></div>
         <div class="card tl"><div class="ci">🏢</div><div class="cv" id="cJKN">—</div><div class="cl">JKN</div></div>
         <div class="card tl"><div class="ci">🏭</div><div class="cv" id="cFC">—</div><div class="cl">FACAI</div></div>
-        <div class="card grn"><div class="ci">✅</div><div class="cv" id="cWrk">—</div><div class="cl">มาทำงาน</div></div>
-        <div class="card red"><div class="ci">❌</div><div class="cv" id="cAbs">—</div><div class="cl">ขาดงาน</div></div>
-        <div class="card pur"><div class="ci">📅</div><div class="cv" id="cLv">—</div><div class="cl">ลา</div></div>
-        <div class="card amb"><div class="ci">⚠️</div><div class="cv" id="cFgt">—</div><div class="cl">ลืมสแกน</div></div>
-        <div class="card ora"><div class="ci">⏰</div><div class="cv" id="cLt60">—</div><div class="cl">สาย>60นาที</div></div>
+        <div class="card grn"><div class="ci">✅</div><div class="cv" id="cWrk">—</div><div class="cl">At Work</div></div>
+        <div class="card red"><div class="ci">❌</div><div class="cv" id="cAbs">—</div><div class="cl">Absent</div></div>
+        <div class="card pur"><div class="ci">📅</div><div class="cv" id="cLv">—</div><div class="cl">Leave</div></div>
+        <div class="card amb"><div class="ci">⚠️</div><div class="cv" id="cFgt">—</div><div class="cl">Missed Scan</div></div>
+        <div class="card ora"><div class="ci">⏰</div><div class="cv" id="cLt60">—</div><div class="cl">Late>60min</div></div>
       </div>
       <div id="dashAlerts"></div>
-      <div class="tw"><div class="th_"><h3>📋 สถานะพนักงานวันนี้</h3><div class="fl"><input type="text" id="dSrch" placeholder="🔍 ค้นหา..." oninput="filterDash()"><select id="dComp" onchange="filterDash()"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select></div></div>
+      <div class="tw"><div class="th_"><h3>📋 Employee Status Today</h3><div class="fl"><input type="text" id="dSrch" placeholder="🔍 Search..." oninput="filterDash()"><select id="dComp" onchange="filterDash()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select></div></div>
         <div style="overflow-x:auto"><table><thead id="dHd"></thead><tbody id="dBd"></tbody></table></div></div>
     </div>
 
@@ -186,61 +186,61 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="page" id="page-checkin">
       <div class="checkin-container">
         <div id="checkinStep1" class="checkin-card">
-          <h3>📸 เช็คอิน — เลือกเหตุผล</h3>
-          <div style="margin-bottom:12px"><label style="font-size:11px;color:var(--t2)">Employee ID</label><input id="ciEmpId" placeholder="เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit"></div>
+          <h3>📸 Check-in — Select Reason</h3>
+          <div style="margin-bottom:12px"><label style="font-size:11px;color:var(--t2)">Employee ID</label><input id="ciEmpId" placeholder="e.g. JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit"></div>
           <div class="reason-grid">
-            <button class="reason-btn" data-reason="เข้างาน" onclick="selectReason(this)"><span class="emoji">🟢</span>เข้างาน</button>
-            <button class="reason-btn" data-reason="ไปพัก" onclick="selectReason(this)"><span class="emoji">🍽️</span>ไปพัก</button>
-            <button class="reason-btn" data-reason="กลับจากพัก" onclick="selectReason(this)"><span class="emoji">🔙</span>กลับจากพัก</button>
-            <button class="reason-btn" data-reason="เลิกงาน" onclick="selectReason(this)"><span class="emoji">🏠</span>เลิกงาน</button>
-            <button class="reason-btn" data-reason="ไปละหมาด" onclick="selectReason(this)"><span class="emoji">🕌</span>ไปละหมาด</button>
-            <button class="reason-btn" data-reason="กลับจากละหมาด" onclick="selectReason(this)"><span class="emoji">🤲</span>กลับจากละหมาด</button>
-            <button class="reason-btn" data-reason="กลับก่อนเวลา" onclick="selectReason(this)"><span class="emoji">🔶</span>กลับก่อนเวลา</button>
-            <button class="reason-btn" data-reason="ลาขาด" onclick="selectReason(this)"><span class="emoji">📋</span>ลา / ขาดงาน</button>
+            <button class="reason-btn" data-reason="Clock In" onclick="selectReason(this)"><span class="emoji">🟢</span>Clock In</button>
+            <button class="reason-btn" data-reason="Break Out" onclick="selectReason(this)"><span class="emoji">🍽️</span>Break Out</button>
+            <button class="reason-btn" data-reason="Break In" onclick="selectReason(this)"><span class="emoji">🔙</span>Break In</button>
+            <button class="reason-btn" data-reason="Clock Out" onclick="selectReason(this)"><span class="emoji">🏠</span>Clock Out</button>
+            <button class="reason-btn" data-reason="Prayer Out" onclick="selectReason(this)"><span class="emoji">🕌</span>Prayer Out</button>
+            <button class="reason-btn" data-reason="Prayer In" onclick="selectReason(this)"><span class="emoji">🤲</span>Prayer In</button>
+            <button class="reason-btn" data-reason="Early Leave" onclick="selectReason(this)"><span class="emoji">🔶</span>Early Leave</button>
+            <button class="reason-btn" data-reason="Leave/Absent" onclick="selectReason(this)"><span class="emoji">📋</span>Leave / Absent</button>
           </div>
           <div id="absentFormArea" style="display:none" class="absent-form">
-            <label>ประเภท</label>
-            <select id="absentType"><option>ลาป่วย</option><option>ลากิจ</option></select>
-            <label>วันที่ลา</label>
+            <label>Type</label>
+            <select id="absentType"><option>Sick Leave</option><option>Personal Leave</option></select>
+            <label>Leave Date</label>
             <input type="date" id="absentDate">
-            <label>หมายเหตุ (ลาป่วยเป็นอะไร / ลากิจไปไหน)</label>
-            <textarea id="absentRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
-            <button class="btn-checkin" onclick="submitAbsent()">📋 บันทึกการลา</button>
+            <label>Remarks (reason for leave)</label>
+            <textarea id="absentRemarks" rows="2" placeholder="Enter reason..."></textarea>
+            <button class="btn-checkin" onclick="submitAbsent()">📋 Submit Leave</button>
           </div>
           <div id="normalCheckinBtn" style="display:none">
             <div id="earlyLeaveForm" style="display:none" class="absent-form">
-              <label>เหตุผลกลับก่อน</label>
-              <select id="earlyType"><option>ลาป่วย</option><option>ลากิจ</option></select>
-              <label>หมายเหตุ</label>
-              <textarea id="earlyRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
+              <label>Reason for early leave</label>
+              <select id="earlyType"><option>Sick Leave</option><option>Personal Leave</option></select>
+              <label>Remarks</label>
+              <textarea id="earlyRemarks" rows="2" placeholder="Enter reason..."></textarea>
             </div>
-            <button class="btn-checkin" onclick="goToCamera()">📸 ถัดไป — ถ่ายรูปยืนยัน</button>
+            <button class="btn-checkin" onclick="goToCamera()">📸 Next — Take Photo</button>
           </div>
         </div>
 
         <div id="checkinStep2" class="checkin-card" style="display:none">
-          <h3>📸 ถ่ายรูป Selfie</h3>
+          <h3>📸 Take Selfie</h3>
           <div class="camera-area">
             <video id="camVideo" autoplay playsinline muted></video>
             <canvas id="camCanvas" style="display:none"></canvas>
             <div class="overlay"></div>
-            <div class="status" id="camStatus">กำลังเปิดกล้อง...</div>
+            <div class="status" id="camStatus">Opening camera...</div>
           </div>
-          <div class="gps-status loading" id="gpsStatus">📍 กำลังตรวจ GPS...</div>
-          <div id="faceStatus" style="padding:8px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:12px;color:var(--t2)">🤖 กำลังโหลดระบบจดจำใบหน้า...</div>
-          <button class="btn-checkin" id="btnCapture" onclick="captureAndCheckin()" disabled>📸 ถ่ายรูป & เช็คอิน</button>
-          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="backToStep1()">← ย้อนกลับ</button>
+          <div class="gps-status loading" id="gpsStatus">📍 Checking GPS...</div>
+          <div id="faceStatus" style="padding:8px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:12px;color:var(--t2)">🤖 Loading face recognition...</div>
+          <button class="btn-checkin" id="btnCapture" onclick="captureAndCheckin()" disabled>📸 Capture & Check-in</button>
+          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="backToStep1()">← Go Back</button>
         </div>
 
         <div id="checkinResult" class="checkin-card" style="display:none">
           <div class="checkin-result" id="resultContent"></div>
-          <button class="btn-checkin" onclick="resetCheckin()">📸 เช็คอินอีกครั้ง</button>
+          <button class="btn-checkin" onclick="resetCheckin()">📸 Check-in Again</button>
         </div>
       </div>
     </div>
 
     <!-- EMPLOYEES -->
-    <div class="page" id="page-employees"><div class="tw"><div class="th_"><h3>👥 พนักงาน</h3><div class="fl"><select id="empComp" onchange="loadEmp()"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select></div></div><div style="overflow-x:auto"><table><thead id="eHd"></thead><tbody id="eBd"></tbody></table></div></div></div>
+    <div class="page" id="page-employees"><div class="tw"><div class="th_"><h3>👥 Employees</h3><div class="fl"><select id="empComp" onchange="loadEmp()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select></div></div><div style="overflow-x:auto"><table><thead id="eHd"></thead><tbody id="eBd"></tbody></table></div></div></div>
 
     <!-- PROFILE -->
     <div class="page" id="page-profile"><div id="profileContent"></div></div>
@@ -287,10 +287,12 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 let API='',REF=30,timer=null,allDash=[],curUser=null,selectedReason='',gpsData=null,faceModelsLoaded=false,camStream=null;
 const $=id=>document.getElementById(id);
 const API_KEY='HR PAYROLL TOPPY';
+const DEFAULT_API='https://script.google.com/macros/s/AKfycbzowQT19UUhQYp9KwLt0A1pANsnhSEsdGXoZDABfzEKBdiTXUK2uBweZAXD0HvEUbxZ/exec';
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded',()=>{
-  API=localStorage.getItem('hr_api')||'';
+  API=localStorage.getItem('hr_api')||DEFAULT_API;
+  localStorage.setItem('hr_api',API);
   REF=parseInt(localStorage.getItem('hr_ref')||'30');
   const sess=localStorage.getItem('hr_session');
   if(sess)try{curUser=JSON.parse(sess)}catch(e){}
