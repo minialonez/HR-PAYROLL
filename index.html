@@ -94,6 +94,26 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 .profile-item{background:var(--s2);padding:12px;border-radius:8px}.profile-item .label{font-size:10px;color:var(--t3);text-transform:uppercase;margin-bottom:4px}.profile-item .value{font-size:14px;font-weight:600}
 /* User mgmt */
 .um-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;padding:16px}
+
+/* Payslip */
+.payslip{background:#fff;color:#1a1a2e;border-radius:12px;padding:32px;font-size:13px;line-height:1.6}
+.payslip .ps-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1a1a2e;padding-bottom:16px;margin-bottom:16px}
+.payslip .ps-company{font-size:20px;font-weight:700;color:#1a1a2e}
+.payslip .ps-subtitle{font-size:11px;color:#666;margin-top:2px}
+.payslip .ps-title{font-size:16px;font-weight:700;text-align:right;color:#1a1a2e}
+.payslip .ps-period{font-size:12px;color:#666;text-align:right}
+.payslip .ps-info{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-bottom:20px;padding:12px;background:#f8f9fa;border-radius:8px}
+.payslip .ps-info .label{font-size:10px;color:#999;text-transform:uppercase}.payslip .ps-info .val{font-weight:600}
+.payslip .ps-table{width:100%;border-collapse:collapse;margin-bottom:16px}
+.payslip .ps-table th{background:#1a1a2e;color:#fff;padding:8px 12px;text-align:left;font-size:11px;font-weight:600}
+.payslip .ps-table td{padding:6px 12px;border-bottom:1px solid #eee;font-size:12px}
+.payslip .ps-table .amt{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:600}
+.payslip .ps-table .amt.green{color:#16a34a}.payslip .ps-table .amt.red{color:#dc2626}
+.payslip .ps-table .total{background:#f0f0f0;font-weight:700;font-size:13px}
+.payslip .ps-net{text-align:center;padding:20px;background:linear-gradient(135deg,#1a1a2e,#2d3748);border-radius:12px;margin-top:16px}
+.payslip .ps-net .label{color:#a0aec0;font-size:11px;text-transform:uppercase}.payslip .ps-net .amount{color:#fff;font-size:32px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.payslip .ps-footer{text-align:center;margin-top:16px;font-size:10px;color:#aaa;border-top:1px dashed #ddd;padding-top:12px}
+@media print{body *{visibility:hidden}.payslip,.payslip *{visibility:visible}.payslip{position:absolute;top:0;left:0;width:100%;background:#fff!important;color:#000!important;border:none;box-shadow:none}}
 .um-form input,.um-form select{padding:8px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit}
 .um-form button{grid-column:span 2;padding:8px;background:var(--grn);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
 /* Modal */
@@ -140,6 +160,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="sl">Data</div>
     <div class="ni" data-page="attendance"><span class="ic">📋</span>Time Records</div>
     <div class="ni" data-page="payroll"><span class="ic">💰</span>Payroll</div>
+    <div class="ni" data-page="payslip"><span class="ic">🧾</span>Payslip</div>
     <div class="ni" data-page="holidays"><span class="ic">📅</span>Holidays</div>
     <div class="sl role-admin" style="display:none">Admin</div>
     <div class="ni role-admin" data-page="earlyclose" style="display:none"><span class="ic">🔔</span>Early Close</div>
@@ -315,6 +336,19 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 
     <!-- PAYROLL -->
     <div class="page" id="page-payroll"><div class="tw"><div class="th_"><h3>💰 Payroll</h3><div class="fl"><input type="text" id="payP" placeholder="e.g. 03/2026 → 04/2026" style="width:180px"><select id="payComp"><option value="">All Companies</option><option>JKN</option><option>FC</option></select><button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPay()">Load</button></div></div><div style="overflow-x:auto"><table><thead id="pyHd"></thead><tbody id="pyBd"></tbody></table></div></div></div>
+
+    <!-- PAYSLIP -->
+    <div class="page" id="page-payslip">
+      <div style="max-width:700px;margin:0 auto">
+        <div class="tw"><div class="th_"><h3>🧾 Payslip</h3><div class="fl">
+          <input id="psEmpId" placeholder="Employee ID" style="text-transform:uppercase;width:120px" oninput="this.value=this.value.toUpperCase()">
+          <input id="psPeriod" placeholder="e.g. 03/2026 → 04/2026" style="width:180px">
+          <button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPayslip()">Load</button>
+          <button style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="printPayslip()">🖨️ Print</button>
+        </div></div></div>
+        <div id="payslipContent" style="margin-top:16px"><div class="empty">เลือก Employee ID + Pay Period แล้วกด Load</div></div>
+      </div>
+    </div>
 
     <!-- HOLIDAYS -->
     <div class="page" id="page-holidays"><div class="tw"><div class="th_"><h3>📅 Company Holidays</h3></div><div style="overflow-x:auto"><table><thead id="hlHd"></thead><tbody id="hlBd"></tbody></table></div></div></div>
@@ -888,6 +922,92 @@ async function loadLate(){const d=await apiGet('late_alerts');if(!d||!d.success|
     return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+r.date+'</td><td>'+r.empId+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+(r.company==='JKN'?'h':'l')+'">'+r.company+'</span></td><td><span class="sb0 '+c+'">'+r.lateMins+'m</span></td><td style="font-size:11px">'+(r.reason||'-')+'</td><td><span class="sb0 '+y+'">'+(r.deductYN==='Y'?'Deduct':r.deductYN==='N'?'No':'Pending')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt+'฿':'—')+'</td><td>'+(r.warning||'')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No data</td></tr>'}
 async function loadAtt(){const d=await apiGet('attendance',{from:$('atFrom').value,to:$('atTo').value,company:$('atComp')?$('atComp').value:''});if(!d||!d.success)return;renderTbl('atHd','atBd',d.data)}
 async function loadPay(){const p=$('payP').value.trim();const d=await apiGet('payroll',p?{period:p,company:$('payComp')?$('payComp').value:''}:{company:$('payComp')?$('payComp').value:''});if(!d||!d.success)return;renderTbl('pyHd','pyBd',d.data)}
+
+// ===== PAYSLIP =====
+async function loadPayslip(){
+  const empId=$('psEmpId').value.trim(),period=$('psPeriod').value.trim();
+  if(!empId){alert('กรอก Employee ID');return;}
+  $('payslipContent').innerHTML='<div class="empty">กำลังโหลด...</div>';
+  // Get employee profile
+  const prof=await apiGet('employee_profile',{empId});
+  if(!prof||!prof.success){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบพนักงาน</div>';return;}
+  // Get payroll data
+  const pay=await apiGet('payroll',period?{period}:{});
+  if(!pay||!pay.success||!pay.data||pay.data.length<2){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล Payroll</div>';return;}
+  // Find this employee's payroll row
+  const hdr=pay.data[0];let row=null;
+  for(let i=1;i<pay.data.length;i++){if(pay.data[i][0]&&pay.data[i][0].toString().trim().toUpperCase()===empId.toUpperCase()){row=pay.data[i];break;}}
+  if(!row){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล Payroll ของ '+empId+'</div>';return;}
+  renderPayslip(prof.profile,row,hdr);
+}
+
+function renderPayslip(p,r,h){
+  const fmt=n=>(parseFloat(n)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const compName=p.company==='JKN'?'จงกลณี การไฟฟ้า (JKN)':'FACAI';
+  const salary=parseFloat(r[4])||0,workDays=r[5]||0,actualDays=r[6]||0,absentDays=r[7]||0,leaveDays=r[8]||0,sickDays=r[9]||0;
+  const lateCount=r[10]||0,lateBaht=parseFloat(r[11])||0,otHrs=r[12]||0,otPay=parseFloat(r[13])||0,holidayWork=r[14]||0;
+  const sp1=parseFloat(r[15])||0,sp2=parseFloat(r[16])||0,gross=parseFloat(r[17])||0;
+  const dedAbsent=parseFloat(r[18])||0,dedSS=parseFloat(r[19])||0,dedSL=parseFloat(r[20])||0,dedAdv=parseFloat(r[21])||0;
+  const dedSav=parseFloat(r[22])||0,dedLoan=parseFloat(r[23])||0,dedOther=parseFloat(r[24])||0;
+  const totalDed=parseFloat(r[25])||0,net=parseFloat(r[26])||0;
+  const period=r[3]||'-';
+
+  $('payslipContent').innerHTML=`<div class="payslip" id="payslipPrint">
+    <div class="ps-header">
+      <div><div class="ps-company">${compName}</div><div class="ps-subtitle">ใบแจ้งเงินเดือน / Payslip</div></div>
+      <div><div class="ps-title">PAYSLIP</div><div class="ps-period">งวด: ${period}</div></div>
+    </div>
+    <div class="ps-info">
+      <div><div class="label">Employee ID</div><div class="val">${p.id}</div></div>
+      <div><div class="label">Position</div><div class="val">${p.position||'-'}</div></div>
+      <div><div class="label">Name</div><div class="val">${p.title||''} ${p.name} ${p.surname}</div></div>
+      <div><div class="label">Work Days</div><div class="val">${actualDays} / ${workDays} วัน</div></div>
+    </div>
+
+    <table class="ps-table">
+      <thead><tr><th colspan="2">รายได้ / Earnings</th><th style="text-align:right">จำนวน</th></tr></thead>
+      <tbody>
+        <tr><td colspan="2">เงินเดือน / Salary</td><td class="amt green">${fmt(salary)}</td></tr>
+        ${otPay>0?'<tr><td colspan="2">ค่าล่วงเวลา / OT ('+otHrs+' ชม.)</td><td class="amt green">'+fmt(otPay)+'</td></tr>':''}
+        ${sp1>0?'<tr><td colspan="2">เงินพิเศษ 1 / Special Pay 1</td><td class="amt green">'+fmt(sp1)+'</td></tr>':''}
+        ${sp2>0?'<tr><td colspan="2">เงินพิเศษ 2 / Special Pay 2</td><td class="amt green">'+fmt(sp2)+'</td></tr>':''}
+        <tr class="total"><td colspan="2">รวมรายได้ / Total Earnings</td><td class="amt green">${fmt(gross)}</td></tr>
+      </tbody>
+    </table>
+
+    <table class="ps-table">
+      <thead><tr><th colspan="2">รายการหัก / Deductions</th><th style="text-align:right">จำนวน</th></tr></thead>
+      <tbody>
+        ${dedAbsent>0?'<tr><td colspan="2">หักขาดงาน / Absent ('+absentDays+' วัน)</td><td class="amt red">-'+fmt(dedAbsent)+'</td></tr>':''}
+        ${lateBaht>0?'<tr><td colspan="2">หักมาสาย / Late ('+lateCount+' ครั้ง)</td><td class="amt red">-'+fmt(lateBaht)+'</td></tr>':''}
+        ${dedSS>0?'<tr><td colspan="2">ประกันสังคม / Social Security</td><td class="amt red">-'+fmt(dedSS)+'</td></tr>':''}
+        ${dedSL>0?'<tr><td colspan="2">กยศ. / Student Loan</td><td class="amt red">-'+fmt(dedSL)+'</td></tr>':''}
+        ${dedAdv>0?'<tr><td colspan="2">หักเงินล่วงหน้า / Advance</td><td class="amt red">-'+fmt(dedAdv)+'</td></tr>':''}
+        ${dedSav>0?'<tr><td colspan="2">หักเงินออม / Savings</td><td class="amt red">-'+fmt(dedSav)+'</td></tr>':''}
+        ${dedLoan>0?'<tr><td colspan="2">หักเงินยืม / Loan</td><td class="amt red">-'+fmt(dedLoan)+'</td></tr>':''}
+        ${dedOther>0?'<tr><td colspan="2">หักอื่นๆ / Other (รวมกลับก่อน)</td><td class="amt red">-'+fmt(dedOther)+'</td></tr>':''}
+        <tr class="total"><td colspan="2">รวมหัก / Total Deductions</td><td class="amt red">-${fmt(totalDed)}</td></tr>
+      </tbody>
+    </table>
+
+    <table class="ps-table" style="margin-bottom:0">
+      <thead><tr><th>สถิติ / Attendance</th><th>ลา</th><th>ป่วย</th><th>สาย</th><th>ทำงานวันหยุด</th></tr></thead>
+      <tbody><tr><td></td><td>${leaveDays} วัน</td><td>${sickDays} วัน</td><td>${lateCount} ครั้ง</td><td>${holidayWork} วัน</td></tr></tbody>
+    </table>
+
+    <div class="ps-net">
+      <div class="label">เงินสุทธิ / Net Pay</div>
+      <div class="amount">${fmt(net)} ฿</div>
+    </div>
+    <div class="ps-footer">เอกสารฉบับนี้ออกโดยระบบ HR & Payroll v4 — ${compName}<br>Generated: ${new Date().toLocaleString('th-TH')}</div>
+  </div>`;
+}
+
+function printPayslip(){
+  const content=$('payslipPrint');
+  if(!content){alert('โหลด Payslip ก่อน');return;}
+  window.print();
+}
 async function loadHol(){const d=await apiGet('holidays');if(!d||!d.success)return;renderTbl('hlHd','hlBd',d.data)}
 async function loadPrayer(){const d=await apiGet('prayer_log');if(!d||!d.success)return;renderTbl('prHd','prBd',d.data)}
 
