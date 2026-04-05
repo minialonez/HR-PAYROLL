@@ -56,13 +56,6 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 .login-box .btn-login{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
 .login-box .err{color:var(--red);font-size:12px;margin-top:8px;min-height:18px}
 
-/* Setup */
-#setupScreen{position:fixed;inset:0;z-index:9998;background:var(--bg);display:flex;align-items:center;justify-content:center}
-.setup-box{width:460px;max-width:90vw;text-align:center}.setup-box h2{font-size:22px;font-weight:700;margin-bottom:8px}
-.setup-box p{font-size:13px;color:var(--t2);margin-bottom:20px}
-.setup-box input{width:100%;padding:12px;background:var(--s1);border:2px solid var(--blue);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:12px;text-align:center}
-.setup-box button{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
-
 /* Checkin Page */
 .checkin-container{max-width:500px;margin:0 auto}
 .checkin-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:24px;margin-bottom:16px}
@@ -73,7 +66,8 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 .reason-btn.selected{border-color:var(--blue);background:rgba(59,130,246,.15);color:var(--blue)}
 .reason-btn .emoji{font-size:24px;display:block;margin-bottom:4px}
 .camera-area{position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:12px;overflow:hidden;margin:16px 0}
-.camera-area video,.camera-area canvas{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+.camera-area video{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;transform:scaleX(-1)}
+.camera-area canvas{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;display:none}
 .camera-area .overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:180px;height:220px;border:3px solid rgba(59,130,246,.6);border-radius:50%;pointer-events:none;z-index:5}
 .camera-area .status{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;z-index:5}
 .gps-status{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s2);border-radius:8px;margin:12px 0;font-size:12px}
@@ -82,9 +76,14 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 .btn-checkin:disabled{opacity:.4;cursor:not-allowed}
 .btn-checkin:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(59,130,246,.3)}
 .checkin-result{text-align:center;padding:32px 16px}.checkin-result .big{font-size:64px;margin-bottom:16px}.checkin-result h3{font-size:18px;margin-bottom:8px}
-/* Absent form */
 .absent-form{margin-top:16px}.absent-form label{font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px}
 .absent-form select,.absent-form input,.absent-form textarea{width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:13px;font-family:inherit;margin-bottom:12px}
+/* Identified employee card */
+.id-card{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(20,184,166,.15));border:2px solid var(--teal);border-radius:16px;padding:20px;text-align:center;margin-bottom:16px}
+.id-card .id-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--teal));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:32px;font-weight:700;border:3px solid var(--teal)}
+.id-card .id-name{font-size:20px;font-weight:700;margin-bottom:4px}.id-card .id-detail{font-size:12px;color:var(--t2)}
+.scan-pulse{animation:scanPulse 1.5s ease-in-out infinite}
+@keyframes scanPulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.4)}50%{box-shadow:0 0 0 15px rgba(59,130,246,0)}}
 /* Profile */
 .profile-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:24px;margin-bottom:16px}
 .profile-header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
@@ -107,26 +106,15 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 </head>
 <body>
 
-<!-- SETUP -->
-<div id="setupScreen" style="display:none">
-<div class="setup-box">
-  <div style="font-size:48px;margin-bottom:12px">📸</div>
-  <h2>HR & Payroll v4</h2>
-  <p>Enter Google Apps Script URL to get started</p>
-  <input id="setupUrl" placeholder="https://script.google.com/macros/s/.../exec">
-  <button onclick="saveSetup()">🚀 Save & Start</button>
-</div>
-</div>
-
 <!-- LOGIN -->
 <div id="loginScreen" style="display:none">
 <div class="login-box">
   <div class="avatar">📸</div>
   <h2>HR & Payroll v4</h2>
-  <p>Photo Check-in + Face Recognition</p>
+  <p>สแกนใบหน้าเช็คอิน + จดจำใบหน้า</p>
   <input id="loginUser" placeholder="👤 Username" autofocus>
   <input id="loginPass" placeholder="🔒 Password" type="password" onkeydown="if(event.key==='Enter')doLogin()">
-  <button class="btn-login" onclick="doLogin()">Sign In</button>
+  <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
   <div class="err" id="loginErr"></div>
 </div>
 </div>
@@ -139,6 +127,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="sl">Overview</div>
     <div class="ni active" data-page="dashboard"><span class="ic">📊</span>Dashboard</div>
     <div class="ni" data-page="checkin"><span class="ic">📸</span>Check-in</div>
+    <div class="ni" data-page="faceregister"><span class="ic">🤳</span>ลงทะเบียนใบหน้า</div>
     <div class="ni" data-page="employees"><span class="ic">👥</span>Employees</div>
     <div class="sl">Alerts</div>
     <div class="ni" data-page="alerts"><span class="ic">⚠️</span>Missed Scan <span class="badge" id="bScan">0</span></div>
@@ -182,21 +171,48 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
         <div style="overflow-x:auto"><table><thead id="dHd"></thead><tbody id="dBd"></tbody></table></div></div>
     </div>
 
-    <!-- CHECKIN -->
+    <!-- CHECKIN — NEW FLOW: Face scan → Identify → Select reason -->
     <div class="page" id="page-checkin">
       <div class="checkin-container">
-        <div id="checkinStep1" class="checkin-card">
-          <h3>📸 Check-in — Select Reason</h3>
-          <div style="margin-bottom:12px"><label style="font-size:11px;color:var(--t2)">Employee ID</label><input id="ciEmpId" placeholder="e.g. JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit"></div>
+        <!-- Step 1: Face Scan -->
+        <div id="ciStep1" class="checkin-card">
+          <h3>📸 สแกนใบหน้าเพื่อเช็คอิน</h3>
+          <div class="camera-area scan-pulse">
+            <video id="camVideo" autoplay playsinline muted></video>
+            <canvas id="camCanvas"></canvas>
+            <div class="overlay"></div>
+            <div class="status" id="camStatus">กำลังเปิดกล้อง...</div>
+          </div>
+          <div id="faceStatus" style="padding:10px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:13px;color:var(--t2);text-align:center">🤖 กำลังโหลดระบบจดจำใบหน้า...</div>
+          <p style="text-align:center;font-size:11px;color:var(--t3);margin-top:8px">หันหน้าเข้ากล้องให้ชัด ระบบจะจดจำให้อัตโนมัติ</p>
+          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:12px;cursor:pointer;font-family:inherit" onclick="showManualId()">🔑 กรอกรหัสพนักงานแทน</button>
+          <div id="manualIdArea" style="display:none;margin-top:12px">
+            <input id="ciManualId" placeholder="รหัสพนักงาน เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:8px">
+            <button class="btn-checkin" onclick="manualIdentify()">➡️ ตรวจสอบ</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Identified + Reason Selection -->
+        <div id="ciStep2" class="checkin-card" style="display:none">
+          <div class="id-card" id="identifiedCard"></div>
+          <div class="gps-status loading" id="gpsStatus">📍 กำลังตรวจ GPS...</div>
+          <h3 style="margin:16px 0 12px;font-size:14px">เลือกประเภทเช็คอิน</h3>
           <div class="reason-grid">
-            <button class="reason-btn" data-reason="Check In" onclick="selectReason(this)"><span class="emoji">🟢</span>เข้างาน</button>
-            <button class="reason-btn" data-reason="Break Out" onclick="selectReason(this)"><span class="emoji">🍽️</span>ไปพัก</button>
-            <button class="reason-btn" data-reason="Break In" onclick="selectReason(this)"><span class="emoji">🔙</span>กลับจากพัก</button>
-            <button class="reason-btn" data-reason="Prayer Out" onclick="selectReason(this)"><span class="emoji">🕌</span>ไปละหมาด</button>
-            <button class="reason-btn" data-reason="Prayer In" onclick="selectReason(this)"><span class="emoji">🤲</span>กลับจากละหมาด</button>
-            <button class="reason-btn" data-reason="Check Out" onclick="selectReason(this)"><span class="emoji">🏠</span>เลิกงาน</button>
-            <button class="reason-btn" data-reason="Early Leave" onclick="selectReason(this)"><span class="emoji">🔶</span>กลับก่อนเวลา</button>
-            <button class="reason-btn" data-reason="Leave/Absent" onclick="selectReason(this)"><span class="emoji">📋</span>ลา / ขาดงาน</button>
+            <button class="reason-btn" data-reason="Check In" onclick="selectAndSubmit(this)"><span class="emoji">🟢</span>เข้างาน</button>
+            <button class="reason-btn" data-reason="Break Out" onclick="selectAndSubmit(this)"><span class="emoji">🍽️</span>ไปพัก</button>
+            <button class="reason-btn" data-reason="Break In" onclick="selectAndSubmit(this)"><span class="emoji">🔙</span>กลับจากพัก</button>
+            <button class="reason-btn" data-reason="Prayer Out" onclick="selectAndSubmit(this)"><span class="emoji">🕌</span>ไปละหมาด</button>
+            <button class="reason-btn" data-reason="Prayer In" onclick="selectAndSubmit(this)"><span class="emoji">🤲</span>กลับจากละหมาด</button>
+            <button class="reason-btn" data-reason="Check Out" onclick="selectAndSubmit(this)"><span class="emoji">🏠</span>เลิกงาน</button>
+            <button class="reason-btn" data-reason="Early Leave" onclick="showEarlyForm(this)"><span class="emoji">🔶</span>กลับก่อนเวลา</button>
+            <button class="reason-btn" data-reason="Leave/Absent" onclick="showAbsentForm(this)"><span class="emoji">📋</span>ลา / ขาดงาน</button>
+          </div>
+          <div id="earlyFormArea" style="display:none" class="absent-form">
+            <label>เหตุผลกลับก่อน</label>
+            <select id="earlyType"><option value="Sick Leave">ลาป่วย</option><option value="Personal Leave">ลากิจ</option></select>
+            <label>หมายเหตุ</label>
+            <textarea id="earlyRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
+            <button class="btn-checkin" onclick="submitCheckin('Early Leave')">📸 บันทึก</button>
           </div>
           <div id="absentFormArea" style="display:none" class="absent-form">
             <label>ประเภท</label>
@@ -207,34 +223,38 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
             <textarea id="absentRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
             <button class="btn-checkin" onclick="submitAbsent()">📋 บันทึกการลา</button>
           </div>
-          <div id="normalCheckinBtn" style="display:none">
-            <div id="earlyLeaveForm" style="display:none" class="absent-form">
-              <label>เหตุผลกลับก่อน</label>
-              <select id="earlyType"><option value="Sick Leave">ลาป่วย</option><option value="Personal Leave">ลากิจ</option></select>
-              <label>หมายเหตุ</label>
-              <textarea id="earlyRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
-            </div>
-            <button class="btn-checkin" onclick="goToCamera()">📸 ถัดไป — ถ่ายรูปยืนยัน</button>
-          </div>
+          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:12px;cursor:pointer;font-family:inherit" onclick="resetCheckin()">← สแกนใหม่</button>
         </div>
 
-        <div id="checkinStep2" class="checkin-card" style="display:none">
-          <h3>📸 ถ่ายรูป Selfie</h3>
-          <div class="camera-area">
-            <video id="camVideo" autoplay playsinline muted></video>
-            <canvas id="camCanvas" style="display:none"></canvas>
-            <div class="overlay"></div>
-            <div class="status" id="camStatus">กำลังเปิดกล้อง...</div>
-          </div>
-          <div class="gps-status loading" id="gpsStatus">📍 กำลังตรวจ GPS...</div>
-          <div id="faceStatus" style="padding:8px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:12px;color:var(--t2)">🤖 กำลังโหลดระบบจดจำใบหน้า...</div>
-          <button class="btn-checkin" id="btnCapture" onclick="captureAndCheckin()" disabled>📸 ถ่ายรูป & เช็คอิน</button>
-          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="backToStep1()">← ย้อนกลับ</button>
-        </div>
-
-        <div id="checkinResult" class="checkin-card" style="display:none">
+        <!-- Step 3: Result -->
+        <div id="ciStep3" class="checkin-card" style="display:none">
           <div class="checkin-result" id="resultContent"></div>
           <button class="btn-checkin" onclick="resetCheckin()">📸 เช็คอินอีกครั้ง</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FACE REGISTRATION -->
+    <div class="page" id="page-faceregister">
+      <div class="checkin-container">
+        <div class="checkin-card">
+          <h3>🤳 ลงทะเบียนใบหน้า</h3>
+          <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">ถ่ายรูป 3 มุม: หน้าตรง / เอียงซ้าย / เอียงขวา</p>
+          <div style="margin-bottom:12px">
+            <label style="font-size:11px;color:var(--t2)">Employee ID</label>
+            <input id="frEmpId" placeholder="เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit">
+          </div>
+          <div class="camera-area">
+            <video id="frVideo" autoplay playsinline muted></video>
+            <canvas id="frCanvas" style="display:none"></canvas>
+            <div class="overlay"></div>
+            <div class="status" id="frCamStatus">กดปุ่มเพื่อเปิดกล้อง</div>
+          </div>
+          <div id="frPhotos" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0"></div>
+          <div id="frProgress" style="font-size:13px;text-align:center;color:var(--t2);margin:8px 0">ถ่ายรูป 0 / 3</div>
+          <button class="btn-checkin" id="frCaptureBtn" onclick="frCapture()">📸 เปิดกล้อง & ถ่ายรูป</button>
+          <button class="btn-checkin" id="frSubmitBtn" onclick="frSubmit()" style="display:none;background:var(--grn)">✅ บันทึกลงทะเบียน</button>
+          <div id="frResult" style="margin-top:12px;text-align:center;font-size:13px"></div>
         </div>
       </div>
     </div>
@@ -246,27 +266,27 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="page" id="page-profile"><div id="profileContent"></div></div>
 
     <!-- ALERTS -->
-    <div class="page" id="page-alerts"><div class="ap"><h3>⚠️ ลืมสแกน</h3><div id="alertL"><div class="empty">ไม่มีรายการ</div></div></div><div class="tw"><div class="th_"><h3>📋 ประวัติ</h3></div><div style="overflow-x:auto"><table><thead id="fHd"></thead><tbody id="fBd"></tbody></table></div></div></div>
+    <div class="page" id="page-alerts"><div class="ap"><h3>⚠️ Missed Scan</h3><div id="alertL"><div class="empty">No data</div></div></div><div class="tw"><div class="th_"><h3>📋 History</h3></div><div style="overflow-x:auto"><table><thead id="fHd"></thead><tbody id="fBd"></tbody></table></div></div></div>
 
     <!-- LATE -->
-    <div class="page" id="page-late"><div class="ap danger"><h3>🚨 สายเกิน 60 นาที</h3><div id="lateAlertL"></div></div><div class="tw"><div class="th_"><h3>⏰ รายการสาย</h3><div class="fl"><input type="date" id="ltFrom" onchange="loadLate()"><input type="date" id="ltTo" onchange="loadLate()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>วันที่</th><th>ID</th><th>ชื่อ</th><th>บริษัท</th><th>สาย</th><th>เหตุผล</th><th>หัก?</th><th>฿</th><th>สถานะ</th></tr></thead><tbody id="ltBd"></tbody></table></div></div></div>
+    <div class="page" id="page-late"><div class="ap danger"><h3>🚨 Late over 60 min</h3><div id="lateAlertL"></div></div><div class="tw"><div class="th_"><h3>⏰ Late Records</h3><div class="fl"><input type="date" id="ltFrom" onchange="loadLate()"><input type="date" id="ltTo" onchange="loadLate()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>Date</th><th>ID</th><th>Name</th><th>Company</th><th>Late</th><th>Reason</th><th>Deduct?</th><th>฿</th><th>Status</th></tr></thead><tbody id="ltBd"></tbody></table></div></div></div>
 
     <!-- PRAYER -->
-    <div class="page" id="page-prayer"><div class="tw"><div class="th_"><h3>🕌 ละหมาดศุกร์</h3></div><div style="overflow-x:auto"><table><thead id="prHd"></thead><tbody id="prBd"></tbody></table></div></div></div>
+    <div class="page" id="page-prayer"><div class="tw"><div class="th_"><h3>🕌 Friday Prayer</h3></div><div style="overflow-x:auto"><table><thead id="prHd"></thead><tbody id="prBd"></tbody></table></div></div></div>
 
     <!-- ATTENDANCE -->
-    <div class="page" id="page-attendance"><div class="tw"><div class="th_"><h3>📋 บันทึกเวลา</h3><div class="fl"><input type="date" id="atFrom" onchange="loadAtt()"><input type="date" id="atTo" onchange="loadAtt()"><select id="atComp" onchange="loadAtt()"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select></div></div><div style="overflow-x:auto"><table><thead id="atHd"></thead><tbody id="atBd"></tbody></table></div></div></div>
+    <div class="page" id="page-attendance"><div class="tw"><div class="th_"><h3>📋 Time Records</h3><div class="fl"><input type="date" id="atFrom" onchange="loadAtt()"><input type="date" id="atTo" onchange="loadAtt()"><select id="atComp" onchange="loadAtt()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select></div></div><div style="overflow-x:auto"><table><thead id="atHd"></thead><tbody id="atBd"></tbody></table></div></div></div>
 
     <!-- PAYROLL -->
-    <div class="page" id="page-payroll"><div class="tw"><div class="th_"><h3>💰 เงินเดือน</h3><div class="fl"><input type="text" id="payP" placeholder="เช่น 03/2026 → 04/2026" style="width:180px"><select id="payComp"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select><button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPay()">โหลด</button></div></div><div style="overflow-x:auto"><table><thead id="pyHd"></thead><tbody id="pyBd"></tbody></table></div></div></div>
+    <div class="page" id="page-payroll"><div class="tw"><div class="th_"><h3>💰 Payroll</h3><div class="fl"><input type="text" id="payP" placeholder="e.g. 03/2026 → 04/2026" style="width:180px"><select id="payComp"><option value="">All Companies</option><option>JKN</option><option>FC</option></select><button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPay()">Load</button></div></div><div style="overflow-x:auto"><table><thead id="pyHd"></thead><tbody id="pyBd"></tbody></table></div></div></div>
 
     <!-- HOLIDAYS -->
-    <div class="page" id="page-holidays"><div class="tw"><div class="th_"><h3>📅 วันหยุดบริษัท</h3></div><div style="overflow-x:auto"><table><thead id="hlHd"></thead><tbody id="hlBd"></tbody></table></div></div></div>
+    <div class="page" id="page-holidays"><div class="tw"><div class="th_"><h3>📅 Company Holidays</h3></div><div style="overflow-x:auto"><table><thead id="hlHd"></thead><tbody id="hlBd"></tbody></table></div></div></div>
 
     <!-- USERS -->
-    <div class="page" id="page-users"><div class="tw"><div class="th_"><h3>🔐 จัดการผู้ใช้</h3></div>
-      <div class="um-form"><input id="nuUser" placeholder="Username"><input id="nuName" placeholder="ชื่อแสดง"><input id="nuPass" placeholder="Password"><select id="nuRole"><option>employee</option><option>manager</option><option>hr</option><option>admin</option></select><button onclick="addUser()">➕ เพิ่มผู้ใช้</button></div>
-      <div style="overflow-x:auto"><table><thead><tr><th>Username</th><th>ชื่อ</th><th>สิทธิ์</th><th>จัดการ</th></tr></thead><tbody id="umBd"></tbody></table></div></div></div>
+    <div class="page" id="page-users"><div class="tw"><div class="th_"><h3>🔐 User Management</h3></div>
+      <div class="um-form"><input id="nuUser" placeholder="Username"><input id="nuName" placeholder="Display Name"><input id="nuPass" placeholder="Password"><select id="nuRole"><option>employee</option><option>manager</option><option>hr</option><option>admin</option></select><button onclick="addUser()">➕ Add User</button></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Action</th></tr></thead><tbody id="umBd"></tbody></table></div></div></div>
 
   </div>
 </div>
@@ -275,16 +295,20 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 <!-- Settings Modal -->
 <div id="setMo" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
 <div class="modal-box">
-  <h3>⚙️ ตั้งค่า</h3>
+  <h3>⚙️ Settings</h3>
   <label>Web App URL</label><input id="apiUrl">
-  <label>Auto Refresh (วินาที)</label><input id="refInt" type="number" value="30">
-  <div class="modal-btns"><button onclick="$('setMo').style.display='none'" style="background:var(--s3);color:var(--t2)">ยกเลิก</button><button onclick="saveSt()" style="background:var(--blue);color:#fff">💾 บันทึก</button></div>
+  <label>Auto Refresh (sec)</label><input id="refInt" type="number" value="30">
+  <div class="modal-btns"><button onclick="$('setMo').style.display='none'" style="background:var(--s3);color:var(--t2)">Cancel</button><button onclick="saveSt()" style="background:var(--blue);color:#fff">💾 Save</button></div>
 </div>
 </div>
 
 <script>
 // ===== GLOBALS =====
-let API='',REF=30,timer=null,allDash=[],curUser=null,selectedReason='',gpsData=null,faceModelsLoaded=false,camStream=null;
+let API='',REF=30,timer=null,allDash=[],curUser=null,gpsData=null,faceModelsLoaded=false,camStream=null;
+let allFaceDescriptors=[]; // cached face data from API
+let identifiedEmp=null; // {empId,name,company,descriptor,faceScore}
+let capturedPhoto=null; // base64 photo from scan step
+let gpsWatchId=null;
 const $=id=>document.getElementById(id);
 const API_KEY='HR PAYROLL TOPPY';
 const DEFAULT_API='https://script.google.com/macros/s/AKfycbzowQT19UUhQYp9KwLt0A1pANsnhSEsdGXoZDABfzEKBdiTXUK2uBweZAXD0HvEUbxZ/exec';
@@ -296,17 +320,13 @@ document.addEventListener('DOMContentLoaded',()=>{
   REF=parseInt(localStorage.getItem('hr_ref')||'30');
   const sess=localStorage.getItem('hr_session');
   if(sess)try{curUser=JSON.parse(sess)}catch(e){}
-  $('absentDate').value=new Date().toISOString().split('T')[0];
-  if(!API){$('setupScreen').style.display='flex';return;}
   if(!curUser){$('loginScreen').style.display='flex';return;}
   showApp();
 });
 
-// ===== SETUP & LOGIN =====
-function saveSetup(){API=$('setupUrl').value.trim();if(!API){alert('กรุณาวาง URL');return;}localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref','30');$('setupScreen').style.display='none';$('loginScreen').style.display='flex';}
+// ===== LOGIN =====
 function showSettings(){$('setMo').style.display='flex';$('apiUrl').value=API;$('refInt').value=REF}
 function saveSt(){API=$('apiUrl').value.trim();REF=parseInt($('refInt').value)||30;localStorage.setItem('hr_api',API);localStorage.setItem('hr_ref',REF);$('setMo').style.display='none';startRef();loadAll()}
-
 async function doLogin(){
   const u=$('loginUser').value.trim(),p=$('loginPass').value;
   if(!u||!p){$('loginErr').textContent='กรุณากรอก Username และ Password';return;}
@@ -325,13 +345,14 @@ function showApp(){
   const t=new Date(),d26=new Date(t.getFullYear(),t.getMonth()-1,26);
   if($('atFrom'))$('atFrom').value=fmt(d26);if($('atTo'))$('atTo').value=fmt(t);
   if($('ltFrom'))$('ltFrom').value=fmt(d26);if($('ltTo'))$('ltTo').value=fmt(t);
+  if($('absentDate'))$('absentDate').value=fmt(t);
   document.querySelectorAll('.ni').forEach(n=>n.addEventListener('click',()=>{
     document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));n.classList.add('active');
     const p=n.dataset.page;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
     $('page-'+p).classList.add('active');$('pageTitle').textContent=n.textContent.trim();loadPage(p);$('sidebar').classList.remove('open');
-    if(p!=='checkin')stopCamera();
+    if(p!=='checkin'&&p!=='faceregister')stopCamera();
   }));
-  startRef();loadAll();
+  startRef();loadAll();loadAllFaces();
 }
 
 function fmt(d){return d.getFullYear()+'-'+(''+(d.getMonth()+1)).padStart(2,'0')+'-'+(''+(d.getDate())).padStart(2,'0')}
@@ -348,10 +369,198 @@ async function apiPost(body){try{const r=await fetch(API,{method:'POST',headers:
 
 async function loadAll(){loadSum();loadDash();loadAlerts();loadLate()}
 function loadPage(p){
-  if(p==='dashboard'){loadSum();loadDash()}else if(p==='checkin'){resetCheckin()}
+  if(p==='dashboard'){loadSum();loadDash()}else if(p==='checkin'){resetCheckin();startCheckinFlow()}
+  else if(p==='faceregister'){frReset()}
   else if(p==='employees')loadEmp();else if(p==='alerts')loadAlerts();
   else if(p==='late')loadLate();else if(p==='attendance')loadAtt();else if(p==='payroll')loadPay();
   else if(p==='holidays')loadHol();else if(p==='prayer')loadPrayer();else if(p==='users')loadUsers();
+}
+
+// ===== LOAD ALL FACE DESCRIPTORS =====
+async function loadAllFaces(){
+  const d=await apiPost({action:'get_face_data',empId:''});
+  if(d&&d.success){
+    allFaceDescriptors=d.faces.filter(f=>f.descriptor).map(f=>{
+      try{return{empId:f.empId,name:f.name,company:f.company,descriptor:new Float32Array(JSON.parse(f.descriptor))};}catch(e){return null;}
+    }).filter(Boolean);
+  }
+}
+
+// ===== CAMERA =====
+async function startCamera(videoEl){
+  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
+  videoEl.srcObject=camStream;return true;}catch(e){return false;}
+}
+function stopCamera(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}if(gpsWatchId){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}}
+
+// ===== GPS =====
+function startGPS(){
+  if(!navigator.geolocation){$('gpsStatus').className='gps-status fail';$('gpsStatus').textContent='❌ เบราว์เซอร์ไม่รองรับ GPS';return;}
+  $('gpsStatus').className='gps-status loading';$('gpsStatus').textContent='📍 กำลังตรวจ GPS...';
+  gpsWatchId=navigator.geolocation.watchPosition(pos=>{
+    gpsData={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
+    $('gpsStatus').className='gps-status ok';$('gpsStatus').textContent='📍 GPS พร้อม (±'+Math.round(gpsData.accuracy)+'m)';
+  },err=>{
+    $('gpsStatus').className='gps-status fail';$('gpsStatus').textContent='❌ GPS: '+err.message;
+  },{enableHighAccuracy:true,timeout:30000,maximumAge:0});
+}
+
+// ===== FACE MODELS =====
+async function loadFaceModels(){
+  if(faceModelsLoaded)return true;
+  try{const MODEL_URL='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+  await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)]);
+  faceModelsLoaded=true;return true;}catch(e){return false;}
+}
+
+// ===== CHECKIN FLOW: Face Scan → Identify → Select Reason =====
+let scanInterval=null;
+async function startCheckinFlow(){
+  identifiedEmp=null;capturedPhoto=null;gpsData=null;
+  $('ciStep1').style.display='block';$('ciStep2').style.display='none';$('ciStep3').style.display='none';
+  $('manualIdArea').style.display='none';
+  const ok=await startCamera($('camVideo'));
+  if(!ok){$('camStatus').textContent='❌ เปิดกล้องไม่ได้';return;}
+  $('camStatus').textContent='📸 กล้องพร้อม';
+  startGPS();
+  const modelsOk=await loadFaceModels();
+  if(!modelsOk){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">โหลด Face Model ไม่สำเร็จ — กรุณากรอกรหัสแทน</span>';return;}
+  if(allFaceDescriptors.length===0){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">ยังไม่มีใบหน้าในระบบ — ลงทะเบียนก่อน หรือกรอกรหัสแทน</span>';return;}
+  $('faceStatus').innerHTML='🤖 <span style="color:var(--cyn)">กำลังสแกน... หันหน้าเข้ากล้อง</span>';
+  // Start continuous face scanning
+  scanInterval=setInterval(async()=>{await scanFace();},1500);
+}
+
+async function scanFace(){
+  if(!faceModelsLoaded||!camStream)return;
+  const video=$('camVideo'),canvas=$('camCanvas');
+  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  const ctx=canvas.getContext('2d');
+  // Mirror the captured image to match the mirrored video
+  ctx.translate(canvas.width,0);ctx.scale(-1,1);
+  ctx.drawImage(video,0,0);
+  ctx.setTransform(1,0,0,1,0,0);
+  try{
+    const detection=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions({scoreThreshold:0.5})).withFaceLandmarks(true).withFaceDescriptor();
+    if(!detection){$('camStatus').textContent='🔍 กำลังหาใบหน้า...';return;}
+    // Compare with all registered faces
+    let bestMatch=null,bestDist=999;
+    for(const face of allFaceDescriptors){
+      const dist=faceapi.euclideanDistance(detection.descriptor,face.descriptor);
+      if(dist<bestDist){bestDist=dist;bestMatch=face;}
+    }
+    if(bestMatch&&bestDist<0.55){
+      // MATCHED!
+      clearInterval(scanInterval);scanInterval=null;
+      identifiedEmp={empId:bestMatch.empId,name:bestMatch.name,company:bestMatch.company,faceScore:Math.max(0,1-bestDist)};
+      capturedPhoto=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
+      $('camStatus').textContent='✅ พบ: '+bestMatch.name;
+      setTimeout(()=>showStep2(),500);
+    }else{
+      $('camStatus').textContent='🔍 ยังไม่ตรง... ('+Math.round((1-bestDist)*100)+'%)';
+    }
+  }catch(e){$('camStatus').textContent='⚠️ สแกนผิดพลาด';}
+}
+
+function showManualId(){$('manualIdArea').style.display='block';$('ciManualId').focus();}
+
+async function manualIdentify(){
+  const empId=$('ciManualId').value.trim();if(!empId){alert('กรอกรหัสพนักงาน');return;}
+  // Capture current frame
+  const video=$('camVideo'),canvas=$('camCanvas');
+  if(video.videoWidth>0){canvas.width=video.videoWidth;canvas.height=video.videoHeight;const ctx=canvas.getContext('2d');ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0);ctx.setTransform(1,0,0,1,0,0);capturedPhoto=canvas.toDataURL('image/jpeg',0.7).split(',')[1];}
+  identifiedEmp={empId:empId,name:empId,company:'',faceScore:0};
+  // Try to get employee info from API
+  const d=await apiGet('employee_profile',{empId});
+  if(d&&d.success){identifiedEmp.name=d.profile.name+' '+d.profile.surname;identifiedEmp.company=d.profile.company;}
+  if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
+  showStep2();
+}
+
+function showStep2(){
+  stopCamera();
+  $('ciStep1').style.display='none';$('ciStep2').style.display='block';
+  $('identifiedCard').innerHTML='<div class="id-avatar">'+(identifiedEmp.name||'?')[0]+'</div><div class="id-name">'+identifiedEmp.name+'</div><div class="id-detail">'+identifiedEmp.empId+(identifiedEmp.company?' — '+identifiedEmp.company:'')+(identifiedEmp.faceScore?' | Face: '+Math.round(identifiedEmp.faceScore*100)+'%':'')+'</div>';
+  $('earlyFormArea').style.display='none';$('absentFormArea').style.display='none';
+}
+
+// ===== REASON ACTIONS =====
+async function selectAndSubmit(btn){
+  document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');
+  await submitCheckin(btn.dataset.reason);
+}
+function showEarlyForm(btn){document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');$('earlyFormArea').style.display='block';$('absentFormArea').style.display='none';}
+function showAbsentForm(btn){document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');$('absentFormArea').style.display='block';$('earlyFormArea').style.display='none';}
+
+async function submitCheckin(reason){
+  let remarks='';
+  if(reason==='Early Leave')remarks=($('earlyType').value||'')+': '+($('earlyRemarks').value||'');
+  const result=await apiPost({
+    action:'photo_checkin',apiKey:API_KEY,empId:identifiedEmp.empId,reason:reason,
+    photo:capturedPhoto||'',gpsLat:gpsData?gpsData.lat:0,gpsLng:gpsData?gpsData.lng:0,
+    faceScore:identifiedEmp.faceScore||0,remarks:remarks
+  });
+  if(result&&result.success){showResult(true,result.message,result.data);}
+  else{showResult(false,result?result.message:'เชื่อมต่อไม่ได้');}
+}
+
+async function submitAbsent(){
+  const reason=$('absentType').value,remarks=$('absentRemarks').value.trim(),date=$('absentDate').value;
+  if(!remarks){alert('กรุณาระบุเหตุผล');return;}
+  const d=await apiPost({action:'absent_checkin',apiKey:API_KEY,empId:identifiedEmp.empId,reason,remarks,date});
+  if(d&&d.success){showResult(true,'บันทึก'+reason+'สำเร็จ');}else{showResult(false,d?d.message:'เชื่อมต่อไม่ได้');}
+}
+
+function showResult(success,message,data){
+  $('ciStep2').style.display='none';$('ciStep3').style.display='block';
+  $('resultContent').innerHTML=success
+    ?'<div class="big">✅</div><h3 style="color:var(--grn)">'+message+'</h3><p style="color:var(--t2);margin-top:8px">'+(data?data.name+' — '+data.company:''+identifiedEmp.name)+'</p><p style="font-family:JetBrains Mono;font-size:20px;color:var(--t1);margin-top:12px">'+(data?data.time:'')+'</p>'
+    :'<div class="big">❌</div><h3 style="color:var(--red)">ไม่สำเร็จ</h3><p style="color:var(--t2);margin-top:8px">'+message+'</p>';
+}
+
+function resetCheckin(){
+  stopCamera();if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
+  identifiedEmp=null;capturedPhoto=null;gpsData=null;
+  $('ciStep1').style.display='block';$('ciStep2').style.display='none';$('ciStep3').style.display='none';
+  $('manualIdArea').style.display='none';$('earlyFormArea').style.display='none';$('absentFormArea').style.display='none';
+  $('earlyRemarks').value='';$('absentRemarks').value='';
+}
+
+// ===== FACE REGISTRATION =====
+let frStream=null,frPhotos=[],frDescriptors=[];
+function frReset(){frPhotos=[];frDescriptors=[];$('frPhotos').innerHTML='';$('frProgress').textContent='ถ่ายรูป 0 / 3';$('frSubmitBtn').style.display='none';$('frCaptureBtn').style.display='block';$('frResult').textContent='';if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}}
+async function frCapture(){
+  if(!frStream){
+    try{frStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
+    $('frVideo').srcObject=frStream;$('frCamStatus').textContent='📸 กล้องพร้อม — กดอีกครั้งเพื่อถ่าย';
+    const ok=await loadFaceModels();if(!ok)$('frCamStatus').textContent='⚠️ Face Model ไม่พร้อม';
+    $('frCaptureBtn').textContent='📸 ถ่ายรูป ('+(frPhotos.length+1)+'/3)';return;}catch(e){$('frCamStatus').textContent='❌ '+e.message;return;}
+  }
+  // Capture
+  const video=$('frVideo'),canvas=$('frCanvas');
+  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  const ctx=canvas.getContext('2d');ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0);ctx.setTransform(1,0,0,1,0,0);
+  const photoB64=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
+  // Detect face
+  if(faceModelsLoaded){
+    try{const det=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true).withFaceDescriptor();
+    if(!det){$('frCamStatus').textContent='⚠️ ไม่พบใบหน้า ลองใหม่';return;}
+    frDescriptors.push(Array.from(det.descriptor));$('frCamStatus').textContent='✅ ถ่ายรูปที่ '+(frPhotos.length+1)+' สำเร็จ';
+    }catch(e){$('frCamStatus').textContent='⚠️ ตรวจใบหน้าไม่ได้';return;}
+  }
+  frPhotos.push(photoB64);
+  $('frPhotos').innerHTML+=`<img src="data:image/jpeg;base64,${photoB64}" style="width:100%;border-radius:8px;border:2px solid var(--grn)">`;
+  $('frProgress').textContent='ถ่ายรูป '+frPhotos.length+' / 3';
+  if(frPhotos.length>=3){$('frCaptureBtn').style.display='none';$('frSubmitBtn').style.display='block';frStream.getTracks().forEach(t=>t.stop());frStream=null;$('frCamStatus').textContent='✅ ถ่ายครบ 3 รูปแล้ว';}
+  else{$('frCaptureBtn').textContent='📸 ถ่ายรูป ('+(frPhotos.length+1)+'/3)';const labels=['หน้าตรง','เอียงซ้าย','เอียงขวา'];$('frCamStatus').textContent='📸 ถ่าย'+labels[frPhotos.length];}
+}
+async function frSubmit(){
+  const empId=$('frEmpId').value.trim();if(!empId){alert('กรอก Employee ID');return;}
+  $('frResult').innerHTML='<span style="color:var(--amb)">กำลังบันทึก...</span>';
+  const avgDesc=frDescriptors.length>0?JSON.stringify(frDescriptors[0]):JSON.stringify([]);
+  const d=await apiPost({action:'face_register',empId,descriptor:avgDesc,photos:frPhotos});
+  if(d&&d.success){$('frResult').innerHTML='<span style="color:var(--grn)">✅ ลงทะเบียนสำเร็จ!</span>';loadAllFaces();}
+  else{$('frResult').innerHTML='<span style="color:var(--red)">❌ '+(d?d.message:'ผิดพลาด')+'</span>';}
 }
 
 // ===== SUMMARY =====
@@ -388,7 +597,7 @@ function renderDash(data){
 function filterDash(){const q=$('dSrch').value.toLowerCase(),c=$('dComp').value;if(!q&&!c){renderDash(allDash);return}
   const f=[allDash[0],...allDash.slice(1).filter(r=>{if(!r)return false;const matchQ=!q||r.some(cl=>cl&&cl.toString().toLowerCase().includes(q));const matchC=!c||r[2]===c;return matchQ&&matchC;})];renderDash(f)}
 
-// ===== ABSENT MODAL =====
+// ===== ABSENT MODAL (Dashboard) =====
 function showAbsentModal(empId,empName){
   const html='<div class="modal-box"><h3>📝 '+empId+' — '+empName+'</h3><p style="font-size:12px;color:var(--t2);margin-bottom:14px">Select status and reason</p><label>Status</label><select id="absSt"><option value="📅 Leave">📅 Leave</option><option value="🤒 Sick leave">🤒 Sick leave</option><option value="📋 Personal leave">📋 Personal leave</option><option value="❌ Absent">❌ Absent</option></select><label>Reason</label><input id="absReason" placeholder="Enter reason..."><div class="modal-btns"><button onclick="closeAbsModal()" style="background:var(--s3);color:var(--t2)">Cancel</button><button onclick="saveAbsent(\''+empId+'\')" style="background:var(--blue);color:#fff">💾 Save</button></div></div>';
   const mo=document.createElement('div');mo.id='absMo';mo.className='modal-overlay';mo.onclick=function(ev){if(ev.target===mo)closeAbsModal()};mo.innerHTML=html;document.body.appendChild(mo);
@@ -396,143 +605,26 @@ function showAbsentModal(empId,empName){
 function closeAbsModal(){const m=$('absMo');if(m)m.remove()}
 async function saveAbsent(empId){const st=$('absSt').value;const reason=$('absReason').value.trim()||st;closeAbsModal();const d=await apiGet('set_status',{empId,status:st,reason:encodeURIComponent(reason)});if(d&&d.success){loadSum();loadDash();}else alert('Error: '+(d?d.message:'fail'));}
 
-// ===== CHECKIN =====
-function selectReason(btn){
-  document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');
-  selectedReason=btn.dataset.reason;
-  if(selectedReason==='Leave/Absent'){$('absentFormArea').style.display='block';$('normalCheckinBtn').style.display='none';}
-  else{$('absentFormArea').style.display='none';$('normalCheckinBtn').style.display='block';
-    $('earlyLeaveForm').style.display=selectedReason==='Early Leave'?'block':'none';}
-}
-
-async function submitAbsent(){
-  const empId=$('ciEmpId').value.trim();if(!empId){alert('กรอก Employee ID');return;}
-  const reason=$('absentType').value;const remarks=$('absentRemarks').value.trim();const date=$('absentDate').value;
-  if(!remarks){alert('กรุณาระบุเหตุผล');return;}
-  const d=await apiPost({action:'absent_checkin',apiKey:API_KEY,empId,reason,remarks,date});
-  if(d&&d.success){showResult(true,'บันทึก'+reason+'สำเร็จ',empId,reason);}else{showResult(false,d?d.message:'เชื่อมต่อไม่ได้');}
-}
-
-function goToCamera(){
-  const empId=$('ciEmpId').value.trim();if(!empId){alert('กรอก Employee ID');return;}if(!selectedReason){alert('เลือกเหตุผล');return;}
-  $('checkinStep1').style.display='none';$('checkinStep2').style.display='block';
-  startCamera();startGPS();
-}
-function backToStep1(){stopCamera();$('checkinStep2').style.display='none';$('checkinStep1').style.display='block';}
-
-async function startCamera(){
-  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
-  $('camVideo').srcObject=camStream;$('camStatus').textContent='📸 กล้องพร้อม';
-  $('btnCapture').disabled=false;loadFaceModels();}
-  catch(e){$('camStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;}
-}
-function stopCamera(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
-
-async function loadFaceModels(){
-  if(faceModelsLoaded){$('faceStatus').innerHTML='🤖 <span style="color:var(--grn)">ระบบจดจำใบหน้าพร้อม</span>';return;}
-  try{$('faceStatus').textContent='🤖 กำลังโหลด Face Recognition models...';
-  const MODEL_URL='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
-  await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)]);
-  faceModelsLoaded=true;$('faceStatus').innerHTML='🤖 <span style="color:var(--grn)">ระบบจดจำใบหน้าพร้อม ✅</span>';
-  }catch(e){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">โหลด Face Model ไม่สำเร็จ — จะเช็คอินแบบรูปอย่างเดียว</span>';}
-}
-
-function startGPS(){
-  if(!navigator.geolocation){$('gpsStatus').className='gps-status fail';$('gpsStatus').textContent='❌ เบราว์เซอร์ไม่รองรับ GPS';return;}
-  $('gpsStatus').className='gps-status loading';$('gpsStatus').textContent='📍 กำลังตรวจ GPS...';
-  navigator.geolocation.getCurrentPosition(pos=>{
-    gpsData={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
-    $('gpsStatus').className='gps-status ok';$('gpsStatus').textContent='📍 GPS พร้อม (±'+Math.round(gpsData.accuracy)+'m)';
-  },err=>{
-    $('gpsStatus').className='gps-status fail';$('gpsStatus').textContent='❌ ไม่สามารถดึง GPS: '+err.message;
-  },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
-}
-
-async function captureAndCheckin(){
-  const empId=$('ciEmpId').value.trim();if(!empId)return;
-  $('btnCapture').disabled=true;$('camStatus').textContent='📸 กำลังถ่ายรูป...';
-
-  // Capture photo
-  const video=$('camVideo'),canvas=$('camCanvas');
-  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
-  canvas.getContext('2d').drawImage(video,0,0);
-  const photoBase64=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
-
-  // Face detection
-  let faceScore=0;
-  if(faceModelsLoaded){
-    try{$('camStatus').textContent='🤖 กำลังตรวจใบหน้า...';
-    const detection=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true).withFaceDescriptor();
-    if(detection){
-      faceScore=detection.detection.score;
-      // Try to match with registered face
-      const faceData=await apiPost({action:'get_face_data',empId});
-      if(faceData&&faceData.success&&faceData.faces.length>0){
-        const stored=faceData.faces[0];try{
-          const storedDesc=new Float32Array(JSON.parse(stored.descriptor));
-          const dist=faceapi.euclideanDistance(detection.descriptor,storedDesc);
-          faceScore=Math.max(0,1-dist);
-          if(dist>0.6){stopCamera();showResult(false,'❌ ใบหน้าไม่ตรงกับที่ลงทะเบียน (ป้องกันสแกนแทนเพื่อน)');return;}
-        }catch(e){}
-      }
-      $('camStatus').textContent='✅ ตรวจใบหน้าสำเร็จ ('+Math.round(faceScore*100)+'%)';
-    }else{$('camStatus').textContent='⚠️ ไม่พบใบหน้า — ลองใหม่';$('btnCapture').disabled=false;return;}
-    }catch(e){$('camStatus').textContent='⚠️ Face detection error';}
-  }
-
-  // Build remarks
-  let remarks='';
-  if(selectedReason==='Early Leave'){remarks=($('earlyType').value||'')+': '+($('earlyRemarks').value||'');}
-
-  // Send to API
-  $('camStatus').textContent='📤 กำลังส่งข้อมูล...';
-  const result=await apiPost({
-    action:'photo_checkin',apiKey:API_KEY,empId,reason:selectedReason,
-    photo:photoBase64,gpsLat:gpsData?gpsData.lat:0,gpsLng:gpsData?gpsData.lng:0,
-    faceScore:faceScore,remarks:remarks
-  });
-
-  stopCamera();
-  if(result&&result.success){showResult(true,result.message,empId,selectedReason,result.data);}
-  else{showResult(false,result?result.message:'เชื่อมต่อไม่ได้');}
-}
-
-function showResult(success,message,empId,reason,data){
-  $('checkinStep1').style.display='none';$('checkinStep2').style.display='none';$('checkinResult').style.display='block';
-  $('resultContent').innerHTML=success
-    ?'<div class="big">✅</div><h3 style="color:var(--grn)">'+message+'</h3><p style="color:var(--t2);margin-top:8px">'+(data?data.name+' — '+data.company:'')+'</p><p style="font-family:JetBrains Mono;font-size:20px;color:var(--t1);margin-top:12px">'+(data?data.time:'')+'</p><p style="font-size:12px;color:var(--t3);margin-top:4px">'+(data?data.date:'')+'</p>'
-    :'<div class="big">❌</div><h3 style="color:var(--red)">ไม่สำเร็จ</h3><p style="color:var(--t2);margin-top:8px">'+message+'</p>';
-}
-
-function resetCheckin(){
-  stopCamera();selectedReason='';gpsData=null;
-  document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));
-  $('checkinStep1').style.display='block';$('checkinStep2').style.display='none';$('checkinResult').style.display='none';
-  $('absentFormArea').style.display='none';$('normalCheckinBtn').style.display='none';
-  $('absentRemarks').value='';$('earlyRemarks').value='';
-}
-
 // ===== EMPLOYEE PROFILE =====
 async function showProfile(empId){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('page-profile').classList.add('active');
-  $('pageTitle').textContent='👤 โปรไฟล์พนักงาน';$('profileContent').innerHTML='<div class="empty">กำลังโหลด...</div>';
-  const d=await apiGet('employee_profile',{empId});if(!d||!d.success){$('profileContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล</div>';return;}
+  $('pageTitle').textContent='👤 Employee Profile';$('profileContent').innerHTML='<div class="empty">Loading...</div>';
+  const d=await apiGet('employee_profile',{empId});if(!d||!d.success){$('profileContent').innerHTML='<div class="empty">❌ Not found</div>';return;}
   const p=d.profile;
-  $('profileContent').innerHTML=`
-  <div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(p.nickname||p.name||'?')[0]}</div><div class="profile-info"><h3>${p.name} ${p.surname}</h3><p>${p.id} — ${p.company} — ${p.position||'-'}</p><p>${p.nickname||''} | ${p.gender||''} | ${p.religion||''}</p></div></div>
+  $('profileContent').innerHTML=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(p.nickname||p.name||'?')[0]}</div><div class="profile-info"><h3>${p.name} ${p.surname}</h3><p>${p.id} — ${p.company} — ${p.position||'-'}</p></div></div>
   <div class="profile-grid">
-    <div class="profile-item"><div class="label">สถานะ</div><div class="value"><span class="sb0 ${p.status==='ACTIVE'?'w':'a'}">${p.status}</span></div></div>
-    <div class="profile-item"><div class="label">วันเริ่มงาน</div><div class="value">${p.startDate||'-'}</div></div>
-    <div class="profile-item"><div class="label">เงินเดือน</div><div class="value">${(p.wage||0).toLocaleString()} ฿</div></div>
-    <div class="profile-item"><div class="label">ประเภท</div><div class="value">${p.wageType||'-'}</div></div>
-    <div class="profile-item"><div class="label">โควตาลา</div><div class="value">${p.quotaLeave||0} วัน</div></div>
-    <div class="profile-item"><div class="label">ลาคงเหลือ</div><div class="value">${p.remainLeave||0} วัน</div></div>
-    <div class="profile-item"><div class="label">เงินออม</div><div class="value">${(p.sumSavings||0).toLocaleString()} ฿</div></div>
-    <div class="profile-item"><div class="label">เงินยืม</div><div class="value">${(p.sumLoan||0).toLocaleString()} ฿</div></div>
-    <div class="profile-item"><div class="label">ประกัน</div><div class="value">${(p.sumInsurance||0).toLocaleString()} ฿</div></div>
-    <div class="profile-item"><div class="label">ลงทะเบียนใบหน้า</div><div class="value"><span class="sb0 ${p.faceRegistered==='Y'?'w':'a'}">${p.faceRegistered==='Y'?'✅ แล้ว':'❌ ยังไม่ได้'}</span></div></div>
-    <div class="profile-item"><div class="label">เบอร์โทร</div><div class="value">${p.tel||'-'}</div></div>
-    <div class="profile-item"><div class="label">บริษัท</div><div class="value">${p.company}</div></div>
+    <div class="profile-item"><div class="label">Status</div><div class="value"><span class="sb0 ${p.status==='ACTIVE'?'w':'a'}">${p.status}</span></div></div>
+    <div class="profile-item"><div class="label">Start Date</div><div class="value">${p.startDate||'-'}</div></div>
+    <div class="profile-item"><div class="label">Salary</div><div class="value">${(p.wage||0).toLocaleString()} ฿</div></div>
+    <div class="profile-item"><div class="label">Wage Type</div><div class="value">${p.wageType||'-'}</div></div>
+    <div class="profile-item"><div class="label">Leave Quota</div><div class="value">${p.quotaLeave||0} days</div></div>
+    <div class="profile-item"><div class="label">Remaining Leave</div><div class="value">${p.remainLeave||0} days</div></div>
+    <div class="profile-item"><div class="label">Savings</div><div class="value">${(p.sumSavings||0).toLocaleString()} ฿</div></div>
+    <div class="profile-item"><div class="label">Loan</div><div class="value">${(p.sumLoan||0).toLocaleString()} ฿</div></div>
+    <div class="profile-item"><div class="label">Insurance</div><div class="value">${(p.sumInsurance||0).toLocaleString()} ฿</div></div>
+    <div class="profile-item"><div class="label">Face Registered</div><div class="value"><span class="sb0 ${p.faceRegistered==='Y'?'w':'a'}">${p.faceRegistered==='Y'?'✅ Yes':'❌ No'}</span></div></div>
+    <div class="profile-item"><div class="label">Phone</div><div class="value">${p.tel||'-'}</div></div>
+    <div class="profile-item"><div class="label">Company</div><div class="value">${p.company}</div></div>
   </div></div>`;
 }
 
@@ -541,11 +633,11 @@ async function loadEmp(){const c=$('empComp')?$('empComp').value:'';const d=awai
   let data=d.data;if(c)data=[data[0],...data.slice(1).filter(r=>r[1]===c)];renderTbl('eHd','eBd',data)}
 async function loadAlerts(){const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;renderTbl('fHd','fBd',d.data);
   const p=d.data.filter((r,i)=>i>0&&(r[6]==='Pending'||r[6]==='รอแก้ไข'||r[6]==='รอดำเนินการ'));$('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
-  $('alertL').innerHTML=p.length===0?'<div class="empty">ไม่มี</div>':p.map(r=>'<div class="ai"><span>⚠️</span><span style="flex:1"><b>'+(r[2]||r[1])+'</b> ('+(r[3]||'')+') — '+(r[4]||'')+'</span><span style="font-size:10px;color:var(--t3)">'+r[0]+'</span></div>').join('')}
+  $('alertL').innerHTML=p.length===0?'<div class="empty">No data</div>':p.map(r=>'<div class="ai"><span>⚠️</span><span style="flex:1"><b>'+(r[2]||r[1])+'</b> ('+(r[3]||'')+') — '+(r[4]||'')+'</span><span style="font-size:10px;color:var(--t3)">'+r[0]+'</span></div>').join('')}
 async function loadLate(){const d=await apiGet('late_alerts');if(!d||!d.success||!d.data)return;
   const fr=$('ltFrom').value,to=$('ltTo').value;const fl=d.data.filter(r=>{const dt=r.date||'';return(!fr||dt>=fr)&&(!to||dt<=to)});
   const o60=fl.filter(r=>r.lateMins>60);$('bLate').textContent=o60.length;$('bLate').style.display=o60.length>0?'inline':'none';
-  $('lateAlertL').innerHTML=o60.length===0?'<div class="empty">ไม่มี</div>':o60.map(r=>'<div class="ai"><span>🚨</span><span style="flex:1"><b>'+r.name+'</b> ('+r.empId+' '+r.company+') — <b>'+r.lateMins+'m</b></span><span style="font-size:10px;color:var(--t3)">'+r.date+'</span></div>').join('');
+  $('lateAlertL').innerHTML=o60.length===0?'<div class="empty">No data</div>':o60.map(r=>'<div class="ai"><span>🚨</span><span style="flex:1"><b>'+r.name+'</b> ('+r.empId+' '+r.company+') — <b>'+r.lateMins+'m</b></span><span style="font-size:10px;color:var(--t3)">'+r.date+'</span></div>').join('');
   $('ltBd').innerHTML=fl.length?fl.map(r=>{const c=r.lateMins>60?'danger':r.lateMins>30?'la':'';const y=r.deductYN==='N'?'w':r.deductYN==='Y'?'a':'x';
     return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+r.date+'</td><td>'+r.empId+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+(r.company==='JKN'?'h':'l')+'">'+r.company+'</span></td><td><span class="sb0 '+c+'">'+r.lateMins+'m</span></td><td style="font-size:11px">'+(r.reason||'-')+'</td><td><span class="sb0 '+y+'">'+(r.deductYN==='Y'?'Deduct':r.deductYN==='N'?'No':'Pending')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt+'฿':'—')+'</td><td>'+(r.warning||'')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No data</td></tr>'}
 async function loadAtt(){const d=await apiGet('attendance',{from:$('atFrom').value,to:$('atTo').value,company:$('atComp')?$('atComp').value:''});if(!d||!d.success)return;renderTbl('atHd','atBd',d.data)}
@@ -556,9 +648,9 @@ async function loadPrayer(){const d=await apiGet('prayer_log');if(!d||!d.success
 // ===== USERS =====
 async function loadUsers(){const d=await apiPost({action:'get_users'});if(!d||!d.success)return;
   $('umBd').innerHTML=d.users.map(u=>'<tr><td><b>'+u.username+'</b></td><td>'+u.displayName+'</td><td><span class="sb0 '+(u.role==='admin'?'a':u.role==='hr'?'l':'w')+'">'+u.role+'</span></td><td><button onclick="editUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-right:4px">✏️</button><button onclick="deleteUser(\''+u.username+'\')" style="padding:3px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">🗑️</button></td></tr>').join('');}
-async function addUser(){const u=$('nuUser').value.trim(),n=$('nuName').value.trim(),p=$('nuPass').value.trim(),r=$('nuRole').value;if(!u||!p){alert('กรอก Username+Password');return;}const d=await apiPost({action:'add_user',username:u,displayName:n,password:p,role:r});alert(d.message);if(d.success){$('nuUser').value='';$('nuName').value='';$('nuPass').value='';loadUsers();}}
-async function editUser(username){const np=prompt('รหัสผ่านใหม่:');const nr=prompt('สิทธิ์ (admin/hr/manager/employee):');const body={action:'edit_user',username};if(np)body.password=np;if(nr)body.role=nr;const d=await apiPost(body);alert(d.message);loadUsers();}
-async function deleteUser(username){if(!confirm('ลบ '+username+'?'))return;const d=await apiPost({action:'delete_user',username});alert(d.message);loadUsers();}
+async function addUser(){const u=$('nuUser').value.trim(),n=$('nuName').value.trim(),p=$('nuPass').value.trim(),r=$('nuRole').value;if(!u||!p){alert('Username+Password required');return;}const d=await apiPost({action:'add_user',username:u,displayName:n,password:p,role:r});alert(d.message);if(d.success){$('nuUser').value='';$('nuName').value='';$('nuPass').value='';loadUsers();}}
+async function editUser(username){const np=prompt('New password:');const nr=prompt('Role (admin/hr/manager/employee):');const body={action:'edit_user',username};if(np)body.password=np;if(nr)body.role=nr;const d=await apiPost(body);alert(d.message);loadUsers();}
+async function deleteUser(username){if(!confirm('Delete '+username+'?'))return;const d=await apiPost({action:'delete_user',username});alert(d.message);loadUsers();}
 
 // ===== TABLE RENDERER =====
 function renderTbl(hId,bId,data){
@@ -566,11 +658,11 @@ function renderTbl(hId,bId,data){
   $(hId).innerHTML='<tr>'+data[0].map(h=>'<th>'+(h||'')+'</th>').join('')+'</tr>';
   const rows=data.slice(1).filter(r=>r&&r[0]!==undefined&&r[0]!=='');
   $(bId).innerHTML=rows.map(r=>'<tr>'+r.map(c=>{let v=c===null||c===undefined?'':c;const s=v.toString();
-    if(s.includes('✅')||s==='ACTIVE'||s==='Approved'||s.includes('ปกติ'))return'<td><span class="sb0 w">'+s+'</span></td>';
+    if(s.includes('✅')||s==='ACTIVE'||s==='Approved')return'<td><span class="sb0 w">'+s+'</span></td>';
     if(s.includes('❌')||s==='INACTIVE'||s==='RESIGNED')return'<td><span class="sb0 a">'+s+'</span></td>';
-    if(s.includes('eave')||s.includes('📅')||s.includes('ลา'))return'<td><span class="sb0 l">'+s+'</span></td>';
+    if(s.includes('eave')||s.includes('📅'))return'<td><span class="sb0 l">'+s+'</span></td>';
     if(s.includes('⚠️')||s.includes('Missed')||s.includes('Over'))return'<td><span class="sb0 f">'+s+'</span></td>';
-    if(s==='Pending'||s==='รอแก้ไข')return'<td><span class="sb0 la">'+s+'</span></td>';
+    if(s==='Pending')return'<td><span class="sb0 la">'+s+'</span></td>';
     if(s.includes('Holiday')||s.includes('🎉'))return'<td><span class="sb0 h">'+s+'</span></td>';
     if(s==='JKN')return'<td><span class="sb0 h">JKN</span></td>';
     if(s==='FC')return'<td><span class="sb0 l">FC</span></td>';
