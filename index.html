@@ -9,7 +9,7 @@
 <title>HR & Payroll v4</title>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <style>
 :root{--bg:#0f1117;--s1:#1a1d27;--s2:#242736;--s3:#2d3143;--bd:#353849;--t1:#e4e6f0;--t2:#9ca0b0;--t3:#6b7084;--blue:#3b82f6;--grn:#22c55e;--grn-bg:rgba(34,197,94,.12);--red:#ef4444;--red-bg:rgba(239,68,68,.12);--amb:#f59e0b;--amb-bg:rgba(245,158,11,.12);--pur:#a78bfa;--pur-bg:rgba(167,139,250,.12);--cyn:#22d3ee;--cyn-bg:rgba(34,211,238,.12);--ora:#fb923c;--ora-bg:rgba(251,146,60,.12);--teal:#14b8a6;--teal-bg:rgba(20,184,166,.12)}
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}a{color:var(--blue);text-decoration:none}
@@ -444,6 +444,9 @@ async function startCheckinFlow(){
   $('faceStatus').innerHTML='🤖 กำลังเตรียมระบบ...';
   const ok=await startCamera($('camVideo'));
   if(!ok){$('camStatus').textContent='❌ เปิดกล้องไม่ได้';return;}
+  // Wait for video to produce frames
+  await new Promise((resolve)=>{$('camVideo').onloadeddata=resolve;setTimeout(resolve,3000);});
+  await new Promise(r=>setTimeout(r,500));
   $('camStatus').textContent='📸 กล้องพร้อม';
   startGPS();
   // Reload face data fresh
@@ -459,7 +462,9 @@ async function startCheckinFlow(){
 
 async function scanFace(){
   if(!faceModelsLoaded||!camStream)return;
-  const video=$('camVideo'),canvas=$('camCanvas');
+  const video=$('camVideo');
+  if(!video||video.videoWidth===0||video.readyState<2)return;
+  const canvas=$('camCanvas');
   canvas.width=video.videoWidth;canvas.height=video.videoHeight;
   const ctx=canvas.getContext('2d');
   // Mirror the captured image to match the mirrored video
@@ -585,14 +590,20 @@ function frReset(){
 async function frStartScan(){
   const empId=$('frEmpId').value.trim();
   if(!empId){alert('กรุณากรอก Employee ID ก่อน');return;}
+  $('frStartBtn').style.display='none';
+  $('frCamStatus').textContent='📸 กำลังเปิดกล้อง...';
   // Open camera
   try{frStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
-  $('frVideo').srcObject=frStream;}catch(e){$('frCamStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;return;}
+  $('frVideo').srcObject=frStream;
+  // Wait for video to actually produce frames
+  await new Promise((resolve)=>{$('frVideo').onloadeddata=resolve;setTimeout(resolve,3000);});
+  await new Promise(r=>setTimeout(r,500)); // extra buffer
+  }catch(e){$('frCamStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;$('frStartBtn').style.display='block';return;}
   // Load models
   $('frCamStatus').textContent='🤖 กำลังโหลด Face Model... (รอสักครู่)';
   const ok=await loadFaceModels();
-  if(!ok){$('frCamStatus').textContent='⚠️ โหลด Face Model ไม่สำเร็จ — ลองรีเฟรชหน้าเว็บ';$('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';return;}
-  $('frStartBtn').style.display='none';$('frInstruction').style.display='block';
+  if(!ok){$('frCamStatus').textContent='⚠️ โหลด Face Model ไม่สำเร็จ — ลองรีเฟรชหน้าเว็บ แล้วกดใหม่';$('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';return;}
+  $('frInstruction').style.display='block';
   frDescriptors=[];frPhotos=[];frScanning=true;
   // Go through each pose
   let totalPoses=FR_POSES.length,completedPoses=0;
@@ -600,7 +611,6 @@ async function frStartScan(){
     if(!frScanning)break;
     $('frPoseText').textContent=pose.emoji+' '+pose.text;
     $('frCamStatus').textContent='🎬 '+pose.text+'...';
-    // Scan multiple frames during this pose
     const startTime=Date.now();
     while(Date.now()-startTime<pose.duration&&frScanning){
       await frCaptureFrame();
@@ -608,28 +618,29 @@ async function frStartScan(){
       const progress=((completedPoses/totalPoses)+(elapsed/pose.duration/totalPoses))*100;
       $('frProgressBar').style.width=Math.min(progress,100)+'%';
       $('frScanCount').textContent='เก็บข้อมูล '+frDescriptors.length+' จุด';
-      await new Promise(r=>setTimeout(r,400)); // scan every 400ms
+      await new Promise(r=>setTimeout(r,500));
     }
     completedPoses++;
   }
   $('frProgressBar').style.width='100%';
-  // Done scanning
   if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}
   frScanning=false;
-  if(frDescriptors.length>=5){
+  if(frDescriptors.length>=3){
     $('frCamStatus').textContent='✅ สแกนเสร็จ! เก็บได้ '+frDescriptors.length+' จุด';
     $('frPoseText').textContent='✅ สแกนเสร็จสมบูรณ์!';
     $('frSubmitBtn').style.display='block';
   }else{
-    $('frCamStatus').textContent='⚠️ เก็บได้น้อยเกินไป ('+frDescriptors.length+' จุด) — ลองใหม่';
-    $('frPoseText').textContent='⚠️ กรุณาลองใหม่ ให้แสงสว่างเพียงพอ';
+    $('frCamStatus').textContent='⚠️ เก็บได้น้อยเกินไป ('+frDescriptors.length+'/3) — ลองใหม่ ให้แสงสว่างเพียงพอ';
+    $('frPoseText').textContent='⚠️ กรุณาลองใหม่';
     $('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';
   }
 }
 
 async function frCaptureFrame(){
   if(!frStream||!faceModelsLoaded)return;
-  const video=$('frVideo'),canvas=$('frCanvas');
+  const video=$('frVideo');
+  if(!video||video.videoWidth===0||video.readyState<2)return; // video not ready
+  const canvas=$('frCanvas');
   canvas.width=video.videoWidth;canvas.height=video.videoHeight;
   const ctx=canvas.getContext('2d');
   ctx.translate(canvas.width,0);ctx.scale(-1,1);
@@ -638,10 +649,12 @@ async function frCaptureFrame(){
     const det=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions({scoreThreshold:0.3})).withFaceLandmarks(true).withFaceDescriptor();
     if(det){
       frDescriptors.push(Array.from(det.descriptor));
-      // Save first 3 photos as samples
       if(frPhotos.length<3)frPhotos.push(canvas.toDataURL('image/jpeg',0.7).split(',')[1]);
+      $('frCamStatus').textContent='✅ เก็บจุดที่ '+frDescriptors.length+' สำเร็จ';
+    }else{
+      $('frCamStatus').textContent='🔍 กำลังหาใบหน้า... หันหน้าเข้ากล้อง';
     }
-  }catch(e){}
+  }catch(e){console.log('frCaptureFrame error:',e);}
 }
 
 async function frSubmit(){
