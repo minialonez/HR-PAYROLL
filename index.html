@@ -113,7 +113,11 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 .payslip .ps-net{text-align:center;padding:20px;background:linear-gradient(135deg,#1a1a2e,#2d3748);border-radius:12px;margin-top:16px}
 .payslip .ps-net .label{color:#a0aec0;font-size:11px;text-transform:uppercase}.payslip .ps-net .amount{color:#fff;font-size:32px;font-weight:700;font-family:'JetBrains Mono',monospace}
 .payslip .ps-footer{text-align:center;margin-top:16px;font-size:10px;color:#aaa;border-top:1px dashed #ddd;padding-top:12px}
-@media print{body *{visibility:hidden}.payslip,.payslip *{visibility:visible}.payslip{position:absolute;top:0;left:0;width:100%;background:#fff!important;color:#000!important;border:none;box-shadow:none}}
+/* Payslip protection for employees */
+.ps-protected{user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;position:relative}
+.ps-protected::after{content:attr(data-watermark);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:48px;font-weight:700;color:rgba(128,128,128,0.08);white-space:nowrap;pointer-events:none;z-index:10}
+.ps-protected .payslip{pointer-events:none}
+@media print{.ps-protected{display:none!important}.ps-protected *{display:none!important}}
 .um-form input,.um-form select{padding:8px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit}
 .um-form button{grid-column:span 2;padding:8px;background:var(--grn);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
 /* Modal */
@@ -159,7 +163,6 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="ni" data-page="prayer"><span class="ic">🕌</span>Friday Prayer</div>
     <div class="sl">Data</div>
     <div class="ni" data-page="attendance"><span class="ic">📋</span>Time Records</div>
-    <div class="ni" data-page="payroll"><span class="ic">💰</span>Payroll</div>
     <div class="ni" data-page="payslip"><span class="ic">🧾</span>Payslip</div>
     <div class="ni" data-page="holidays"><span class="ic">📅</span>Holidays</div>
     <div class="sl role-admin" style="display:none">Admin</div>
@@ -339,13 +342,21 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 
     <!-- PAYSLIP -->
     <div class="page" id="page-payslip">
-      <div style="max-width:700px;margin:0 auto">
+      <div style="max-width:750px;margin:0 auto">
         <div class="tw"><div class="th_"><h3>🧾 Payslip</h3><div class="fl">
-          <input id="psEmpId" placeholder="Employee ID" style="text-transform:uppercase;width:120px" oninput="this.value=this.value.toUpperCase()">
-          <select id="psPeriod" style="min-width:180px"><option value="">-- เลือกงวด --</option></select>
-          <button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPayslip()">ดู Payslip</button>
-          <button style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="printPayslip()">🖨️ Print</button>
-        </div></div></div>
+          <select id="psComp" onchange="loadPayslipList()" style="display:none"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select>
+          <select id="psPeriod" onchange="onPeriodChange()" style="min-width:180px"><option value="">-- เลือกงวด --</option></select>
+          <button id="psPrintBtn" style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="printPayslip()">🖨️ Print</button>
+        </div></div>
+        <div id="psAdminBar" style="display:none;padding:8px 16px;border-bottom:1px solid var(--bd);font-size:12px">
+          <span style="color:var(--t2)">Admin:</span>
+          <button style="padding:4px 10px;background:var(--grn);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;margin-left:6px" onclick="publishPayroll()">📢 Publish</button>
+          <button style="padding:4px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;margin-left:4px" onclick="unpublishPayroll()">🔒 Unpublish</button>
+        </div>
+        <div id="psEmpList" style="display:none;max-height:280px;overflow-y:auto;border-bottom:1px solid var(--bd)">
+          <table><thead><tr><th>ID</th><th>ชื่อ</th><th>นามสกุล</th><th>บริษัท</th><th></th></tr></thead><tbody id="psEmpBody"></tbody></table>
+        </div></div>
+        <input type="hidden" id="psEmpId">
         <div id="payslipContent" style="margin-top:16px"><div class="empty">กำลังโหลด...</div></div>
       </div>
     </div>
@@ -519,6 +530,13 @@ function showApp(){
     if(p!=='checkin'&&p!=='faceregister')stopCamera();
   }));
   startRef();loadAll();loadAllFaces();
+  // Block print/screenshot shortcuts for employee role
+  if(curUser.role==='employee'||curUser.role==='manager'){
+    document.addEventListener('keydown',function(e){
+      if(e.key==='PrintScreen'||(e.ctrlKey&&e.key==='p')||(e.ctrlKey&&e.key==='s')||(e.ctrlKey&&e.shiftKey&&e.key==='s')){e.preventDefault();return false;}
+    });
+    document.addEventListener('contextmenu',function(e){if(e.target.closest('.ps-protected'))e.preventDefault();});
+  }
 }
 
 function fmt(d){return d.getFullYear()+'-'+(''+(d.getMonth()+1)).padStart(2,'0')+'-'+(''+(d.getDate())).padStart(2,'0')}
@@ -538,7 +556,7 @@ function loadPage(p){
   if(p==='dashboard'){loadSum();loadDash();loadAnnouncements();loadEarlyClose()}else if(p==='checkin'){resetCheckin();startCheckinFlow()}
   else if(p==='faceregister'){frReset()}
   else if(p==='employees')loadEmp();else if(p==='alerts')loadAlerts();
-  else if(p==='late')loadLate();else if(p==='attendance')loadAtt();else if(p==='payroll')loadPay();
+  else if(p==='late')loadLate();else if(p==='attendance')loadAtt();
   else if(p==='holidays')loadHol();else if(p==='prayer')loadPrayer();else if(p==='users')loadUsers();
   else if(p==='payslip')initPayslip();
   else if(p==='leavereq')loadLeaveReq();else if(p==='notifications')loadNotifications();
@@ -925,33 +943,49 @@ async function loadAtt(){const d=await apiGet('attendance',{from:$('atFrom').val
 async function loadPay(){const p=$('payP').value.trim();const d=await apiGet('payroll',p?{period:p,company:$('payComp')?$('payComp').value:''}:{company:$('payComp')?$('payComp').value:''});if(!d||!d.success)return;renderTbl('pyHd','pyBd',d.data)}
 
 async function publishPayroll(){
-  const period=$('payP').value.trim();
-  if(!period){alert('กรอกงวดเงินเดือนก่อน เช่น 03/2026 → 04/2026');return;}
+  const period=$('psPeriod').value;
+  if(!period){alert('เลือกงวดเงินเดือนก่อน');return;}
   if(!confirm('📢 เผยแพร่ Payslip งวด '+period+' ให้พนักงานดูได้?'))return;
   const d=await apiPost({action:'publish_payroll',period});
   alert(d.message);
 }
 async function unpublishPayroll(){
-  const period=$('payP').value.trim();
-  if(!period){alert('กรอกงวดเงินเดือนก่อน');return;}
+  const period=$('psPeriod').value;
+  if(!period){alert('เลือกงวดเงินเดือนก่อน');return;}
   if(!confirm('🔒 ซ่อน Payslip งวด '+period+' จากพนักงาน?'))return;
   const d=await apiPost({action:'unpublish_payroll',period});
   alert(d.message);
 }
 
 // ===== PAYSLIP =====
+let psAllPayroll=[];
+const psIsAdmin=()=>curUser.role==='admin'||curUser.role==='hr';
 async function initPayslip(){
-  // Auto-fill Employee ID from logged-in user
+  if(psIsAdmin()){
+    $('psComp').style.display='';
+    $('psAdminBar').style.display='';
+    $('psEmpList').style.display='';
+    $('psPrintBtn').style.display='';
+  }else{
+    $('psComp').style.display='none';
+    $('psAdminBar').style.display='none';
+    $('psEmpList').style.display='none';
+    $('psPrintBtn').style.display='none';
+  }
   const empId=curUser.empId||'';
   $('psEmpId').value=empId;
-  // Employee role: lock ID field, Admin: can change
-  if(curUser.role==='employee'){$('psEmpId').readOnly=true;$('psEmpId').style.opacity='0.7';}
-  else{$('psEmpId').readOnly=false;$('psEmpId').style.opacity='1';}
-  // Load available pay periods
-  await loadPayPeriods(empId);
-  // Auto-load latest payslip
-  if($('psPeriod').options.length>1){$('psPeriod').selectedIndex=1;loadPayslip();}
-  else{$('payslipContent').innerHTML='<div class="empty">ยังไม่มีข้อมูลเงินเดือน</div>';}
+  await loadPayPeriods(psIsAdmin()?'':empId);
+  if($('psPeriod').options.length>1){
+    $('psPeriod').selectedIndex=1;
+    if(psIsAdmin()){loadPayslipList();}
+    else{loadPayslip();}
+  }else{
+    $('payslipContent').innerHTML='<div class="empty">ยังไม่มีข้อมูลเงินเดือน</div>';
+  }
+}
+
+function onPeriodChange(){
+  if(psIsAdmin()){loadPayslipList();}else{loadPayslip();}
 }
 
 async function loadPayPeriods(empId){
@@ -962,22 +996,44 @@ async function loadPayPeriods(empId){
   }
 }
 
-async function loadPayslip(){
-  const empId=$('psEmpId').value.trim(),period=$('psPeriod').value;
-  if(!empId){alert('กรอก Employee ID');return;}
-  if(!period){alert('เลือกงวดเงินเดือน');return;}
-  $('payslipContent').innerHTML='<div class="empty">กำลังโหลด...</div>';
-  const prof=await apiGet('employee_profile',{empId});
-  if(!prof||!prof.success){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบพนักงาน</div>';return;}
-  const pay=await apiGet('payroll',{period});
-  if(!pay||!pay.success||!pay.data||pay.data.length<2){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล Payroll งวดนี้</div>';return;}
-  const hdr=pay.data[0];let row=null;
-  for(let i=1;i<pay.data.length;i++){if(pay.data[i][0]&&pay.data[i][0].toString().trim().toUpperCase()===empId.toUpperCase()){row=pay.data[i];break;}}
-  if(!row){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล Payroll ของ '+empId+' ในงวด '+period+'</div>';return;}
-  renderPayslip(prof.profile,row,hdr);
+async function loadPayslipList(){
+  const period=$('psPeriod').value,comp=$('psComp').value;
+  $('psEmpBody').innerHTML='<tr><td colspan="5" class="empty">กำลังโหลด...</td></tr>';
+  $('payslipContent').innerHTML='<div class="empty">เลือกพนักงานจากรายชื่อด้านบน</div>';
+  if(!period){$('psEmpBody').innerHTML='<tr><td colspan="5" class="empty">เลือกงวดเงินเดือนก่อน</td></tr>';return;}
+  const d=await apiGet('payroll',{period});
+  if(!d||!d.success||!d.data||d.data.length<2){$('psEmpBody').innerHTML='<tr><td colspan="5" class="empty">ไม่พบข้อมูล</td></tr>';return;}
+  psAllPayroll=d.data;
+  const rows=d.data.slice(1).filter(r=>r&&r[0]&&(!comp||r[2]===comp));
+  $('psEmpBody').innerHTML=rows.map(r=>{
+    const eid=r[0]||'',parts=(r[1]||'').split(' '),name=parts[0]||'',surname=parts.slice(1).join(' ')||'',company=r[2]||'';
+    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+eid+'</td><td><b>'+name+'</b></td><td>'+surname+'</td><td><span class="sb0 '+(company==='JKN'?'h':'l')+'">'+company+'</span></td><td><button onclick="viewPayslip(\''+eid+'\')" style="padding:3px 10px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">🧾 ดู</button></td></tr>';
+  }).join('')||'<tr><td colspan="5" class="empty">ไม่พบข้อมูล</td></tr>';
 }
 
-function renderPayslip(p,r,h){
+async function viewPayslip(empId){
+  $('psEmpId').value=empId;
+  // Highlight selected row
+  document.querySelectorAll('#psEmpBody tr').forEach(tr=>tr.style.background='');
+  document.querySelectorAll('#psEmpBody tr').forEach(tr=>{if(tr.querySelector('td')&&tr.querySelector('td').textContent.trim()===empId)tr.style.background='var(--s2)';});
+  await loadPayslip();
+}
+
+async function loadPayslip(){
+  const empId=$('psEmpId').value.trim(),period=$('psPeriod').value;
+  if(!empId||!period){$('payslipContent').innerHTML='<div class="empty">เลือกงวด'+(empId?'':'และพนักงาน')+'</div>';return;}
+  $('payslipContent').innerHTML='<div class="empty">กำลังโหลด...</div>';
+  const prof=await apiGet('employee_profile',{empId});
+  if(!prof||!prof.success){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบพนักงาน '+empId+'</div>';return;}
+  const pay=await apiGet('payroll',{period});
+  if(!pay||!pay.success||!pay.data||pay.data.length<2){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล Payroll</div>';return;}
+  let row=null;
+  for(let i=1;i<pay.data.length;i++){if(pay.data[i][0]&&pay.data[i][0].toString().trim().toUpperCase()===empId.toUpperCase()){row=pay.data[i];break;}}
+  if(!row){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบ Payroll ของ '+empId+' งวด '+period+'</div>';return;}
+  renderPayslip(prof.profile,row);
+}
+
+function renderPayslip(p,r){
   const fmt=n=>(parseFloat(n)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
   const compName=p.company==='JKN'?'จงกลณี การไฟฟ้า (JKN)':'FACAI';
   const salary=parseFloat(r[4])||0,workDays=r[5]||0,actualDays=r[6]||0,absentDays=r[7]||0,leaveDays=r[8]||0,sickDays=r[9]||0;
@@ -988,7 +1044,12 @@ function renderPayslip(p,r,h){
   const totalDed=parseFloat(r[25])||0,net=parseFloat(r[26])||0;
   const period=r[3]||'-';
 
-  $('payslipContent').innerHTML=`<div class="payslip" id="payslipPrint">
+  const isProtected=!psIsAdmin();
+  const watermark=(p.title||'')+' '+(p.name||'')+' '+(p.surname||'')+' — '+p.id;
+  const wrapStart=isProtected?'<div class="ps-protected" data-watermark="'+watermark+'" oncontextmenu="return false">':'';
+  const wrapEnd=isProtected?'</div>':'';
+
+  $('payslipContent').innerHTML=wrapStart+`<div class="payslip" id="payslipPrint">
     <div class="ps-header">
       <div><div class="ps-company">${compName}</div><div class="ps-subtitle">ใบแจ้งเงินเดือน / Payslip</div></div>
       <div><div class="ps-title">PAYSLIP</div><div class="ps-period">งวด: ${period}</div></div>
@@ -1032,10 +1093,11 @@ function renderPayslip(p,r,h){
       <div class="amount">${fmt(net)} ฿</div>
     </div>
     <div class="ps-footer">เอกสารฉบับนี้ออกโดยระบบ HR & Payroll v4 — ${compName}<br>Generated: ${new Date().toLocaleString('th-TH')}</div>
-  </div>`;
+  </div>`+wrapEnd;
 }
 
 function printPayslip(){
+  if(!psIsAdmin()){alert('พนักงานไม่มีสิทธิ์พิมพ์ Payslip');return;}
   const content=$('payslipPrint');
   if(!content){alert('โหลด Payslip ก่อน');return;}
   window.print();
