@@ -205,7 +205,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
             <button class="reason-btn" data-reason="Prayer In" onclick="selectAndSubmit(this)"><span class="emoji">🤲</span>กลับจากละหมาด</button>
             <button class="reason-btn" data-reason="Check Out" onclick="selectAndSubmit(this)"><span class="emoji">🏠</span>เลิกงาน</button>
             <button class="reason-btn" data-reason="Early Leave" onclick="showEarlyForm(this)"><span class="emoji">🔶</span>กลับก่อนเวลา</button>
-            <button class="reason-btn" data-reason="Leave/Absent" onclick="showAbsentForm(this)"><span class="emoji">📋</span>ลา / ขาดงาน</button>
+            <button class="reason-btn" data-reason="Leave/Absent" onclick="showAbsentForm(this)"><span class="emoji">📋</span>ลางาน</button>
           </div>
           <div id="earlyFormArea" style="display:none" class="absent-form">
             <label>เหตุผลกลับก่อน</label>
@@ -234,12 +234,12 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
       </div>
     </div>
 
-    <!-- FACE REGISTRATION -->
+    <!-- FACE REGISTRATION — Video-guided multi-angle scan -->
     <div class="page" id="page-faceregister">
       <div class="checkin-container">
         <div class="checkin-card">
           <h3>🤳 ลงทะเบียนใบหน้า</h3>
-          <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">ถ่ายรูป 3 มุม: หน้าตรง / เอียงซ้าย / เอียงขวา</p>
+          <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">ระบบจะบันทึกวิดีโอใบหน้าหลายมุม เพื่อความแม่นยำในการจดจำ</p>
           <div style="margin-bottom:12px">
             <label style="font-size:11px;color:var(--t2)">Employee ID</label>
             <input id="frEmpId" placeholder="เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit">
@@ -248,11 +248,17 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
             <video id="frVideo" autoplay playsinline muted></video>
             <canvas id="frCanvas" style="display:none"></canvas>
             <div class="overlay"></div>
-            <div class="status" id="frCamStatus">กดปุ่มเพื่อเปิดกล้อง</div>
+            <div class="status" id="frCamStatus">กดปุ่มเพื่อเริ่ม</div>
           </div>
-          <div id="frPhotos" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0"></div>
-          <div id="frProgress" style="font-size:13px;text-align:center;color:var(--t2);margin:8px 0">ถ่ายรูป 0 / 3</div>
-          <button class="btn-checkin" id="frCaptureBtn" onclick="frCapture()">📸 เปิดกล้อง & ถ่ายรูป</button>
+          <!-- Instruction overlay -->
+          <div id="frInstruction" style="text-align:center;margin:12px 0;display:none">
+            <div id="frPoseText" style="font-size:22px;font-weight:700;margin-bottom:8px">😊 หันหน้าตรง</div>
+            <div style="background:var(--s2);border-radius:8px;overflow:hidden;height:8px;margin:8px 0">
+              <div id="frProgressBar" style="background:linear-gradient(90deg,var(--blue),var(--teal));height:100%;width:0%;transition:width 0.3s"></div>
+            </div>
+            <div id="frScanCount" style="font-size:11px;color:var(--t3)">เก็บข้อมูล 0 จุด</div>
+          </div>
+          <button class="btn-checkin" id="frStartBtn" onclick="frStartScan()">📸 เปิดกล้อง & เริ่มสแกน</button>
           <button class="btn-checkin" id="frSubmitBtn" onclick="frSubmit()" style="display:none;background:var(--grn)">✅ บันทึกลงทะเบียน</button>
           <div id="frResult" style="margin-top:12px;text-align:center;font-size:13px"></div>
         </div>
@@ -507,7 +513,16 @@ async function submitCheckin(reason){
     faceScore:identifiedEmp.faceScore||0,remarks:remarks
   });
   if(result&&result.success){showResult(true,result.message,result.data);}
-  else{showResult(false,result?result.message:'เชื่อมต่อไม่ได้');}
+  else{
+    const msg=result?result.message:'เชื่อมต่อไม่ได้';
+    if(msg.includes('Out of area')||msg.includes('นอกพื้นที่')||msg.includes('นอกเขต')){
+      // GPS out of range — show popup, stay on step 2
+      alert('📍 คุณอยู่นอกเขตที่ Check-in ได้\nกรุณาเข้าใกล้จุดเช็คอินแล้วลองอีกครั้ง\n\n'+msg);
+      document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('selected'));
+    }else{
+      showResult(false,msg);
+    }
+  }
 }
 
 async function submitAbsent(){
@@ -532,47 +547,94 @@ function resetCheckin(){
   $('earlyRemarks').value='';$('absentRemarks').value='';
 }
 
-// ===== FACE REGISTRATION =====
-let frStream=null,frPhotos=[],frDescriptors=[];
-function frReset(){frPhotos=[];frDescriptors=[];$('frPhotos').innerHTML='';$('frProgress').textContent='ถ่ายรูป 0 / 3';$('frSubmitBtn').style.display='none';$('frCaptureBtn').style.display='block';$('frResult').textContent='';if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}}
-async function frCapture(){
-  if(!frStream){
-    try{frStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
-    $('frVideo').srcObject=frStream;$('frCamStatus').textContent='📸 กล้องพร้อม — กดอีกครั้งเพื่อถ่าย';
-    const ok=await loadFaceModels();if(!ok)$('frCamStatus').textContent='⚠️ Face Model ไม่พร้อม';
-    $('frCaptureBtn').textContent='📸 ถ่ายรูป ('+(frPhotos.length+1)+'/3)';return;}catch(e){$('frCamStatus').textContent='❌ '+e.message;return;}
+// ===== FACE REGISTRATION — Video-guided multi-angle scan =====
+let frStream=null,frDescriptors=[],frPhotos=[],frScanning=false;
+const FR_POSES=[
+  {emoji:'😊',text:'หันหน้าตรง',duration:4000},
+  {emoji:'👈',text:'หันซ้ายเล็กน้อย',duration:3000},
+  {emoji:'👉',text:'หันขวาเล็กน้อย',duration:3000},
+  {emoji:'☝️',text:'เงยหน้าขึ้นเล็กน้อย',duration:3000},
+  {emoji:'👇',text:'ก้มหน้าลงเล็กน้อย',duration:3000},
+];
+
+function frReset(){
+  frDescriptors=[];frPhotos=[];frScanning=false;
+  $('frSubmitBtn').style.display='none';$('frStartBtn').style.display='block';
+  $('frInstruction').style.display='none';$('frResult').textContent='';
+  $('frCamStatus').textContent='กดปุ่มเพื่อเริ่ม';
+  if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}
+}
+
+async function frStartScan(){
+  const empId=$('frEmpId').value.trim();
+  if(!empId){alert('กรุณากรอก Employee ID ก่อน');return;}
+  // Open camera
+  try{frStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
+  $('frVideo').srcObject=frStream;}catch(e){$('frCamStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;return;}
+  // Load models
+  const ok=await loadFaceModels();
+  if(!ok){$('frCamStatus').textContent='⚠️ โหลด Face Model ไม่สำเร็จ';return;}
+  $('frStartBtn').style.display='none';$('frInstruction').style.display='block';
+  frDescriptors=[];frPhotos=[];frScanning=true;
+  // Go through each pose
+  let totalPoses=FR_POSES.length,completedPoses=0;
+  for(const pose of FR_POSES){
+    if(!frScanning)break;
+    $('frPoseText').textContent=pose.emoji+' '+pose.text;
+    $('frCamStatus').textContent='🎬 '+pose.text+'...';
+    // Scan multiple frames during this pose
+    const startTime=Date.now();
+    while(Date.now()-startTime<pose.duration&&frScanning){
+      await frCaptureFrame();
+      const elapsed=Date.now()-startTime;
+      const progress=((completedPoses/totalPoses)+(elapsed/pose.duration/totalPoses))*100;
+      $('frProgressBar').style.width=Math.min(progress,100)+'%';
+      $('frScanCount').textContent='เก็บข้อมูล '+frDescriptors.length+' จุด';
+      await new Promise(r=>setTimeout(r,400)); // scan every 400ms
+    }
+    completedPoses++;
   }
-  // Capture
+  $('frProgressBar').style.width='100%';
+  // Done scanning
+  if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}
+  frScanning=false;
+  if(frDescriptors.length>=5){
+    $('frCamStatus').textContent='✅ สแกนเสร็จ! เก็บได้ '+frDescriptors.length+' จุด';
+    $('frPoseText').textContent='✅ สแกนเสร็จสมบูรณ์!';
+    $('frSubmitBtn').style.display='block';
+  }else{
+    $('frCamStatus').textContent='⚠️ เก็บได้น้อยเกินไป ('+frDescriptors.length+' จุด) — ลองใหม่';
+    $('frPoseText').textContent='⚠️ กรุณาลองใหม่ ให้แสงสว่างเพียงพอ';
+    $('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';
+  }
+}
+
+async function frCaptureFrame(){
+  if(!frStream||!faceModelsLoaded)return;
   const video=$('frVideo'),canvas=$('frCanvas');
   canvas.width=video.videoWidth;canvas.height=video.videoHeight;
-  const ctx=canvas.getContext('2d');ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0);ctx.setTransform(1,0,0,1,0,0);
-  const photoB64=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
-  // Detect face
-  if(faceModelsLoaded){
-    try{const det=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true).withFaceDescriptor();
-    if(!det){$('frCamStatus').textContent='⚠️ ไม่พบใบหน้า ลองใหม่';return;}
-    frDescriptors.push(Array.from(det.descriptor));$('frCamStatus').textContent='✅ ถ่ายรูปที่ '+(frPhotos.length+1)+' สำเร็จ';
-    }catch(e){$('frCamStatus').textContent='⚠️ ตรวจใบหน้าไม่ได้';return;}
-  }
-  frPhotos.push(photoB64);
-  $('frPhotos').innerHTML+=`<img src="data:image/jpeg;base64,${photoB64}" style="width:100%;border-radius:8px;border:2px solid var(--grn)">`;
-  $('frProgress').textContent='ถ่ายรูป '+frPhotos.length+' / 3';
-  if(frPhotos.length>=3){$('frCaptureBtn').style.display='none';$('frSubmitBtn').style.display='block';frStream.getTracks().forEach(t=>t.stop());frStream=null;$('frCamStatus').textContent='✅ ถ่ายครบ 3 รูปแล้ว';}
-  else{$('frCaptureBtn').textContent='📸 ถ่ายรูป ('+(frPhotos.length+1)+'/3)';const labels=['หน้าตรง','เอียงซ้าย','เอียงขวา'];$('frCamStatus').textContent='📸 ถ่าย'+labels[frPhotos.length];}
+  const ctx=canvas.getContext('2d');
+  ctx.translate(canvas.width,0);ctx.scale(-1,1);
+  ctx.drawImage(video,0,0);ctx.setTransform(1,0,0,1,0,0);
+  try{
+    const det=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions({scoreThreshold:0.3})).withFaceLandmarks(true).withFaceDescriptor();
+    if(det){
+      frDescriptors.push(Array.from(det.descriptor));
+      // Save first 3 photos as samples
+      if(frPhotos.length<3)frPhotos.push(canvas.toDataURL('image/jpeg',0.7).split(',')[1]);
+    }
+  }catch(e){}
 }
+
 async function frSubmit(){
   const empId=$('frEmpId').value.trim();if(!empId){alert('กรอก Employee ID');return;}
-  $('frResult').innerHTML='<span style="color:var(--amb)">กำลังบันทึก...</span>';
-  // Average all descriptors for better accuracy
-  let avgDesc='[]';
-  if(frDescriptors.length>0){
-    const len=frDescriptors[0].length;const avg=new Array(len).fill(0);
-    for(const desc of frDescriptors){for(let i=0;i<len;i++)avg[i]+=desc[i];}
-    for(let i=0;i<len;i++)avg[i]/=frDescriptors.length;
-    avgDesc=JSON.stringify(avg);
-  }
-  const d=await apiPost({action:'face_register',empId,descriptor:avgDesc,photos:frPhotos});
-  if(d&&d.success){$('frResult').innerHTML='<span style="color:var(--grn)">✅ ลงทะเบียนสำเร็จ! (เฉลี่ย '+frDescriptors.length+' รูป)</span>';await loadAllFaces();}
+  $('frResult').innerHTML='<span style="color:var(--amb)">กำลังบันทึก... (เฉลี่ย '+frDescriptors.length+' จุด)</span>';
+  // Average all descriptors
+  const len=frDescriptors[0].length;const avg=new Array(len).fill(0);
+  for(const desc of frDescriptors){for(let i=0;i<len;i++)avg[i]+=desc[i];}
+  for(let i=0;i<len;i++)avg[i]/=frDescriptors.length;
+  const d=await apiPost({action:'face_register',empId,descriptor:JSON.stringify(avg),photos:frPhotos.slice(0,3)});
+  if(d&&d.success){$('frResult').innerHTML='<span style="color:var(--grn)">✅ ลงทะเบียนสำเร็จ! (เฉลี่ย '+frDescriptors.length+' จุด)</span>';await loadAllFaces();}
   else{$('frResult').innerHTML='<span style="color:var(--red)">❌ '+(d?d.message:'ผิดพลาด')+'</span>';}
 }
 
