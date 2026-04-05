@@ -342,11 +342,11 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
       <div style="max-width:700px;margin:0 auto">
         <div class="tw"><div class="th_"><h3>🧾 Payslip</h3><div class="fl">
           <input id="psEmpId" placeholder="Employee ID" style="text-transform:uppercase;width:120px" oninput="this.value=this.value.toUpperCase()">
-          <input id="psPeriod" placeholder="e.g. 03/2026 → 04/2026" style="width:180px">
-          <button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPayslip()">Load</button>
+          <select id="psPeriod" style="min-width:180px"><option value="">-- เลือกงวด --</option></select>
+          <button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPayslip()">ดู Payslip</button>
           <button style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="printPayslip()">🖨️ Print</button>
         </div></div></div>
-        <div id="payslipContent" style="margin-top:16px"><div class="empty">เลือก Employee ID + Pay Period แล้วกด Load</div></div>
+        <div id="payslipContent" style="margin-top:16px"><div class="empty">กำลังโหลด...</div></div>
       </div>
     </div>
 
@@ -540,6 +540,7 @@ function loadPage(p){
   else if(p==='employees')loadEmp();else if(p==='alerts')loadAlerts();
   else if(p==='late')loadLate();else if(p==='attendance')loadAtt();else if(p==='payroll')loadPay();
   else if(p==='holidays')loadHol();else if(p==='prayer')loadPrayer();else if(p==='users')loadUsers();
+  else if(p==='payslip')initPayslip();
   else if(p==='leavereq')loadLeaveReq();else if(p==='notifications')loadNotifications();
   else if(p==='announcements')loadAnnouncements();else if(p==='earlyclose')loadEarlyClose();
 }
@@ -924,20 +925,40 @@ async function loadAtt(){const d=await apiGet('attendance',{from:$('atFrom').val
 async function loadPay(){const p=$('payP').value.trim();const d=await apiGet('payroll',p?{period:p,company:$('payComp')?$('payComp').value:''}:{company:$('payComp')?$('payComp').value:''});if(!d||!d.success)return;renderTbl('pyHd','pyBd',d.data)}
 
 // ===== PAYSLIP =====
+async function initPayslip(){
+  // Auto-fill Employee ID from logged-in user
+  const empId=curUser.empId||'';
+  $('psEmpId').value=empId;
+  // Employee role: lock ID field, Admin: can change
+  if(curUser.role==='employee'){$('psEmpId').readOnly=true;$('psEmpId').style.opacity='0.7';}
+  else{$('psEmpId').readOnly=false;$('psEmpId').style.opacity='1';}
+  // Load available pay periods
+  await loadPayPeriods(empId);
+  // Auto-load latest payslip
+  if($('psPeriod').options.length>1){$('psPeriod').selectedIndex=1;loadPayslip();}
+  else{$('payslipContent').innerHTML='<div class="empty">ยังไม่มีข้อมูลเงินเดือน</div>';}
+}
+
+async function loadPayPeriods(empId){
+  const sel=$('psPeriod');sel.innerHTML='<option value="">-- เลือกงวด --</option>';
+  const d=await apiGet('pay_periods',{empId:empId||''});
+  if(d&&d.success&&d.periods){
+    d.periods.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);});
+  }
+}
+
 async function loadPayslip(){
-  const empId=$('psEmpId').value.trim(),period=$('psPeriod').value.trim();
+  const empId=$('psEmpId').value.trim(),period=$('psPeriod').value;
   if(!empId){alert('กรอก Employee ID');return;}
+  if(!period){alert('เลือกงวดเงินเดือน');return;}
   $('payslipContent').innerHTML='<div class="empty">กำลังโหลด...</div>';
-  // Get employee profile
   const prof=await apiGet('employee_profile',{empId});
   if(!prof||!prof.success){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบพนักงาน</div>';return;}
-  // Get payroll data
-  const pay=await apiGet('payroll',period?{period}:{});
-  if(!pay||!pay.success||!pay.data||pay.data.length<2){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล Payroll</div>';return;}
-  // Find this employee's payroll row
+  const pay=await apiGet('payroll',{period});
+  if(!pay||!pay.success||!pay.data||pay.data.length<2){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล Payroll งวดนี้</div>';return;}
   const hdr=pay.data[0];let row=null;
   for(let i=1;i<pay.data.length;i++){if(pay.data[i][0]&&pay.data[i][0].toString().trim().toUpperCase()===empId.toUpperCase()){row=pay.data[i];break;}}
-  if(!row){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล Payroll ของ '+empId+'</div>';return;}
+  if(!row){$('payslipContent').innerHTML='<div class="empty">❌ ไม่พบข้อมูล Payroll ของ '+empId+' ในงวด '+period+'</div>';return;}
   renderPayslip(prof.profile,row,hdr);
 }
 
@@ -961,9 +982,8 @@ function renderPayslip(p,r,h){
       <div><div class="label">Employee ID</div><div class="val">${p.id}</div></div>
       <div><div class="label">Position</div><div class="val">${p.position||'-'}</div></div>
       <div><div class="label">Name</div><div class="val">${p.title||''} ${p.name} ${p.surname}</div></div>
-      <div><div class="label">Work Days</div><div class="val">${actualDays} / ${workDays} วัน</div></div>
+      <div><div class="label">Work days</div><div class="val">${actualDays} / ${workDays} วัน</div></div>
     </div>
-
     <table class="ps-table">
       <thead><tr><th colspan="2">รายได้ / Earnings</th><th style="text-align:right">จำนวน</th></tr></thead>
       <tbody>
@@ -971,10 +991,9 @@ function renderPayslip(p,r,h){
         ${otPay>0?'<tr><td colspan="2">ค่าล่วงเวลา / OT ('+otHrs+' ชม.)</td><td class="amt green">'+fmt(otPay)+'</td></tr>':''}
         ${sp1>0?'<tr><td colspan="2">เงินพิเศษ 1 / Special Pay 1</td><td class="amt green">'+fmt(sp1)+'</td></tr>':''}
         ${sp2>0?'<tr><td colspan="2">เงินพิเศษ 2 / Special Pay 2</td><td class="amt green">'+fmt(sp2)+'</td></tr>':''}
-        <tr class="total"><td colspan="2">รวมรายได้ / Total Earnings</td><td class="amt green">${fmt(gross)}</td></tr>
+        <tr class="total"><td colspan="2">รวมรายได้ / Total earnings</td><td class="amt green">${fmt(gross)}</td></tr>
       </tbody>
     </table>
-
     <table class="ps-table">
       <thead><tr><th colspan="2">รายการหัก / Deductions</th><th style="text-align:right">จำนวน</th></tr></thead>
       <tbody>
@@ -986,17 +1005,15 @@ function renderPayslip(p,r,h){
         ${dedSav>0?'<tr><td colspan="2">หักเงินออม / Savings</td><td class="amt red">-'+fmt(dedSav)+'</td></tr>':''}
         ${dedLoan>0?'<tr><td colspan="2">หักเงินยืม / Loan</td><td class="amt red">-'+fmt(dedLoan)+'</td></tr>':''}
         ${dedOther>0?'<tr><td colspan="2">หักอื่นๆ / Other (รวมกลับก่อน)</td><td class="amt red">-'+fmt(dedOther)+'</td></tr>':''}
-        <tr class="total"><td colspan="2">รวมหัก / Total Deductions</td><td class="amt red">-${fmt(totalDed)}</td></tr>
+        <tr class="total"><td colspan="2">รวมหัก / Total deductions</td><td class="amt red">-${fmt(totalDed)}</td></tr>
       </tbody>
     </table>
-
     <table class="ps-table" style="margin-bottom:0">
-      <thead><tr><th>สถิติ / Attendance</th><th>ลา</th><th>ป่วย</th><th>สาย</th><th>ทำงานวันหยุด</th></tr></thead>
+      <thead><tr><th>สถิติ</th><th>ลา</th><th>ป่วย</th><th>สาย</th><th>วันหยุด</th></tr></thead>
       <tbody><tr><td></td><td>${leaveDays} วัน</td><td>${sickDays} วัน</td><td>${lateCount} ครั้ง</td><td>${holidayWork} วัน</td></tr></tbody>
     </table>
-
     <div class="ps-net">
-      <div class="label">เงินสุทธิ / Net Pay</div>
+      <div class="label">เงินสุทธิ / Net pay</div>
       <div class="amount">${fmt(net)} ฿</div>
     </div>
     <div class="ps-footer">เอกสารฉบับนี้ออกโดยระบบ HR & Payroll v4 — ${compName}<br>Generated: ${new Date().toLocaleString('th-TH')}</div>
