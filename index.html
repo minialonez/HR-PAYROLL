@@ -285,6 +285,11 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           <div class="checkin-result" id="resultContent"></div>
           <button class="btn-checkin" onclick="resetCheckin()">📸 เช็คอินอีกครั้ง</button>
         </div>
+
+        <!-- Admin: Clear test data -->
+        <div class="role-admin" style="display:none;margin-top:12px;text-align:center">
+          <button onclick="clearTodayScans()" style="padding:8px 16px;background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.3);border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit">🧹 ล้างข้อมูลเช็คอินวันนี้ (ทดสอบ)</button>
+        </div>
       </div>
     </div>
 
@@ -961,7 +966,10 @@ function skipQR(){
   if(curUser.role!=='admin'&&curUser.role!=='hr'){alert('เฉพาะ Admin เท่านั้น');return;}
   if(qrScanInterval){clearInterval(qrScanInterval);qrScanInterval=null;}
   if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}
+  // Save GPS at skip moment
+  gpsQR=gpsData?{...gpsData}:null;
   identifiedEmp.qrVerified=false;
+  identifiedEmp.gpsGap=0;
   showReasonStep();
 }
 
@@ -982,40 +990,64 @@ async function showReasonStep(){
 }
 
 function buildSmartReasons(scanned){
-  const hasCheckIn=scanned.includes('Check In');
-  const hasBreakOut=scanned.includes('Break Out');
-  const hasBreakIn=scanned.includes('Break In');
-  const hasPrayerOut=scanned.includes('Prayer Out');
-  const hasPrayerIn=scanned.includes('Prayer In');
-  const hasCheckOut=scanned.includes('Check Out');
-  const hasOTIn=scanned.includes('OT In');
+  const has=id=>scanned.includes(id);
 
   const reasons=[];
-  if(!hasCheckIn){
-    reasons.push({reason:'Check In',emoji:'🟢',label:'เข้างาน'});
-  }else if(!hasCheckOut){
-    if(!hasBreakOut)reasons.push({reason:'Break Out',emoji:'🍽️',label:'ไปพัก'});
-    else if(!hasBreakIn)reasons.push({reason:'Break In',emoji:'🔙',label:'กลับจากพัก'});
-    if(!hasPrayerOut)reasons.push({reason:'Prayer Out',emoji:'🕌',label:'ไปละหมาด'});
-    else if(!hasPrayerIn)reasons.push({reason:'Prayer In',emoji:'🤲',label:'กลับจากละหมาด'});
-    reasons.push({reason:'Check Out',emoji:'🏠',label:'เลิกงาน'});
-    reasons.push({reason:'Early Leave',emoji:'🔶',label:'กลับก่อนเวลา',form:true});
-  }
-  if(hasCheckOut||hasCheckIn){
-    if(!hasOTIn)reasons.push({reason:'OT In',emoji:'⏰',label:'OT เข้า',ot:true});
-    else reasons.push({reason:'OT Out',emoji:'🔚',label:'OT ออก',ot:true});
-  }
-  reasons.push({reason:'Leave/Absent',emoji:'📋',label:'ลางาน',form:true});
 
-  $('smartReasons').innerHTML=reasons.map(r=>{
+  // OT In already done → only OT Out
+  if(has('OT In')&&!has('OT Out')){
+    reasons.push({reason:'OT Out',emoji:'🔚',label:'OT ออก',ot:true});
+    $('smartReasons').innerHTML=renderReasonBtns(reasons);return;
+  }
+  // OT Out done → only Leave (day finished)
+  if(has('OT Out')){
+    reasons.push({reason:'Leave/Absent',emoji:'📋',label:'ลางาน',form:true});
+    $('smartReasons').innerHTML=renderReasonBtns(reasons);return;
+  }
+  // Not checked in yet
+  if(!has('Check In')){
+    reasons.push({reason:'Check In',emoji:'🟢',label:'เข้างาน'});
+    reasons.push({reason:'OT In',emoji:'⏰',label:'OT เข้า',ot:true});
+    reasons.push({reason:'Leave/Absent',emoji:'📋',label:'ลางาน',form:true});
+    $('smartReasons').innerHTML=renderReasonBtns(reasons);return;
+  }
+  // Checked out already → OT or Leave
+  if(has('Check Out')||has('Early Leave')){
+    reasons.push({reason:'OT In',emoji:'⏰',label:'OT เข้า',ot:true});
+    reasons.push({reason:'Leave/Absent',emoji:'📋',label:'ลางาน',form:true});
+    $('smartReasons').innerHTML=renderReasonBtns(reasons);return;
+  }
+  // On break → only Break In
+  if(has('Break Out')&&!has('Break In')){
+    reasons.push({reason:'Break In',emoji:'🔙',label:'กลับจากพัก'});
+    $('smartReasons').innerHTML=renderReasonBtns(reasons);return;
+  }
+  // On prayer → only Prayer In
+  if(has('Prayer Out')&&!has('Prayer In')){
+    reasons.push({reason:'Prayer In',emoji:'🤲',label:'กลับจากละหมาด'});
+    $('smartReasons').innerHTML=renderReasonBtns(reasons);return;
+  }
+  // Working — show available options
+  if(!has('Break Out'))reasons.push({reason:'Break Out',emoji:'🍽️',label:'ไปพัก'});
+  if(!has('Prayer Out'))reasons.push({reason:'Prayer Out',emoji:'🕌',label:'ไปละหมาด'});
+  reasons.push({reason:'Check Out',emoji:'🏠',label:'เลิกงาน'});
+  reasons.push({reason:'Early Leave',emoji:'🔶',label:'กลับก่อนเวลา',form:true});
+
+  $('smartReasons').innerHTML=renderReasonBtns(reasons);
+  $('earlyFormArea').style.display='none';$('absentFormArea').style.display='none';
+}
+
+function renderReasonBtns(reasons){
+  return reasons.map(r=>{
     const style=r.ot?' style="border-color:var(--ora)"':'';
-    if(r.form){
-      const fn=r.reason==='Early Leave'?'showEarlyForm(this)':'showAbsentForm(this)';
-      return'<button class="reason-btn" data-reason="'+r.reason+'" onclick="'+fn+'"'+style+'><span class="emoji">'+r.emoji+'</span>'+r.label+'</button>';
+    if(r.reason==='Early Leave'){
+      return'<button class="reason-btn" data-reason="'+r.reason+'" onclick="showEarlyForm(this)"'+style+'><span class="emoji">'+r.emoji+'</span>'+r.label+'</button>';
+    }
+    if(r.reason==='Leave/Absent'){
+      return'<button class="reason-btn" data-reason="'+r.reason+'" onclick="showAbsentForm(this)"'+style+'><span class="emoji">'+r.emoji+'</span>'+r.label+'</button>';
     }
     return'<button class="reason-btn" data-reason="'+r.reason+'" onclick="confirmCheckin(\''+r.reason+'\')"'+style+'><span class="emoji">'+r.emoji+'</span>'+r.label+'</button>';
   }).join('');
-  $('earlyFormArea').style.display='none';$('absentFormArea').style.display='none';
 }
 
 const REASON_MAP={'Check In':{emoji:'🟢',label:'เข้างาน'},'Break Out':{emoji:'🍽️',label:'ไปพัก'},'Break In':{emoji:'🔙',label:'กลับจากพัก'},'Prayer Out':{emoji:'🕌',label:'ไปละหมาด'},'Prayer In':{emoji:'🤲',label:'กลับจากละหมาด'},'Check Out':{emoji:'🏠',label:'เลิกงาน'},'Early Leave':{emoji:'🔶',label:'กลับก่อนเวลา'},'OT In':{emoji:'⏰',label:'OT เข้า'},'OT Out':{emoji:'🔚',label:'OT ออก'}};
@@ -1040,6 +1072,15 @@ async function doConfirmCheckin(){
 
 function showEarlyForm(btn){$('earlyFormArea').style.display='block';$('absentFormArea').style.display='none';}
 function showAbsentForm(btn){$('absentFormArea').style.display='block';$('earlyFormArea').style.display='none';}
+
+async function clearTodayScans(){
+  const empId=prompt('ล้างข้อมูลเช็คอินวันนี้\n\nกรอก Employee ID (หรือปล่อยว่างเพื่อล้างทั้งหมด):','');
+  if(empId===null)return; // cancelled
+  if(!confirm('⚠️ ยืนยันล้างข้อมูลเช็คอินวันนี้'+(empId?' ของ '+empId:' ทั้งหมด')+'?'))return;
+  const d=await apiPost({action:'clear_today_scans',empId:empId.trim()});
+  alert(d.message||'Done');
+  resetCheckin();
+}
 
 async function submitCheckin(reason){
   let remarks='';
@@ -1080,6 +1121,8 @@ function resetCheckin(){
   $('ciStep1').style.display='block';$('ciStepQR').style.display='none';
   $('ciStep2').style.display='none';$('ciStepConfirm').style.display='none';$('ciStep3').style.display='none';
   $('manualIdArea').style.display='none';$('earlyFormArea').style.display='none';$('absentFormArea').style.display='none';
+  // Restart check-in flow
+  startCheckinFlow();
 }
 
 // ===== FACE REGISTRATION — Video-guided multi-angle scan =====
