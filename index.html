@@ -188,7 +188,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 <div class="main">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px"><button class="mt" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><h2 id="pageTitle">📊 Dashboard</h2></div>
-    <div class="meta"><span id="lastUpd">—</span><span class="dot" id="sDot" style="display:none"></span><span id="connSt" style="font-size:10px">Not connected</span></div>
+    <div class="meta"><span id="liveClock" style="font-family:JetBrains Mono;font-weight:600;font-size:14px">--:--:--</span><span style="margin:0 6px;color:var(--bd)">|</span><span id="lastUpd" style="font-size:10px">—</span><span class="dot" id="sDot" style="display:none"></span><span id="connSt" style="font-size:10px">Not connected</span></div>
   </div>
   <div class="content">
 
@@ -734,6 +734,8 @@ function showApp(){
 
 function fmt(d){return d.getFullYear()+'-'+(''+(d.getMonth()+1)).padStart(2,'0')+'-'+(''+(d.getDate())).padStart(2,'0')}
 function startRef(){if(timer)clearInterval(timer);timer=setInterval(()=>loadAll(),REF*1000)}
+// Live clock
+setInterval(()=>{const el=$('liveClock');if(el)el.textContent=new Date().toLocaleTimeString('th-TH');},1000);
 
 // ===== API =====
 async function apiGet(action,params={}){
@@ -1272,7 +1274,7 @@ async function loadSum(){
 }
 
 // ===== DASHBOARD =====
-async function loadDash(){const d=await apiGet('dashboard');if(!d||!d.success||!d.data)return;allDash=d.data;renderDash(d.data)}
+async function loadDash(){const d=await apiGet('dashboard');if(!d||!d.success||!d.data)return;allDash=d.data;renderDash(d.data);$('lastUpd').textContent='อัพเดท: '+new Date().toLocaleTimeString('th-TH');}
 function renderDash(data){
   if(data.length<2){$('dBd').innerHTML='<tr><td colspan="13" class="empty">No data</td></tr>';return}
   let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&(data[i][0].toString().includes('ID'))){hi=i;break}}
