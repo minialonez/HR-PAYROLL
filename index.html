@@ -240,7 +240,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           </div>
           <div id="qrResult" style="padding:10px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:13px;text-align:center;color:var(--t2)">หันกล้องไปที่ QR Code ที่ติดไว้จุดเช็คอิน</div>
           <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="skipQR()">⏭️ ข้าม QR (Admin เท่านั้น)</button>
-          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:4px;cursor:pointer;font-family:inherit" onclick="resetCheckin()">← สแกนใหม่</button>
+          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:4px;cursor:pointer;font-family:inherit" onclick="restartCheckin()">← สแกนใหม่</button>
         </div>
 
         <!-- Step 2: Smart Reason Selection + Confirm -->
@@ -265,7 +265,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
             <textarea id="absentRemarks" rows="2" placeholder="ระบุเหตุผล..."></textarea>
             <button class="btn-checkin" onclick="submitAbsent()">📋 บันทึกการลา</button>
           </div>
-          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:12px;cursor:pointer;font-family:inherit" onclick="resetCheckin()">← สแกนใหม่</button>
+          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:12px;cursor:pointer;font-family:inherit" onclick="restartCheckin()">← สแกนใหม่</button>
         </div>
 
         <!-- Step 2.5: Confirmation -->
@@ -283,7 +283,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
         <!-- Step 3: Result -->
         <div id="ciStep3" class="checkin-card" style="display:none">
           <div class="checkin-result" id="resultContent"></div>
-          <button class="btn-checkin" onclick="resetCheckin()">📸 เช็คอินอีกครั้ง</button>
+          <button class="btn-checkin" onclick="restartCheckin()">📸 เช็คอินอีกครั้ง</button>
         </div>
 
         <!-- Admin: Clear test data -->
@@ -1079,7 +1079,7 @@ async function clearTodayScans(){
   if(!confirm('⚠️ ยืนยันล้างข้อมูลเช็คอินวันนี้'+(empId?' ของ '+empId:' ทั้งหมด')+'?'))return;
   const d=await apiPost({action:'clear_today_scans',empId:empId.trim()});
   alert(d.message||'Done');
-  resetCheckin();
+  restartCheckin();
 }
 
 async function submitCheckin(reason){
@@ -1121,9 +1121,8 @@ function resetCheckin(){
   $('ciStep1').style.display='block';$('ciStepQR').style.display='none';
   $('ciStep2').style.display='none';$('ciStepConfirm').style.display='none';$('ciStep3').style.display='none';
   $('manualIdArea').style.display='none';$('earlyFormArea').style.display='none';$('absentFormArea').style.display='none';
-  // Restart check-in flow
-  startCheckinFlow();
 }
+function restartCheckin(){resetCheckin();startCheckinFlow();}
 
 // ===== FACE REGISTRATION — Video-guided multi-angle scan =====
 let frStream=null,frDescriptors=[],frPhotos=[],frScanning=false;
