@@ -1130,7 +1130,11 @@ async function submitCheckin(reason){
     gpsGap:identifiedEmp.gpsGap||0,remarks:remarks,skipGps:isOT
   });
   $('ciStep2').style.display='none';$('ciStepConfirm').style.display='none';$('ciStep3').style.display='block';
-  if(result&&result.success){$('resultContent').innerHTML='<div class="big">✅</div><h3 style="color:var(--grn)">'+result.message+'</h3><p style="color:var(--t2);margin-top:8px">'+identifiedEmp.name+'</p><p style="font-family:JetBrains Mono;font-size:20px;margin-top:12px">'+(result.data?result.data.time:'')+'</p>';}
+  if(result&&result.success){
+    $('resultContent').innerHTML='<div class="big">✅</div><h3 style="color:var(--grn)">'+result.message+'</h3><p style="color:var(--t2);margin-top:8px">'+identifiedEmp.name+'</p><p style="font-family:JetBrains Mono;font-size:20px;margin-top:12px">'+(result.data?result.data.time:'')+'</p>';
+    // Refresh dashboard data in background
+    setTimeout(()=>loadAll(),1000);
+  }
   else{$('resultContent').innerHTML='<div class="big">❌</div><h3 style="color:var(--red)">ไม่สำเร็จ</h3><p style="color:var(--t2);margin-top:8px">'+(result?result.message:'เชื่อมต่อไม่ได้')+'</p>';}
 }
 
