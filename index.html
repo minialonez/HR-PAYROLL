@@ -628,7 +628,7 @@ async function startGuestFlow(){
   const ok=await loadFaceModels();
   if(!ok){$('guestFaceStatus').innerHTML='⚠️ <span style="color:var(--amb)">Face Model ไม่พร้อม — กรอกรหัสแทน</span>';return;}
   if(allFaceDescriptors.length===0){$('guestFaceStatus').innerHTML='⚠️ ยังไม่มีใบหน้าในระบบ';return;}
-  $('guestFaceStatus').innerHTML='🤖 <span style="color:var(--cyn)">กำลังสแกน... ('+allFaceDescriptors.length+' คน)</span>';
+  $('guestFaceStatus').innerHTML='🤖 <span style="color:var(--cyn)">กำลังสแกน...</span>';
   guestScanInterval=setInterval(async()=>{await guestScanFace();},1500);
 }
 
@@ -800,16 +800,18 @@ async function loadFaceModels(){
     const ready=await waitForFaceApi();
     if(!ready){console.log('faceapi not available');return false;}
   }
-  for(const url of MODEL_URLS){
+  // Try cached CDN first
+  const cached=localStorage.getItem('hr_face_cdn');
+  const urls=cached?[cached,...MODEL_URLS.filter(u=>u!==cached)]:MODEL_URLS;
+  for(const url of urls){
     try{
-      console.log('Trying models from:',url);
       await Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(url),
         faceapi.nets.faceLandmark68TinyNet.loadFromUri(url),
         faceapi.nets.faceRecognitionNet.loadFromUri(url),
       ]);
-      faceModelsLoaded=true;console.log('Models loaded from:',url);return true;
-    }catch(e){console.log('Failed from '+url+':',e);}
+      faceModelsLoaded=true;localStorage.setItem('hr_face_cdn',url);return true;
+    }catch(e){console.log('Failed:',url);}
   }
   return false;
 }
@@ -834,7 +836,7 @@ async function startCheckinFlow(){
   const modelsOk=await loadFaceModels();
   if(!modelsOk){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">โหลด Face Model ไม่สำเร็จ — ลองรีเฟรชหน้าเว็บ หรือกรอกรหัสแทน</span>';return;}
   if(allFaceDescriptors.length===0){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">ยังไม่มีใบหน้าในระบบ — ลงทะเบียนก่อน หรือกรอกรหัสแทน</span>';return;}
-  $('faceStatus').innerHTML='🤖 <span style="color:var(--cyn)">กำลังสแกน... (ใบหน้าในระบบ: '+allFaceDescriptors.length+' คน)</span>';
+  $('faceStatus').innerHTML='🤖 <span style="color:var(--cyn)">กำลังสแกน...</span>';
   // Start continuous face scanning
   scanInterval=setInterval(async()=>{await scanFace();},1500);
 }
