@@ -220,7 +220,8 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
             <div class="overlay"></div>
             <div class="status" id="camStatus">กำลังเปิดกล้อง...</div>
           </div>
-          <div id="faceStatus" style="padding:10px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:13px;color:var(--t2);text-align:center">🤖 กำลังโหลดระบบจดจำใบหน้า...</div>
+          <div id="gpsDistLive" style="padding:10px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:13px;text-align:center;color:var(--t2)">📍 กำลังหาตำแหน่ง...</div>
+          <div id="faceStatus" style="padding:10px 14px;background:var(--s2);border-radius:8px;margin:4px 0;font-size:13px;color:var(--t2);text-align:center">🤖 กำลังโหลดระบบจดจำใบหน้า...</div>
           <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="showManualId()">🔑 กรอกรหัสพนักงานแทน</button>
           <div id="manualIdArea" style="display:none;margin-top:12px">
             <input id="ciManualId" placeholder="รหัสพนักงาน เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:8px;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
@@ -484,7 +485,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
       <div class="checkin-container">
         <div class="checkin-card">
           <h3>📱 QR Code จุดเช็คอิน</h3>
-          <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">พิมพ์ QR Code นี้ไปติดที่จุดเช็คอินของแต่ละบริษัท<br>QR เปลี่ยนทุกวัน — พนักงานต้องสแกนจาก QR ที่ติดไว้เท่านั้น</p>
+          <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">พิมพ์ QR Code นี้ไปติดที่จุดเช็คอินของแต่ละบริษัท<br>พิมพ์ครั้งเดียว ใช้ได้ตลอด ไม่ต้องเปลี่ยน</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
             <div style="text-align:center;background:var(--s2);padding:16px;border-radius:12px">
               <h4 style="font-size:14px;margin-bottom:12px">🏢 JKN</h4>
@@ -498,7 +499,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
             </div>
           </div>
           <button class="btn-checkin" onclick="printQR()" style="margin-top:16px">🖨️ พิมพ์ QR Code</button>
-          <p style="text-align:center;font-size:11px;color:var(--t3);margin-top:8px">QR จะเปลี่ยนอัตโนมัติทุกวัน — ถ้าพิมพ์ ต้องพิมพ์ใหม่ทุกวัน<br>หรือแสดงบน Tablet/จอที่ร้านแทนการพิมพ์</p>
+          <p style="text-align:center;font-size:11px;color:var(--t3);margin-top:8px">QR คงที่ — พิมพ์ครั้งเดียวติดที่ร้าน ใช้ได้ตลอด<br>ระบบป้องกันโดย: สแกนใบหน้า + GPS + รูปถ่าย + แจ้งเตือนอัตโนมัติ</p>
         </div>
       </div>
     </div>
@@ -536,7 +537,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 
 <script>
 // ===== GLOBALS =====
-let API='',REF=30,timer=null,allDash=[],curUser=null,gpsData=null,faceModelsLoaded=false,camStream=null;
+let API='',REF=30,timer=null,allDash=[],curUser=null,gpsData=null,gpsFace=null,gpsQR=null,faceModelsLoaded=false,camStream=null;
 let allFaceDescriptors=[]; // cached face data from API
 let identifiedEmp=null; // {empId,name,company,descriptor,faceScore}
 let capturedPhoto=null; // base64 photo from scan step
@@ -544,6 +545,7 @@ let gpsWatchId=null;
 const $=id=>document.getElementById(id);
 const API_KEY='HR PAYROLL TOPPY';
 const DEFAULT_API='https://script.google.com/macros/s/AKfycbzowQT19UUhQYp9KwLt0A1pANsnhSEsdGXoZDABfzEKBdiTXUK2uBweZAXD0HvEUbxZ/exec';
+const COMPANY_GPS={JKN:{lat:6.558967,lng:101.291800},FC:{lat:6.555377452490964,lng:101.27216648232881}};
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded',()=>{
@@ -567,7 +569,7 @@ async function doLogin(){
   if(d.success){curUser=d.user;localStorage.setItem('hr_session',JSON.stringify(curUser));$('loginScreen').classList.add('fade-out');setTimeout(()=>{$('loginScreen').style.display='none';showApp();},500);}
   else $('loginErr').textContent='❌ '+d.message;}catch(e){$('loginErr').textContent='❌ เชื่อมต่อไม่ได้';}
 }
-function doLogout(){curUser=null;localStorage.removeItem('hr_session');stopCamera();location.reload();}
+function doLogout(){curUser=null;localStorage.removeItem('hr_session');stopCamera();stopGPS();location.reload();}
 
 // ===== GUEST CHECK-IN =====
 let guestMode=false;
@@ -691,7 +693,7 @@ function showApp(){
     document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));n.classList.add('active');
     const p=n.dataset.page;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
     $('page-'+p).classList.add('active');$('pageTitle').textContent=n.textContent.trim();loadPage(p);$('sidebar').classList.remove('open');
-    if(p!=='checkin'&&p!=='faceregister')stopCamera();
+    if(p!=='checkin'&&p!=='faceregister'){stopCamera();stopGPS();}
   }));
   startRef();loadAll();loadAllFaces();
   // Block print/screenshot shortcuts for employee role
@@ -744,18 +746,37 @@ async function startCamera(videoEl){
   try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
   videoEl.srcObject=camStream;return true;}catch(e){return false;}
 }
-function stopCamera(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}if(gpsWatchId){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}}
+function stopCamera(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
+function stopGPS(){if(gpsWatchId){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}}
 
 // ===== GPS =====
+function calcGpsDist(lat,lng,compGps){return Math.round(haversineJS(lat,lng,compGps.lat,compGps.lng));}
+
 function startGPS(){
-  if(!navigator.geolocation){$('gpsStatus').className='gps-status fail';$('gpsStatus').textContent='❌ เบราว์เซอร์ไม่รองรับ GPS';return;}
-  $('gpsStatus').className='gps-status loading';$('gpsStatus').textContent='📍 กำลังตรวจ GPS...';
+  if(!navigator.geolocation){updateGpsDisplay(null,'❌ เบราว์เซอร์ไม่รองรับ GPS');return;}
+  updateGpsDisplay(null,'📍 กำลังหาตำแหน่ง...');
   gpsWatchId=navigator.geolocation.watchPosition(pos=>{
     gpsData={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
-    $('gpsStatus').className='gps-status ok';$('gpsStatus').textContent='📍 GPS พร้อม (±'+Math.round(gpsData.accuracy)+'m)';
+    // Calculate distance to both companies
+    const dJKN=calcGpsDist(gpsData.lat,gpsData.lng,COMPANY_GPS.JKN);
+    const dFC=calcGpsDist(gpsData.lat,gpsData.lng,COMPANY_GPS.FC);
+    const nearest=dJKN<=dFC?{comp:'JKN',dist:dJKN}:{comp:'FC',dist:dFC};
+    // Update live display
+    const distEl=$('gpsDistLive');
+    if(distEl){
+      if(nearest.dist<=5){distEl.style.color='var(--grn)';distEl.innerHTML='📍 <b>อยู่ที่จุดเช็คอิน '+nearest.comp+'</b> ('+nearest.dist+'m) ✅';}
+      else if(nearest.dist<=10){distEl.style.color='var(--amb)';distEl.innerHTML='📍 ใกล้จุดเช็คอิน '+nearest.comp+' (<b>'+nearest.dist+'m</b>) ±'+Math.round(gpsData.accuracy)+'m';}
+      else{distEl.style.color='var(--red)';distEl.innerHTML='📍 ห่างจาก '+nearest.comp+' <b>'+nearest.dist+'m</b> — เข้าใกล้จุดเช็คอิน ±'+Math.round(gpsData.accuracy)+'m';}
+    }
+    // Also update step2 GPS status if visible
+    const gs=$('gpsStatus');if(gs){gs.style.display='block';gs.className='gps-status '+(nearest.dist<=10?'ok':'fail');gs.textContent='📍 '+nearest.comp+' '+nearest.dist+'m (±'+Math.round(gpsData.accuracy)+'m)';}
   },err=>{
-    $('gpsStatus').className='gps-status fail';$('gpsStatus').textContent='❌ GPS: '+err.message;
+    updateGpsDisplay(null,'❌ GPS: '+err.message);
   },{enableHighAccuracy:true,timeout:30000,maximumAge:0});
+}
+
+function updateGpsDisplay(data,msg){
+  const el=$('gpsDistLive');if(el){el.style.color='var(--t2)';el.textContent=msg;}
 }
 
 // ===== FACE MODELS =====
@@ -838,8 +859,11 @@ async function scanFace(){
       clearInterval(scanInterval);scanInterval=null;
       identifiedEmp={empId:bestMatch.empId,name:bestMatch.name,company:bestMatch.company,faceScore:Math.max(0,1-bestDist)};
       capturedPhoto=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
-      $('camStatus').textContent='✅ พบ: '+bestMatch.name+' ('+Math.round((1-bestDist)*100)+'%)';
-      $('faceStatus').innerHTML='✅ <span style="color:var(--grn)">จับคู่สำเร็จ! '+bestMatch.name+'</span>';
+      // Save GPS at face scan moment
+      gpsFace=gpsData?{...gpsData}:null;
+      const faceDist=gpsFace?calcGpsDist(gpsFace.lat,gpsFace.lng,COMPANY_GPS[bestMatch.company]||COMPANY_GPS.JKN):0;
+      $('camStatus').textContent='✅ พบ: '+bestMatch.name;
+      $('faceStatus').innerHTML='✅ <span style="color:var(--grn)">จับคู่สำเร็จ! '+bestMatch.name+'</span><br><span style="font-size:11px;color:var(--t3)">📍 สแกนหน้าที่ระยะ '+faceDist+'m จาก '+bestMatch.company+'</span>';
       stopCamera();
       setTimeout(()=>showStep2(),500);
     }else if(bestMatch){
@@ -872,20 +896,18 @@ function showStep2(){
   startQRScan();
 }
 
-// ===== QR CODE SYSTEM =====
+// ===== QR CODE SYSTEM (Fixed — print once, use forever) =====
 const QR_SECRET='HRPAYROLL2026';
-function generateQRToken(company,date){
-  const str=company+'-'+date+'-'+QR_SECRET;
+function generateQRToken(company){
+  const str=company+'-'+QR_SECRET+'-FIXED';
   let hash=0;for(let i=0;i<str.length;i++){hash=((hash<<5)-hash)+str.charCodeAt(i);hash|=0;}
-  return 'HRQR-'+company+'-'+date+'-'+Math.abs(hash).toString(36).toUpperCase();
+  return 'HRQR-'+company+'-'+Math.abs(hash).toString(36).toUpperCase();
 }
 
 function validateQRToken(scanned){
   if(!scanned||!scanned.startsWith('HRQR-'))return{valid:false};
-  const today=new Date(),dateStr=today.getFullYear()+'-'+(''+(today.getMonth()+1)).padStart(2,'0')+'-'+(''+(today.getDate())).padStart(2,'0');
-  const jknToken=generateQRToken('JKN',dateStr),fcToken=generateQRToken('FC',dateStr);
-  if(scanned===jknToken)return{valid:true,company:'JKN'};
-  if(scanned===fcToken)return{valid:true,company:'FC'};
+  if(scanned===generateQRToken('JKN'))return{valid:true,company:'JKN'};
+  if(scanned===generateQRToken('FC'))return{valid:true,company:'FC'};
   return{valid:false};
 }
 
@@ -911,11 +933,26 @@ function scanQR(){
     if(result.valid){
       clearInterval(qrScanInterval);qrScanInterval=null;
       if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}
+      // Save GPS at QR scan moment
+      gpsQR=gpsData?{...gpsData}:null;
+      // Compare GPS from face scan vs QR scan
+      const GPS_MATCH_THRESHOLD=50; // meters — both scans should be at same location
+      if(gpsFace&&gpsQR){
+        const gap=Math.round(haversineJS(gpsFace.lat,gpsFace.lng,gpsQR.lat,gpsQR.lng));
+        identifiedEmp.gpsGap=gap;
+        if(gap>GPS_MATCH_THRESHOLD){
+          $('qrResult').innerHTML='<span style="color:var(--red)">❌ ตำแหน่งสแกนหน้า กับ QR ห่างกัน '+gap+'m<br>ต้องสแกนที่เดียวกัน (ไม่เกิน '+GPS_MATCH_THRESHOLD+'m)</span>';
+          return; // Block — don't proceed
+        }
+        $('qrResult').innerHTML='<span style="color:var(--grn)">✅ QR ยืนยัน '+result.company+' — ตำแหน่งตรงกัน ('+gap+'m)</span>';
+      }else{
+        identifiedEmp.gpsGap=0;
+        $('qrResult').innerHTML='<span style="color:var(--grn)">✅ QR ยืนยัน '+result.company+'</span>';
+      }
       identifiedEmp.qrVerified=true;identifiedEmp.qrCompany=result.company;
-      $('qrResult').innerHTML='<span style="color:var(--grn)">✅ QR ยืนยันแล้ว — '+result.company+'</span>';
       setTimeout(()=>showReasonStep(),500);
     }else{
-      $('qrResult').innerHTML='<span style="color:var(--red)">❌ QR ไม่ถูกต้องหรือหมดอายุ</span>';
+      $('qrResult').innerHTML='<span style="color:var(--red)">❌ QR ไม่ถูกต้อง</span>';
     }
   }
 }
@@ -932,7 +969,12 @@ function skipQR(){
 let pendingReason=null;
 async function showReasonStep(){
   $('ciStepQR').style.display='none';$('ciStep2').style.display='block';
-  $('identifiedCard').innerHTML='<div class="id-avatar">'+(identifiedEmp.name||'?')[0]+'</div><div class="id-name">'+identifiedEmp.name+'</div><div class="id-detail">'+identifiedEmp.empId+(identifiedEmp.company?' — '+identifiedEmp.company:'')+(identifiedEmp.qrVerified?' ✅ QR':'')+'</div>';
+  const comp=identifiedEmp.company||'JKN';
+  const faceDist=gpsFace?calcGpsDist(gpsFace.lat,gpsFace.lng,COMPANY_GPS[comp]||COMPANY_GPS.JKN):0;
+  const gap=identifiedEmp.gpsGap||0;
+  let gpsInfo='';
+  if(gpsFace)gpsInfo='<br><span style="font-size:11px">📍 หน้า:'+faceDist+'m | QR:'+(gpsQR?calcGpsDist(gpsQR.lat,gpsQR.lng,COMPANY_GPS[comp]||COMPANY_GPS.JKN)+'m':'?')+(gap>0?' | ห่างกัน:'+gap+'m':'')+(gap<=50?' ✅':' ⚠️')+'</span>';
+  $('identifiedCard').innerHTML='<div class="id-avatar">'+(identifiedEmp.name||'?')[0]+'</div><div class="id-name">'+identifiedEmp.name+'</div><div class="id-detail">'+identifiedEmp.empId+(identifiedEmp.company?' — '+identifiedEmp.company:'')+(identifiedEmp.qrVerified?' ✅QR':'')+gpsInfo+'</div>';
   // Get today's scan history for this employee
   const todayScans=await apiGet('today_scans',{empId:identifiedEmp.empId});
   const scanned=todayScans&&todayScans.success?todayScans.reasons:[];
@@ -1003,11 +1045,12 @@ async function submitCheckin(reason){
   let remarks='';
   if(reason==='Early Leave')remarks=($('earlyType').value||'')+': '+($('earlyRemarks').value||'');
   const isOT=(reason==='OT In'||reason==='OT Out');
+  const gps=gpsFace||gpsData;
   const result=await apiPost({
     action:'photo_checkin',apiKey:API_KEY,empId:identifiedEmp.empId,reason:reason,
-    photo:capturedPhoto||'',gpsLat:gpsData?gpsData.lat:0,gpsLng:gpsData?gpsData.lng:0,
+    photo:capturedPhoto||'',gpsLat:gps?gps.lat:0,gpsLng:gps?gps.lng:0,
     faceScore:identifiedEmp.faceScore||0,qrVerified:identifiedEmp.qrVerified||false,
-    remarks:remarks,skipGps:isOT
+    gpsGap:identifiedEmp.gpsGap||0,remarks:remarks,skipGps:isOT
   });
   $('ciStep2').style.display='none';$('ciStepConfirm').style.display='none';$('ciStep3').style.display='block';
   if(result&&result.success){$('resultContent').innerHTML='<div class="big">✅</div><h3 style="color:var(--grn)">'+result.message+'</h3><p style="color:var(--t2);margin-top:8px">'+identifiedEmp.name+'</p><p style="font-family:JetBrains Mono;font-size:20px;margin-top:12px">'+(result.data?result.data.time:'')+'</p>';}
@@ -1029,11 +1072,11 @@ function showResult(success,message,data){
 }
 
 function resetCheckin(){
-  stopCamera();
+  stopCamera();stopGPS();
   if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
   if(qrScanInterval){clearInterval(qrScanInterval);qrScanInterval=null;}
   if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}
-  identifiedEmp=null;capturedPhoto=null;gpsData=null;pendingReason=null;
+  identifiedEmp=null;capturedPhoto=null;gpsData=null;gpsFace=null;gpsQR=null;pendingReason=null;
   $('ciStep1').style.display='block';$('ciStepQR').style.display='none';
   $('ciStep2').style.display='none';$('ciStepConfirm').style.display='none';$('ciStep3').style.display='none';
   $('manualIdArea').style.display='none';$('earlyFormArea').style.display='none';$('absentFormArea').style.display='none';
@@ -1418,12 +1461,11 @@ function haversineJS(lat1,lng1,lat2,lng2){const R=6371000,dLat=(lat2-lat1)*Math.
 
 // ===== QR CODE MANAGEMENT (Admin) =====
 function initQRManage(){
-  const today=new Date(),dateStr=today.getFullYear()+'-'+(''+(today.getMonth()+1)).padStart(2,'0')+'-'+(''+(today.getDate())).padStart(2,'0');
   ['JKN','FC'].forEach(comp=>{
-    const token=generateQRToken(comp,dateStr);
+    const token=generateQRToken(comp);
     const qr=qrcode(0,'M');qr.addData(token);qr.make();
     $('qr'+comp).innerHTML=qr.createImgTag(5,8);
-    $('qr'+comp+'Token').textContent='Token: '+token+' ('+dateStr+')';
+    $('qr'+comp+'Token').textContent='Token: '+token;
   });
 }
 function printQR(){window.print();}
