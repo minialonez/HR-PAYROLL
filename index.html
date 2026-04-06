@@ -748,6 +748,8 @@ async function loadAllFaces(){
 
 // ===== CAMERA =====
 async function startCamera(videoEl){
+  // Reuse existing stream if still active
+  if(camStream&&camStream.active){videoEl.srcObject=camStream;return true;}
   try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
   videoEl.srcObject=camStream;return true;}catch(e){return false;}
 }
@@ -822,22 +824,29 @@ async function startCheckinFlow(){
   identifiedEmp=null;capturedPhoto=null;gpsData=null;
   $('ciStep1').style.display='block';$('ciStep2').style.display='none';$('ciStep3').style.display='none';
   $('manualIdArea').style.display='none';
-  $('faceStatus').innerHTML='🤖 กำลังเตรียมระบบ...';
-  const ok=await startCamera($('camVideo'));
-  if(!ok){$('camStatus').textContent='❌ เปิดกล้องไม่ได้';return;}
-  // Wait for video to produce frames
-  await new Promise((resolve)=>{$('camVideo').onloadeddata=resolve;setTimeout(resolve,3000);});
-  await new Promise(r=>setTimeout(r,500));
-  $('camStatus').textContent='📸 กล้องพร้อม';
-  startGPS();
-  // Reload face data fresh
-  await loadAllFaces();
-  $('faceStatus').innerHTML='🤖 กำลังโหลด Face Model... (ลอง 3 แหล่ง)';
-  const modelsOk=await loadFaceModels();
-  if(!modelsOk){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">โหลด Face Model ไม่สำเร็จ — ลองรีเฟรชหน้าเว็บ หรือกรอกรหัสแทน</span>';return;}
+  // Reuse camera if already open
+  if(camStream&&camStream.active){
+    $('camVideo').srcObject=camStream;
+    $('camStatus').textContent='📸 กล้องพร้อม';
+  }else{
+    $('faceStatus').innerHTML='🤖 กำลังเตรียมระบบ...';
+    const ok=await startCamera($('camVideo'));
+    if(!ok){$('camStatus').textContent='❌ เปิดกล้องไม่ได้';return;}
+    await new Promise((resolve)=>{$('camVideo').onloadeddata=resolve;setTimeout(resolve,3000);});
+    await new Promise(r=>setTimeout(r,500));
+    $('camStatus').textContent='📸 กล้องพร้อม';
+  }
+  // Start GPS if not running
+  if(!gpsWatchId)startGPS();
+  // Load faces + models if not already loaded
+  if(allFaceDescriptors.length===0)await loadAllFaces();
+  if(!faceModelsLoaded){
+    $('faceStatus').innerHTML='🤖 กำลังโหลด Face Model...';
+    const modelsOk=await loadFaceModels();
+    if(!modelsOk){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">โหลด Face Model ไม่สำเร็จ — ลองรีเฟรชหน้าเว็บ หรือกรอกรหัสแทน</span>';return;}
+  }
   if(allFaceDescriptors.length===0){$('faceStatus').innerHTML='⚠️ <span style="color:var(--amb)">ยังไม่มีใบหน้าในระบบ — ลงทะเบียนก่อน หรือกรอกรหัสแทน</span>';return;}
   $('faceStatus').innerHTML='🤖 <span style="color:var(--cyn)">กำลังสแกน...</span>';
-  // Start continuous face scanning
   scanInterval=setInterval(async()=>{await scanFace();},1500);
 }
 
@@ -871,7 +880,7 @@ async function scanFace(){
       const faceDist=gpsFace?calcGpsDist(gpsFace.lat,gpsFace.lng,COMPANY_GPS[bestMatch.company]||COMPANY_GPS.JKN):0;
       $('camStatus').textContent='✅ พบ: '+bestMatch.name;
       $('faceStatus').innerHTML='✅ <span style="color:var(--grn)">จับคู่สำเร็จ! '+bestMatch.name+'</span><br><span style="font-size:11px;color:var(--t3)">📍 สแกนหน้าที่ระยะ '+faceDist+'m จาก '+bestMatch.company+'</span>';
-      stopCamera();
+      // Don't stop front camera — keep stream alive for next scan
       setTimeout(()=>showStep2(),500);
     }else if(bestMatch){
       $('camStatus').textContent='🔍 ใกล้เคียง: '+bestMatch.name+' ('+Math.round((1-bestDist)*100)+'%) — หันหน้าให้ชัดขึ้น';
@@ -1115,7 +1124,7 @@ function showResult(success,message,data){
 }
 
 function resetCheckin(){
-  stopCamera();stopGPS();
+  // Don't stop front camera — keep it alive to avoid re-asking permission
   if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
   if(qrScanInterval){clearInterval(qrScanInterval);qrScanInterval=null;}
   if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}
