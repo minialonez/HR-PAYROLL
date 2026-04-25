@@ -7,28 +7,27 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f1117">
 <title>HR & Payroll v4</title>
-<script type="application/json" id="manifest-data">
-{
-  "name": "HR & Payroll System",
-  "short_name": "HR Payroll",
-  "description": "ระบบ HR + Payroll + QR Check-in",
-  "start_url": ".",
-  "scope": ".",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0f1117",
-  "theme_color": "#0f1117",
-  "lang": "th",
-  "icons": [
-    {"src": "https://api.iconify.design/material-symbols/badge.svg?color=%233b82f6", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any"},
-    {"src": "https://api.iconify.design/material-symbols/badge.svg?color=%233b82f6", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any"}
-  ]
-}
-</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230f1117'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='%233b82f6' font-family='Arial'%3EH%3C/text%3E%3C/svg%3E">
 <script>
 (function(){
-  var d = document.getElementById('manifest-data').textContent;
-  var b = new Blob([d], {type: 'application/manifest+json'});
+  var base = location.href.split('?')[0].split('#')[0];
+  var manifest = {
+    name: "HR & Payroll System",
+    short_name: "HR Payroll",
+    description: "ระบบ HR + Payroll + QR Check-in",
+    start_url: base,
+    scope: base.substring(0, base.lastIndexOf('/') + 1),
+    display: "standalone",
+    orientation: "portrait",
+    background_color: "#0f1117",
+    theme_color: "#0f1117",
+    lang: "th",
+    icons: [
+      {src: "https://api.iconify.design/material-symbols/badge.svg?color=%233b82f6", sizes: "192x192", type: "image/svg+xml", purpose: "any"},
+      {src: "https://api.iconify.design/material-symbols/badge.svg?color=%233b82f6", sizes: "512x512", type: "image/svg+xml", purpose: "any"}
+    ]
+  };
+  var b = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
   var l = document.createElement('link');
   l.rel = 'manifest';
   l.href = URL.createObjectURL(b);
