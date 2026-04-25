@@ -7,7 +7,34 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f1117">
 <title>HR & Payroll v4</title>
-<link rel="manifest" href="manifest.json">
+<script type="application/json" id="manifest-data">
+{
+  "name": "HR & Payroll System",
+  "short_name": "HR Payroll",
+  "description": "ระบบ HR + Payroll + QR Check-in",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "lang": "th",
+  "icons": [
+    {"src": "https://api.iconify.design/material-symbols/badge.svg?color=%233b82f6", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any"},
+    {"src": "https://api.iconify.design/material-symbols/badge.svg?color=%233b82f6", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any"}
+  ]
+}
+</script>
+<script>
+(function(){
+  var d = document.getElementById('manifest-data').textContent;
+  var b = new Blob([d], {type: 'application/manifest+json'});
+  var l = document.createElement('link');
+  l.rel = 'manifest';
+  l.href = URL.createObjectURL(b);
+  document.head.appendChild(l);
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script>if(typeof faceapi==='undefined'){document.write('<scr'+'ipt src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"><\/scr'+'ipt>')}</script>
