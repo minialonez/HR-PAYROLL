@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ใบสมัครงาน — JKN & FACAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAF7F2;
+  --paper-2:#F4EFE6;
+  --ink:#1A1815;
+  --ink-2:#3D3A36;
+  --ink-3:#6B6661;
+  --ink-4:#A8A39C;
+  --line:#D9D2C5;
+  --accent:#A23F2C;       /* deep terracotta */
+  --accent-2:#C45D45;
+  --gold:#B8923B;
+  --green:#3F6B41;
+  --shadow:0 1px 0 rgba(26,24,21,0.04), 0 4px 12px rgba(26,24,21,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  font-family:'Bai Jamjuree',sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+body{
+  min-height:100vh;
+  background-image:
+    radial-gradient(circle at 20% 10%,rgba(184,146,59,0.04) 0%,transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(162,63,44,0.03) 0%,transparent 50%);
+}
+
+/* Paper texture noise */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0.4;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.container{max-width:780px;margin:0 auto;padding:32px 24px 80px;position:relative;z-index:2}
+
+/* ====== HEADER ====== */
+.masthead{
+  border-bottom:2px solid var(--ink);
+  padding-bottom:20px;margin-bottom:32px;
+  position:relative;
+}
+.masthead::after{
+  content:'';position:absolute;bottom:-6px;left:0;right:0;
+  height:1px;background:var(--ink);
+}
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:500;
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;
+}
+.eyebrow .dot{
+  width:6px;height:6px;background:var(--accent);border-radius:50%;
+  display:inline-block;margin-right:6px;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+h1.title{
+  font-family:'Bai Jamjuree',sans-serif;
+  font-size:clamp(34px,6vw,52px);
+  font-weight:700;
+  letter-spacing:-0.02em;line-height:1.05;
+  color:var(--ink);
+  margin-bottom:8px;
+}
+h1.title em{font-style:normal;color:var(--accent);font-weight:600}
+.tagline{
+  font-size:15px;color:var(--ink-3);
+  max-width:540px;line-height:1.6;
+}
+
+/* ====== PROGRESS BAR ====== */
+.progress{
+  display:flex;gap:6px;margin:24px 0 36px;
+  border:1px solid var(--line);border-radius:2px;padding:6px;background:#fff;
+}
+.step-pill{
+  flex:1;height:34px;display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.05em;
+  color:var(--ink-4);background:transparent;border-radius:2px;
+  transition:all 0.4s cubic-bezier(0.2,0.8,0.2,1);
+  cursor:default;
+}
+.step-pill.active{background:var(--ink);color:var(--paper);font-weight:600}
+.step-pill.done{background:var(--green);color:#fff}
+
+/* ====== STEPS ====== */
+.step{display:none;animation:fadeUp 0.5s cubic-bezier(0.2,0.8,0.2,1)}
+.step.active{display:block}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.section{
+  background:#fff;
+  border:1px solid var(--line);
+  padding:28px 28px 24px;
+  margin-bottom:20px;
+  position:relative;
+  box-shadow:var(--shadow);
+}
+.section::before{
+  content:'';position:absolute;top:-1px;left:-1px;width:40px;height:40px;
+  border-top:3px solid var(--accent);border-left:3px solid var(--accent);
+}
+.sec-num{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;letter-spacing:0.2em;color:var(--accent);
+  font-weight:500;margin-bottom:6px;
+}
+.sec-title{
+  font-size:22px;font-weight:700;letter-spacing:-0.01em;
+  margin-bottom:6px;color:var(--ink);
+}
+.sec-desc{
+  font-size:13px;color:var(--ink-3);margin-bottom:24px;
+  border-bottom:1px solid var(--line);padding-bottom:14px;
+}
+
+/* ====== FIELDS ====== */
+.row{display:grid;gap:16px;margin-bottom:14px}
+.row.r2{grid-template-columns:1fr 1fr}
+.row.r3{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:560px){.row.r2,.row.r3{grid-template-columns:1fr}}
+
+.field label{
+  display:block;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;margin-bottom:6px;
+}
+.field label .req{color:var(--accent);margin-left:2px}
+
+.field input[type="text"],
+.field input[type="tel"],
+.field input[type="number"],
+.field input[type="date"],
+.field select,
+.field textarea{
+  width:100%;
+  padding:11px 14px;
+  border:1px solid var(--line);
+  background:var(--paper);
+  font-family:'Bai Jamjuree',sans-serif;
+  font-size:15px;
+  color:var(--ink);
+  transition:all 0.2s;
+  outline:none;
+  border-radius:2px;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--ink);background:#fff;
+  box-shadow:inset 0 0 0 1px var(--ink);
+}
+.field textarea{resize:vertical;min-height:80px;font-family:inherit}
+
+.field-hint{
+  font-size:11.5px;color:var(--ink-4);margin-top:4px;
+}
+.computed-age{
+  display:inline-block;padding:11px 14px;
+  background:var(--paper-2);border:1px dashed var(--line);
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  color:var(--accent);min-width:80px;text-align:center;
+}
+
+/* Radio / chip choices */
+.chip-group{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  padding:8px 14px;border:1px solid var(--line);background:#fff;
+  font-family:inherit;font-size:13px;color:var(--ink-2);cursor:pointer;
+  transition:all 0.2s;border-radius:2px;
+}
+.chip:hover{border-color:var(--ink-3)}
+.chip.selected{
+  background:var(--ink);color:var(--paper);border-color:var(--ink);
+}
+
+/* Photo upload */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.photo-card{
+  aspect-ratio:1;border:2px dashed var(--line);background:var(--paper);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;
+}
+.photo-card:hover{border-color:var(--ink);background:#fff}
+.photo-card.has-image{border-style:solid;border-color:var(--green)}
+.photo-card .icon{font-size:28px;margin-bottom:6px;opacity:0.4}
+.photo-card .lbl{
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+  letter-spacing:0.05em;color:var(--ink-3);text-align:center;padding:0 8px;
+}
+.photo-card.required .lbl::after{content:' *';color:var(--accent)}
+.photo-card img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+}
+.photo-card .remove{
+  position:absolute;top:6px;right:6px;width:24px;height:24px;
+  background:var(--accent);color:#fff;border:none;border-radius:50%;
+  cursor:pointer;font-size:14px;display:none;align-items:center;justify-content:center;
+}
+.photo-card.has-image .remove{display:flex}
+
+/* ====== TEST ====== */
+.q-card{
+  background:#fff;border:1px solid var(--line);padding:20px;margin-bottom:14px;
+  position:relative;
+}
+.q-num{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.15em;
+  color:var(--accent);margin-bottom:8px;
+}
+.q-text{font-size:16px;font-weight:600;margin-bottom:14px;line-height:1.5}
+.q-options{display:flex;flex-direction:column;gap:8px}
+.q-opt{
+  padding:12px 16px;border:1px solid var(--line);cursor:pointer;
+  display:flex;align-items:center;gap:12px;transition:all 0.2s;
+  border-radius:2px;
+}
+.q-opt:hover{border-color:var(--ink-3);background:var(--paper)}
+.q-opt.selected{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.q-opt .marker{
+  width:22px;height:22px;border:1.5px solid currentColor;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  flex-shrink:0;
+}
+.q-opt.selected .marker::after{content:'✓'}
+
+/* ====== NAV BUTTONS ====== */
+.nav-row{
+  display:flex;justify-content:space-between;gap:12px;margin-top:24px;
+  padding-top:24px;border-top:1px solid var(--line);
+}
+.btn{
+  padding:14px 28px;border:1px solid var(--ink);
+  font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;
+  font-weight:500;cursor:pointer;transition:all 0.2s;text-transform:uppercase;
+  background:#fff;color:var(--ink);border-radius:2px;
+}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.primary:hover{background:var(--accent);border-color:var(--accent)}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.btn.ghost{border:none;background:transparent;color:var(--ink-3)}
+.btn.ghost:hover{color:var(--ink);background:transparent}
+
+/* ====== SUCCESS SCREEN ====== */
+.success{
+  text-align:center;padding:60px 20px;
+}
+.success .seal{
+  display:inline-block;padding:28px 44px;
+  border:3px double var(--green);background:#fff;
+  margin-bottom:24px;transform:rotate(-2deg);
+  position:relative;
+}
+.success .seal::before{
+  content:'APPROVED';
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-15deg);
+  font-family:'IBM Plex Mono',monospace;font-size:50px;font-weight:700;
+  color:rgba(63,107,65,0.08);letter-spacing:0.05em;pointer-events:none;
+}
+.success h2{font-size:32px;margin-bottom:8px;color:var(--ink)}
+.success .app-id{
+  display:inline-block;padding:10px 20px;background:var(--paper-2);
+  font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;
+  margin:14px 0;border:1px dashed var(--ink-3);
+}
+.success p{color:var(--ink-3);max-width:440px;margin:8px auto;font-size:14px}
+
+/* Hidden file input */
+.file-input{display:none}
+
+/* Settings modal (URL config) */
+.url-cfg{
+  background:var(--paper-2);border:1px dashed var(--ink-4);padding:14px 18px;
+  margin-bottom:24px;font-size:12px;
+}
+.url-cfg input{
+  width:100%;padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;
+  border:1px solid var(--line);margin-top:6px;background:#fff;
+}
+.url-cfg-status{margin-top:6px;color:var(--ink-3);font-size:11px}
+.url-cfg-status .ok{color:var(--green)}
+.url-cfg-status .err{color:var(--accent)}
+
+/* Loading overlay */
+.loading{
+  position:fixed;inset:0;background:rgba(250,247,242,0.96);z-index:9999;
+  display:none;align-items:center;justify-content:center;flex-direction:column;
+}
+.loading.show{display:flex}
+.spinner{
+  width:48px;height:48px;border:3px solid var(--line);border-top-color:var(--accent);
+  border-radius:50%;animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{margin-top:16px;font-size:13px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace}
+
+/* Footer */
+.foot{
+  margin-top:48px;padding-top:24px;border-top:1px solid var(--line);
+  text-align:center;font-size:11px;color:var(--ink-4);
+  font-family:'IBM Plex Mono',monospace;letter-spacing:0.1em;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Masthead -->
+  <header class="masthead">
+    <div class="eyebrow">
+      <span><span class="dot"></span>RECRUITING · 2026</span>
+      <span id="liveTime">--:--</span>
+    </div>
+    <h1 class="title">ใบสมัคร<em>งาน</em></h1>
+    <p class="tagline">JKN & FACAI กำลังมองหาพนักงานคุณภาพร่วมงาน — กรอกใบสมัครให้ครบถ้วน ทีม HR จะติดต่อกลับภายใน 3-5 วันทำการ</p>
+  </header>
+
+  <!-- API URL Config (hidden by default, show ?setup=1) -->
+  <div id="urlCfg" class="url-cfg" style="display:none">
+    <strong>⚙️ Setup API URL</strong>
+    <input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    <div class="url-cfg-status" id="urlStatus">กรอก Web App URL ของ Apps Script</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress" id="progress">
+    <div class="step-pill active" data-step="1">01 · ตำแหน่ง</div>
+    <div class="step-pill" data-step="2">02 · ข้อมูลส่วนตัว</div>
+    <div class="step-pill" data-step="3">03 · ติดต่อ</div>
+    <div class="step-pill" data-step="4">04 · เอกสาร</div>
+    <div class="step-pill" data-step="5">05 · แบบทดสอบ</div>
+  </div>
+
+  <!-- =================================================================
+       STEP 1 — ตำแหน่งและบริษัท
+       ================================================================= -->
+  <div class="step active" data-step="1">
+    <div class="section">
+      <div class="sec-num">SECTION 01</div>
+      <div class="sec-title">ตำแหน่งและบริษัทที่สมัคร</div>
+      <div class="sec-desc">เริ่มต้นด้วยการบอกเราว่าคุณสนใจตำแหน่งใด ที่บริษัทไหน</div>
+
+      <div class="row">
+        <div class="field">
+          <label>บริษัทที่ต้องการสมัคร <span class="req">*</span></label>
+          <div class="chip-group" id="company-chips">
+            <button type="button" class="chip" data-value="JKN">🏢 JKN</button>
+            <button type="button" class="chip" data-value="FC">🏭 FACAI (FC)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row r2">
+        <div class="field">
+          <label>ตำแหน่งที่สนใจ <span class="req">*</span></label>
+          <input type="text" id="position" placeholder="เช่น Sales / Cashier / Keeper">
+        </div>
+        <div class="field">
+          <label>ประเภทค่าจ้าง <span class="req">*</span></label>
+          <div class="chip-group" id="wagetype-chips">
+            <button type="button" class="chip" data-value="Daily">รายวัน</button>
+            <button type="button" class="chip" data-value="Monthly">รายเดือน</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>อัตราค่าจ้างที่คาดหวัง (บาท)</label>
+          <input type="number" id="expectedWage" placeholder="เช่น 12000">
+          <div class="field-hint" id="wageHint">— เลือกประเภทค่าจ้างก่อน —</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       STEP 2 — ข้อมูลส่วนตัว
+       ================================================================= -->
+  <div class="step" data-step="2">
+    <div class="section">
+      <div class="sec-num">SECTION 02</div>
+      <div class="sec-title">ข้อมูลส่วนตัว</div>
+      <div class="sec-desc">กรอกข้อมูลส่วนตัวให้ครบถ้วนตามบัตรประชาชน</div>
+
+      <div class="row r3">
+        <div class="field">
+          <label>ชื่อจริง <span class="req">*</span></label>
+          <input type="text" id="firstName" placeholder="สมชาย">
+        </div>
+        <div class="field">
+          <label>นามสกุล <span class="req">*</span></label>
+          <input type="text" id="lastName" placeholder="ใจดี">
+        </div>
+        <div class="field">
+          <label>ชื่อเล่น</label>
+          <input type="text" id="nickname" placeholder="ชาย">
+        </div>
+      </div>
+
+      <div class="row r3">
+        <div class="field">
+          <label>วัน/เดือน/ปีเกิด (พ.ศ.) <span class="req">*</span></label>
+          <input type="text" id="dobBE" placeholder="2540-05-15" pattern="\d{4}-\d{2}-\d{2}" oninput="updateAge()">
+          <div class="field-hint">รูปแบบ YYYY-MM-DD เช่น 2540-05-15</div>
+        </div>
+        <div class="field">
+          <label>อายุ</label>
+          <div class="computed-age" id="ageCalc">—</div>
+        </div>
+        <div class="field">
+          <label>เพศ <span class="req">*</span></label>
+          <div class="chip-group" id="gender-chips">
+            <button type="button" class="chip" data-value="Male">ชาย</button>
+            <button type="button" class="chip" data-value="Female">หญิง</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row r3">
+        <div class="field">
+          <label>ศาสนา</label>
+          <div class="chip-group" id="religion-chips">
+            <button type="button" class="chip" data-value="Buddhist">พุทธ</button>
+            <button type="button" class="chip" data-value="Islam">อิสลาม</button>
+            <button type="button" class="chip" data-value="Christian">คริสต์</button>
+            <button type="button" class="chip" data-value="Other">อื่นๆ</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>สัญชาติ</label>
+          <input type="text" id="nationality" placeholder="ไทย" value="ไทย">
+        </div>
+        <div class="field">
+          <label>เลขบัตรประชาชน <span class="req">*</span></label>
+          <input type="text" id="nationalId" placeholder="1234567890123" maxlength="13">
+        </div>
+      </div>
+
+      <div class="row r2">
+        <div class="field">
+          <label>สถานภาพสมรส</label>
+          <div class="chip-group" id="marital-chips">
+            <button type="button" class="chip" data-value="Single">โสด</button>
+            <button type="button" class="chip" data-value="Married">สมรส</button>
+            <button type="button" class="chip" data-value="Divorced">หย่า</button>
+            <button type="button" class="chip" data-value="Widowed">หม้าย</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>มีบุตรหรือยัง</label>
+          <div class="chip-group" id="children-chips">
+            <button type="button" class="chip" data-value="No">ยังไม่มี</button>
+            <button type="button" class="chip" data-value="Yes">มี</button>
+          </div>
+          <div id="numChildrenWrap" style="margin-top:8px;display:none">
+            <input type="number" id="numChildren" placeholder="จำนวนบุตร" min="1" max="20">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field" id="militaryWrap" style="display:none">
+          <label>สถานะเกณฑ์ทหาร</label>
+          <div class="chip-group" id="military-chips">
+            <button type="button" class="chip" data-value="Exempt">ได้รับการยกเว้น</button>
+            <button type="button" class="chip" data-value="Done">ผ่านการเกณฑ์แล้ว</button>
+            <button type="button" class="chip" data-value="Pending">ยังไม่ได้เกณฑ์</button>
+            <button type="button" class="chip" data-value="In Service">รับราชการทหาร</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>ความสามารถพิเศษ / ทักษะที่มี</label>
+          <textarea id="specialSkills" placeholder="เช่น ขับรถมอเตอร์ไซค์/รถยนต์ได้ • ใช้ Excel ได้ดี • พูดภาษาอังกฤษได้ • มีใบขับขี่..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       STEP 3 — ติดต่อ
+       ================================================================= -->
+  <div class="step" data-step="3">
+    <div class="section">
+      <div class="sec-num">SECTION 03</div>
+      <div class="sec-title">ที่อยู่และการติดต่อ</div>
+      <div class="sec-desc">ข้อมูลที่อยู่และเบอร์ติดต่อให้สามารถติดต่อกลับได้</div>
+
+      <div class="row r2">
+        <div class="field">
+          <label>ที่อยู่ปัจจุบัน <span class="req">*</span></label>
+          <textarea id="currentAddress" placeholder="บ้านเลขที่ / หมู่ / ถนน / ตำบล / อำเภอ / จังหวัด / รหัสไปรษณีย์"></textarea>
+        </div>
+        <div class="field">
+          <label>ที่อยู่ตามทะเบียนบ้าน</label>
+          <textarea id="registeredAddress" placeholder="เหมือนที่อยู่ปัจจุบัน หรือกรอกใหม่"></textarea>
+          <button type="button" onclick="copyAddress()" style="margin-top:6px;padding:6px 12px;border:1px solid var(--line);background:#fff;font-family:'IBM Plex Mono',monospace;font-size:11px;cursor:pointer">📋 คัดลอกจากที่อยู่ปัจจุบัน</button>
+        </div>
+      </div>
+
+      <div class="row r2">
+        <div class="field">
+          <label>เบอร์โทรศัพท์ <span class="req">*</span></label>
+          <input type="tel" id="tel" placeholder="08X-XXX-XXXX">
+        </div>
+        <div class="field">
+          <label>เบอร์โทรสำรอง</label>
+          <input type="tel" id="backupTel" placeholder="(ไม่บังคับ)">
+        </div>
+      </div>
+
+      <div class="row r3">
+        <div class="field">
+          <label>ผู้ติดต่อฉุกเฉิน <span class="req">*</span></label>
+          <input type="text" id="emergencyName" placeholder="ชื่อ-นามสกุล">
+        </div>
+        <div class="field">
+          <label>เบอร์ฉุกเฉิน <span class="req">*</span></label>
+          <input type="tel" id="emergencyTel" placeholder="08X-XXX-XXXX">
+        </div>
+        <div class="field">
+          <label>ความสัมพันธ์</label>
+          <input type="text" id="emergencyRelation" placeholder="เช่น พ่อ / แม่ / พี่">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       STEP 4 — เอกสาร
+       ================================================================= -->
+  <div class="step" data-step="4">
+    <div class="section">
+      <div class="sec-num">SECTION 04</div>
+      <div class="sec-title">เอกสารและรูปถ่าย</div>
+      <div class="sec-desc">อัพโหลดรูปถ่ายเอกสารที่จำเป็น (ถ่ายจากมือถือได้) — รูปถ่ายหน้าตรงและบัตรประชาชน <span class="req">*</span> จำเป็นต้องอัพโหลด</div>
+
+      <div class="photo-grid">
+        <label class="photo-card required" data-target="photoFace">
+          <span class="icon">📷</span>
+          <span class="lbl">รูปถ่ายหน้าตรง</span>
+          <input type="file" class="file-input" accept="image/*" capture="user">
+          <button type="button" class="remove">×</button>
+        </label>
+        <label class="photo-card required" data-target="photoNationalId">
+          <span class="icon">🪪</span>
+          <span class="lbl">บัตรประชาชน</span>
+          <input type="file" class="file-input" accept="image/*">
+          <button type="button" class="remove">×</button>
+        </label>
+        <label class="photo-card" data-target="photoMcLicense">
+          <span class="icon">🛵</span>
+          <span class="lbl">ใบขับขี่ จยย.</span>
+          <input type="file" class="file-input" accept="image/*">
+          <button type="button" class="remove">×</button>
+        </label>
+        <label class="photo-card" data-target="photoCarLicense">
+          <span class="icon">🚗</span>
+          <span class="lbl">ใบขับขี่รถยนต์</span>
+          <input type="file" class="file-input" accept="image/*">
+          <button type="button" class="remove">×</button>
+        </label>
+        <label class="photo-card" data-target="photoHouseReg">
+          <span class="icon">🏠</span>
+          <span class="lbl">ทะเบียนบ้าน</span>
+          <input type="file" class="file-input" accept="image/*">
+          <button type="button" class="remove">×</button>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       STEP 5 — แบบทดสอบ
+       ================================================================= -->
+  <div class="step" data-step="5">
+    <div class="section">
+      <div class="sec-num">SECTION 05</div>
+      <div class="sec-title">แบบทดสอบความสามารถ</div>
+      <div class="sec-desc">ตอบ 8 ข้อนี้ตามที่คุณคิดจริงๆ — ไม่มีถูกผิดเด็ดขาด เราใช้เพื่อทำความรู้จักคุณ</div>
+
+      <div id="test-questions"></div>
+
+      <div style="background:var(--paper-2);padding:16px;margin-top:14px;border-left:3px solid var(--gold);font-size:13px;color:var(--ink-2)">
+        <strong>📝 ก่อนกดส่งใบสมัคร</strong> — กรุณาตรวจสอบข้อมูลทั้งหมดให้ถูกต้อง เมื่อส่งแล้วทีม HR จะพิจารณาใบสมัครและติดต่อกลับ
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       SUCCESS
+       ================================================================= -->
+  <div class="step" data-step="success">
+    <div class="success">
+      <div class="seal">
+        <div style="position:relative;z-index:2">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);letter-spacing:0.2em;margin-bottom:6px">RECEIVED</div>
+          <div style="font-size:22px;font-weight:700;color:var(--ink)">ใบสมัครเรียบร้อย</div>
+        </div>
+      </div>
+      <h2>ขอบคุณที่สมัครงานกับเรา</h2>
+      <p>ทีม HR จะตรวจสอบใบสมัครและติดต่อกลับภายใน 3-5 วันทำการ</p>
+      <div class="app-id" id="appIdShow">APP-XXXXXX-XXXX</div>
+      <p style="font-size:12px;color:var(--ink-4);margin-top:20px">โปรดบันทึกรหัสนี้ไว้สำหรับติดตามสถานะ</p>
+    </div>
+  </div>
+
+  <!-- ==== NAV ==== -->
+  <div class="nav-row" id="navRow">
+    <button type="button" class="btn ghost" id="btnBack" onclick="prevStep()">← ย้อนกลับ</button>
+    <button type="button" class="btn primary" id="btnNext" onclick="nextStep()">ถัดไป →</button>
+  </div>
+
+  <div class="foot">
+    JKN & FACAI · POWERED BY HR PAYROLL V4 · 2026
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>กำลังส่งใบสมัคร...</p>
+</div>
+
+<script>
+// ==================== STATE ====================
+const $ = id => document.getElementById(id);
+const QS = (sel, root=document) => root.querySelector(sel);
+const QSA = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+let currentStep = 1;
+const TOTAL_STEPS = 5;
+const formData = {
+  testAnswers: {},
+  photos: { photoFace:'', photoNationalId:'', photoMcLicense:'', photoCarLicense:'', photoHouseReg:'' }
+};
+
+// API URL — set via ?setup=1 or env
+let API_URL = localStorage.getItem('apply_api_url') || '';
+
+// Show setup if ?setup=1
+if(new URLSearchParams(location.search).get('setup')==='1'){
+  $('urlCfg').style.display='block';
+  $('apiUrl').value = API_URL;
+  $('apiUrl').addEventListener('input', e=>{
+    API_URL = e.target.value.trim();
+    localStorage.setItem('apply_api_url', API_URL);
+    $('urlStatus').innerHTML = API_URL ? '<span class="ok">✓ บันทึกแล้ว</span>' : '<span class="err">กรุณากรอก URL</span>';
+  });
+}
+
+// ==================== TEST QUESTIONS ====================
+const TEST_QUESTIONS = [
+  {
+    q: 'ถ้าลูกค้าหงุดหงิดและตะคอกใส่คุณอย่างไม่มีเหตุผล คุณจะทำอย่างไร?',
+    options: [
+      { text: 'ตอบโต้ทันทีให้ลูกค้ารู้ว่าไม่ถูกต้อง', score: 1 },
+      { text: 'ฟังให้จบ พยายามเข้าใจ แล้วแก้ปัญหาให้', score: 5 },
+      { text: 'นิ่งเฉยไม่ตอบโต้แล้วเดินหนี', score: 2 },
+      { text: 'เรียกหัวหน้ามาคุยให้ทันที', score: 3 }
+    ]
+  },
+  {
+    q: 'หัวหน้ามอบหมายงานหลายอย่างพร้อมกัน คุณจะจัดการอย่างไร?',
+    options: [
+      { text: 'ทำตามลำดับที่ได้รับ ไม่จัดเรียง', score: 2 },
+      { text: 'ขอทำพร้อมกันทั้งหมด', score: 1 },
+      { text: 'จัดลำดับความสำคัญและแจ้งหัวหน้าถ้าไม่ทัน', score: 5 },
+      { text: 'รอหัวหน้ามาบอกว่าอันไหนสำคัญที่สุด', score: 2 }
+    ]
+  },
+  {
+    q: 'เพื่อนร่วมงานทำผิดและโยนความผิดมาให้คุณ คุณจะ...',
+    options: [
+      { text: 'รับไว้แล้วจบ ไม่อยากมีปัญหา', score: 1 },
+      { text: 'อธิบายข้อเท็จจริงให้หัวหน้าฟังอย่างใจเย็น', score: 5 },
+      { text: 'โต้กลับด้วยความผิดของเพื่อน', score: 2 },
+      { text: 'ไปบ่นกับเพื่อนคนอื่นแทน', score: 1 }
+    ]
+  },
+  {
+    q: 'ถ้าคุณเห็นเพื่อนร่วมงานขโมยของในร้าน คุณจะ...',
+    options: [
+      { text: 'ไม่เห็น ไม่ได้ยิน ไม่รู้', score: 1 },
+      { text: 'แจ้งหัวหน้าทันทีโดยไม่ลังเล', score: 5 },
+      { text: 'คุยกับเพื่อนเอง ขอให้คืนของ', score: 3 },
+      { text: 'รอดูก่อนว่าจะทำอีกไหม', score: 2 }
+    ]
+  },
+  {
+    q: 'งานที่คุณทำเสร็จเร็วกว่ากำหนด คุณจะ...',
+    options: [
+      { text: 'พักผ่อน รอเวลาเลิกงาน', score: 2 },
+      { text: 'เล่นมือถือ', score: 1 },
+      { text: 'ถามหัวหน้าว่ามีงานอื่นให้ช่วยไหม', score: 5 },
+      { text: 'ช่วยเพื่อนร่วมงานที่ยังทำไม่เสร็จ', score: 4 }
+    ]
+  },
+  {
+    q: 'คุณคิดว่าตัวเองเป็นคนแบบใดมากที่สุด?',
+    options: [
+      { text: 'ทำตามที่บอก ไม่ค่อยคิดต่อ', score: 2 },
+      { text: 'ขยัน เป็นระเบียบ ตรงเวลา', score: 5 },
+      { text: 'สนุกสนาน ชอบคุย', score: 3 },
+      { text: 'เก่งคนเดียวได้ ไม่ต้องการทีม', score: 2 }
+    ]
+  },
+  {
+    q: 'ถ้าวันนี้ป่วย แต่ร้านขาดคน ลูกค้าเยอะมาก คุณจะ...',
+    options: [
+      { text: 'ลาป่วยตามสิทธิ', score: 3 },
+      { text: 'มาทำงาน แต่บอกหัวหน้าว่าป่วย', score: 4 },
+      { text: 'มาแบบไม่บอกใคร เผื่อหัวหน้าจะมองว่าอู้', score: 2 },
+      { text: 'โทรปรึกษาหัวหน้าก่อน ดูสถานการณ์ร่วมกัน', score: 5 }
+    ]
+  },
+  {
+    q: 'อะไรคือเหตุผลหลักที่คุณอยากทำงานที่นี่?',
+    options: [
+      { text: 'ต้องการรายได้เพื่อเลี้ยงครอบครัว', score: 4 },
+      { text: 'ใกล้บ้าน เดินทางสะดวก', score: 3 },
+      { text: 'อยากเรียนรู้และเติบโตในอาชีพ', score: 5 },
+      { text: 'ยังไม่มีงานทำ จึงสมัคร', score: 2 }
+    ]
+  }
+];
+
+function renderTest(){
+  const wrap = $('test-questions');
+  wrap.innerHTML = TEST_QUESTIONS.map((q, idx) => `
+    <div class="q-card">
+      <div class="q-num">QUESTION ${String(idx+1).padStart(2,'0')} / ${String(TEST_QUESTIONS.length).padStart(2,'0')}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.options.map((opt, oi) => `
+          <div class="q-opt" data-q="${idx}" data-opt="${oi}" data-score="${opt.score}" onclick="pickAnswer(${idx},${oi},${opt.score})">
+            <div class="marker"></div>
+            <div>${opt.text}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+function pickAnswer(qIdx, optIdx, score){
+  formData.testAnswers[qIdx] = { opt: optIdx, score: score };
+  // UI update
+  QSA(`.q-opt[data-q="${qIdx}"]`).forEach(el => el.classList.remove('selected'));
+  QS(`.q-opt[data-q="${qIdx}"][data-opt="${optIdx}"]`).classList.add('selected');
+}
+
+// ==================== CHIPS ====================
+function setupChips(groupId, fieldKey){
+  QSA('#'+groupId+' .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      QSA('#'+groupId+' .chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      formData[fieldKey] = chip.dataset.value;
+      onChipChange(fieldKey, chip.dataset.value);
+    });
+  });
+}
+function onChipChange(key, value){
+  if(key==='wageType'){
+    $('wageHint').textContent = value==='Daily'
+      ? 'เช่น 350-450 บาท / วัน'
+      : (value==='Monthly' ? 'เช่น 12,000-18,000 บาท / เดือน' : '— เลือกประเภทค่าจ้างก่อน —');
+  }
+  if(key==='gender'){
+    $('militaryWrap').style.display = (value==='Male') ? 'block' : 'none';
+  }
+  if(key==='hasChildren'){
+    $('numChildrenWrap').style.display = (value==='Yes') ? 'block' : 'none';
+  }
+}
+
+setupChips('company-chips','company');
+setupChips('wagetype-chips','wageType');
+setupChips('gender-chips','gender');
+setupChips('religion-chips','religion');
+setupChips('marital-chips','maritalStatus');
+setupChips('children-chips','hasChildren');
+setupChips('military-chips','militaryStatus');
+
+// ==================== AGE CALC ====================
+function updateAge(){
+  const dobBE = $('dobBE').value.trim();
+  if(!dobBE.match(/^\d{4}-\d{2}-\d{2}$/)){ $('ageCalc').textContent='—'; return; }
+  const beYear = parseInt(dobBE.substring(0,4));
+  const adYear = beYear - 543;
+  const dob = new Date(adYear, parseInt(dobBE.substring(5,7))-1, parseInt(dobBE.substring(8,10)));
+  if(isNaN(dob.getTime())){ $('ageCalc').textContent='—'; return; }
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const m = now.getMonth() - dob.getMonth();
+  if(m < 0 || (m===0 && now.getDate() < dob.getDate())) age--;
+  $('ageCalc').textContent = age + ' ปี';
+}
+
+function copyAddress(){
+  $('registeredAddress').value = $('currentAddress').value;
+}
+
+// ==================== PHOTO UPLOAD ====================
+QSA('.photo-card').forEach(card => {
+  const target = card.dataset.target;
+  const input = card.querySelector('input[type="file"]');
+  const removeBtn = card.querySelector('.remove');
+  card.addEventListener('click', e => {
+    if(e.target===removeBtn) return;
+    input.click();
+  });
+  input.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    // Compress + read as base64
+    const compressed = await compressImage(file, 1200, 0.85);
+    formData.photos[target] = compressed.base64;
+    // Show preview
+    const img = new Image();
+    img.src = compressed.dataUrl;
+    card.querySelectorAll('img').forEach(i=>i.remove());
+    card.appendChild(img);
+    card.classList.add('has-image');
+  });
+  removeBtn.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    formData.photos[target] = '';
+    card.querySelectorAll('img').forEach(i=>i.remove());
+    card.classList.remove('has-image');
+    input.value = '';
+  });
+});
+
+function compressImage(file, maxDim, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w=img.width, h=img.height;
+        if(w > h){ if(w > maxDim){ h *= maxDim/w; w = maxDim; }}
+        else { if(h > maxDim){ w *= maxDim/h; h = maxDim; }}
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve({ dataUrl: dataUrl, base64: dataUrl.split(',')[1] });
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ==================== STEP NAVIGATION ====================
+function showStep(n){
+  QSA('.step').forEach(s => s.classList.remove('active'));
+  QSA('.step-pill').forEach(p => p.classList.remove('active'));
+  if(n==='success'){
+    QS('.step[data-step="success"]').classList.add('active');
+    $('navRow').style.display='none';
+    return;
+  }
+  QS(`.step[data-step="${n}"]`).classList.add('active');
+  // Mark progress
+  QSA('.step-pill').forEach(p => {
+    const pn = parseInt(p.dataset.step);
+    if(pn < n) p.classList.add('done');
+    else if(pn === n) p.classList.add('active');
+    else p.classList.remove('done');
+  });
+  $('btnBack').style.visibility = (n>1) ? 'visible' : 'hidden';
+  $('btnNext').textContent = (n===TOTAL_STEPS) ? '📤 ส่งใบสมัคร' : 'ถัดไป →';
+  window.scrollTo({top:0, behavior:'smooth'});
+  // render test on entering step 5
+  if(n===5 && !$('test-questions').children.length) renderTest();
+}
+
+function nextStep(){
+  if(!validateStep(currentStep)) return;
+  if(currentStep===TOTAL_STEPS){ submitApp(); return; }
+  currentStep++;
+  showStep(currentStep);
+}
+function prevStep(){
+  if(currentStep<=1) return;
+  currentStep--;
+  showStep(currentStep);
+}
+
+function validateStep(n){
+  // collect text fields
+  if(n===1){
+    if(!formData.company){ alert('กรุณาเลือกบริษัท'); return false; }
+    formData.position = $('position').value.trim();
+    if(!formData.position){ alert('กรุณากรอกตำแหน่ง'); return false; }
+    if(!formData.wageType){ alert('กรุณาเลือกประเภทค่าจ้าง'); return false; }
+    formData.expectedWage = $('expectedWage').value;
+  }
+  if(n===2){
+    formData.firstName = $('firstName').value.trim();
+    formData.lastName = $('lastName').value.trim();
+    formData.nickname = $('nickname').value.trim();
+    formData.dobBE = $('dobBE').value.trim();
+    formData.nationality = $('nationality').value.trim();
+    formData.nationalId = $('nationalId').value.trim();
+    formData.numChildren = $('numChildren').value;
+    formData.specialSkills = $('specialSkills').value.trim();
+    if(!formData.firstName||!formData.lastName){ alert('กรุณากรอกชื่อ-นามสกุล'); return false; }
+    if(!formData.dobBE.match(/^\d{4}-\d{2}-\d{2}$/)){ alert('รูปแบบวันเกิดไม่ถูก (YYYY-MM-DD)'); return false; }
+    if(!formData.gender){ alert('กรุณาเลือกเพศ'); return false; }
+    if(!formData.nationalId || formData.nationalId.length!==13){ alert('เลขบัตรประชาชน 13 หลัก'); return false; }
+  }
+  if(n===3){
+    formData.currentAddress = $('currentAddress').value.trim();
+    formData.registeredAddress = $('registeredAddress').value.trim();
+    formData.tel = $('tel').value.trim();
+    formData.backupTel = $('backupTel').value.trim();
+    formData.emergencyName = $('emergencyName').value.trim();
+    formData.emergencyTel = $('emergencyTel').value.trim();
+    formData.emergencyRelation = $('emergencyRelation').value.trim();
+    if(!formData.currentAddress){ alert('กรุณากรอกที่อยู่ปัจจุบัน'); return false; }
+    if(!formData.tel){ alert('กรุณากรอกเบอร์โทร'); return false; }
+    if(!formData.emergencyName||!formData.emergencyTel){ alert('กรุณากรอกข้อมูลผู้ติดต่อฉุกเฉิน'); return false; }
+  }
+  if(n===4){
+    if(!formData.photos.photoFace){ alert('กรุณาอัพโหลดรูปถ่ายหน้าตรง'); return false; }
+    if(!formData.photos.photoNationalId){ alert('กรุณาอัพโหลดรูปบัตรประชาชน'); return false; }
+  }
+  if(n===5){
+    const total = TEST_QUESTIONS.length;
+    const answered = Object.keys(formData.testAnswers).length;
+    if(answered < total){ alert('กรุณาตอบให้ครบทั้ง '+total+' ข้อ ('+answered+'/'+total+' แล้ว)'); return false; }
+  }
+  return true;
+}
+
+// ==================== SUBMIT ====================
+async function submitApp(){
+  if(!API_URL){
+    alert('ระบบยังไม่ได้ตั้งค่า API URL ติดต่อ HR');
+    return;
+  }
+  $('loading').classList.add('show');
+  // Calculate test score
+  let testScore = 0;
+  Object.values(formData.testAnswers).forEach(a => testScore += a.score);
+
+  const payload = {
+    action: 'submit_application',
+    company: formData.company, position: formData.position,
+    wageType: formData.wageType, expectedWage: formData.expectedWage,
+    firstName: formData.firstName, lastName: formData.lastName, nickname: formData.nickname,
+    dobBE: formData.dobBE, gender: formData.gender, religion: formData.religion,
+    nationality: formData.nationality, nationalId: formData.nationalId,
+    maritalStatus: formData.maritalStatus, hasChildren: formData.hasChildren,
+    numChildren: formData.numChildren, militaryStatus: formData.militaryStatus,
+    currentAddress: formData.currentAddress, registeredAddress: formData.registeredAddress,
+    tel: formData.tel, backupTel: formData.backupTel,
+    emergencyName: formData.emergencyName, emergencyTel: formData.emergencyTel,
+    emergencyRelation: formData.emergencyRelation,
+    specialSkills: formData.specialSkills,
+    photoFace: formData.photos.photoFace,
+    photoNationalId: formData.photos.photoNationalId,
+    photoMcLicense: formData.photos.photoMcLicense,
+    photoCarLicense: formData.photos.photoCarLicense,
+    photoHouseReg: formData.photos.photoHouseReg,
+    testScore: testScore,
+    testAnswers: formData.testAnswers
+  };
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify(payload)
+    });
+    const d = await res.json();
+    $('loading').classList.remove('show');
+    if(d && d.success){
+      $('appIdShow').textContent = d.applicationId || '-';
+      currentStep = 'success';
+      showStep('success');
+    } else {
+      alert('❌ ส่งใบสมัครไม่สำเร็จ: ' + (d ? d.message : 'unknown'));
+    }
+  } catch(e){
+    $('loading').classList.remove('show');
+    alert('❌ เชื่อมต่อไม่ได้: ' + e.message);
+  }
+}
+
+// ==================== LIVE TIME ====================
+function tick(){
+  const t = new Date();
+  $('liveTime').textContent = String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+':'+String(t.getSeconds()).padStart(2,'0');
+}
+setInterval(tick, 1000); tick();
+
+// init
+showStep(1);
+</script>
+
+</body>
+</html>
