@@ -369,25 +369,11 @@ h1.title em{font-style:normal;color:var(--accent);font-weight:600}
         </div>
       </div>
 
-      <div class="row r2">
+      <div class="row">
         <div class="field">
           <label>ตำแหน่งที่สนใจ <span class="req">*</span></label>
           <input type="text" id="position" placeholder="เช่น Sales / Cashier / Keeper">
-        </div>
-        <div class="field">
-          <label>ประเภทค่าจ้าง <span class="req">*</span></label>
-          <div class="chip-group" id="wagetype-chips">
-            <button type="button" class="chip" data-value="Daily">รายวัน</button>
-            <button type="button" class="chip" data-value="Monthly">รายเดือน</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="field">
-          <label>อัตราค่าจ้างที่คาดหวัง (บาท)</label>
-          <input type="number" id="expectedWage" placeholder="เช่น 12000">
-          <div class="field-hint" id="wageHint">— เลือกประเภทค่าจ้างก่อน —</div>
+          <div class="field-hint">เรื่องค่าจ้าง รายวัน/รายเดือน จะคุยตอนสัมภาษณ์</div>
         </div>
       </div>
     </div>
@@ -558,36 +544,36 @@ h1.title em{font-style:normal;color:var(--accent);font-weight:600}
       <div class="sec-desc">อัพโหลดรูปถ่ายเอกสารที่จำเป็น (ถ่ายจากมือถือได้) — รูปถ่ายหน้าตรงและบัตรประชาชน <span class="req">*</span> จำเป็นต้องอัพโหลด</div>
 
       <div class="photo-grid">
-        <label class="photo-card required" data-target="photoFace">
+        <div class="photo-card required" data-target="photoFace">
           <span class="icon">📷</span>
           <span class="lbl">รูปถ่ายหน้าตรง</span>
           <input type="file" class="file-input" accept="image/*" capture="user">
           <button type="button" class="remove">×</button>
-        </label>
-        <label class="photo-card required" data-target="photoNationalId">
+        </div>
+        <div class="photo-card required" data-target="photoNationalId">
           <span class="icon">🪪</span>
           <span class="lbl">บัตรประชาชน</span>
           <input type="file" class="file-input" accept="image/*">
           <button type="button" class="remove">×</button>
-        </label>
-        <label class="photo-card" data-target="photoMcLicense">
+        </div>
+        <div class="photo-card" data-target="photoMcLicense">
           <span class="icon">🛵</span>
           <span class="lbl">ใบขับขี่ จยย.</span>
           <input type="file" class="file-input" accept="image/*">
           <button type="button" class="remove">×</button>
-        </label>
-        <label class="photo-card" data-target="photoCarLicense">
+        </div>
+        <div class="photo-card" data-target="photoCarLicense">
           <span class="icon">🚗</span>
           <span class="lbl">ใบขับขี่รถยนต์</span>
           <input type="file" class="file-input" accept="image/*">
           <button type="button" class="remove">×</button>
-        </label>
-        <label class="photo-card" data-target="photoHouseReg">
+        </div>
+        <div class="photo-card" data-target="photoHouseReg">
           <span class="icon">🏠</span>
           <span class="lbl">ทะเบียนบ้าน</span>
           <input type="file" class="file-input" accept="image/*">
           <button type="button" class="remove">×</button>
-        </label>
+        </div>
       </div>
     </div>
   </div>
@@ -782,11 +768,6 @@ function setupChips(groupId, fieldKey){
   });
 }
 function onChipChange(key, value){
-  if(key==='wageType'){
-    $('wageHint').textContent = value==='Daily'
-      ? 'เช่น 350-450 บาท / วัน'
-      : (value==='Monthly' ? 'เช่น 12,000-18,000 บาท / เดือน' : '— เลือกประเภทค่าจ้างก่อน —');
-  }
   if(key==='gender'){
     $('militaryWrap').style.display = (value==='Male') ? 'block' : 'none';
   }
@@ -796,7 +777,6 @@ function onChipChange(key, value){
 }
 
 setupChips('company-chips','company');
-setupChips('wagetype-chips','wageType');
 setupChips('gender-chips','gender');
 setupChips('religion-chips','religion');
 setupChips('marital-chips','maritalStatus');
@@ -835,7 +815,9 @@ QSA('.photo-card').forEach(card => {
   const input = card.querySelector('input[type="file"]');
   const removeBtn = card.querySelector('.remove');
   card.addEventListener('click', e => {
-    if(e.target===removeBtn) return;
+    // ⭐ ถ้ากดที่ remove button หรือ input โดยตรง → อย่า trigger ซ้ำ
+    if(e.target===removeBtn || e.target===input) return;
+    if(removeBtn.contains(e.target)) return;
     input.click();
   });
   input.addEventListener('change', async e => {
@@ -925,8 +907,6 @@ function validateStep(n){
     if(!formData.company){ alert('กรุณาเลือกบริษัท'); return false; }
     formData.position = $('position').value.trim();
     if(!formData.position){ alert('กรุณากรอกตำแหน่ง'); return false; }
-    if(!formData.wageType){ alert('กรุณาเลือกประเภทค่าจ้าง'); return false; }
-    formData.expectedWage = $('expectedWage').value;
   }
   if(n===2){
     formData.firstName = $('firstName').value.trim();
@@ -980,7 +960,6 @@ async function submitApp(){
   const payload = {
     action: 'submit_application',
     company: formData.company, position: formData.position,
-    wageType: formData.wageType, expectedWage: formData.expectedWage,
     firstName: formData.firstName, lastName: formData.lastName, nickname: formData.nickname,
     dob: formData.dob, gender: formData.gender, religion: formData.religion,
     nationality: formData.nationality, nationalId: formData.nationalId,
