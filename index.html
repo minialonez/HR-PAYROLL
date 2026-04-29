@@ -223,10 +223,15 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           </div>
           <div id="gpsDistLive" style="padding:10px 14px;background:var(--s2);border-radius:8px;margin:8px 0;font-size:13px;text-align:center;color:var(--t2)">📍 กำลังหาตำแหน่ง...</div>
           <div id="faceStatus" style="padding:10px 14px;background:var(--s2);border-radius:8px;margin:4px 0;font-size:13px;color:var(--t2);text-align:center">🤖 กำลังโหลดระบบจดจำใบหน้า...</div>
-          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="showManualId()">🔑 กรอกรหัสพนักงานแทน</button>
+          <button style="width:100%;padding:10px;background:var(--s3);color:var(--t2);border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-family:inherit" onclick="showManualId()">🔍 ค้นหาด้วยชื่อ (ถ้าระบบจำหน้าไม่ได้)</button>
           <div id="manualIdArea" style="display:none;margin-top:12px">
-            <input id="ciManualId" placeholder="รหัสพนักงาน เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:8px;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
-            <button class="btn-checkin" onclick="manualIdentify()">➡️ ตรวจสอบ</button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <input id="ciManualFirstName" placeholder="ชื่อจริง" style="padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit">
+              <input id="ciManualLastName" placeholder="นามสกุล" style="padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit">
+            </div>
+            <input id="ciManualId" type="hidden" value="">
+            <div id="ciManualResults" style="margin-bottom:8px"></div>
+            <button class="btn-checkin" onclick="manualIdentify()">➡️ ค้นหา</button>
           </div>
         </div>
 
@@ -299,11 +304,21 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
       <div class="checkin-container">
         <div class="checkin-card">
           <h3>🤳 ลงทะเบียนใบหน้า</h3>
-          <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">ระบบจะบันทึกวิดีโอใบหน้าหลายมุม เพื่อความแม่นยำในการจดจำ</p>
-          <div style="margin-bottom:12px">
-            <label style="font-size:11px;color:var(--t2)">Employee ID</label>
-            <input id="frEmpId" placeholder="เช่น JKN001" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+          <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">กรอกชื่อ-นามสกุล แล้วถ่ายใบหน้าหลายมุม ระบบจะค้นหาคุณในฐานข้อมูลให้อัตโนมัติ</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+            <div>
+              <label style="font-size:11px;color:var(--t2)">ชื่อจริง *</label>
+              <input id="frFirstName" placeholder="เช่น สมชาย" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--t2)">นามสกุล *</label>
+              <input id="frLastName" placeholder="เช่น ใจดี" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t1);font-size:14px;font-family:inherit">
+            </div>
           </div>
+          <!-- Hidden empId for backward compat -->
+          <input id="frEmpId" type="hidden" value="">
+          <!-- Auto-detected employee preview -->
+          <div id="frEmpPreview" style="display:none;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px;margin-bottom:12px;text-align:center"></div>
           <div class="camera-area">
             <video id="frVideo" autoplay playsinline muted></video>
             <canvas id="frCanvas" style="display:none"></canvas>
@@ -915,19 +930,55 @@ async function scanFace(){
   }catch(e){$('camStatus').textContent='⚠️ สแกนผิดพลาด';}
 }
 
-function showManualId(){$('manualIdArea').style.display='block';$('ciManualId').focus();}
+function showManualId(){$('manualIdArea').style.display='block';$('ciManualFirstName').focus();}
 
 async function manualIdentify(){
-  const empId=$('ciManualId').value.trim();if(!empId){alert('กรอกรหัสพนักงาน');return;}
+  const fname=$('ciManualFirstName').value.trim();
+  const lname=$('ciManualLastName').value.trim();
+  const directId=$('ciManualId').value.trim(); // จะมีค่าตอนกดเลือก candidate
+  if(!fname && !directId){alert('กรอกชื่อจริง');return;}
+
   // Capture current frame
   const video=$('camVideo'),canvas=$('camCanvas');
   if(video.videoWidth>0){canvas.width=video.videoWidth;canvas.height=video.videoHeight;const ctx=canvas.getContext('2d');ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0);ctx.setTransform(1,0,0,1,0,0);capturedPhoto=canvas.toDataURL('image/jpeg',0.7).split(',')[1];}
+
+  let empId=directId;
+  // ถ้ามี directId แล้ว (จากการเลือก candidate) → ใช้เลย
+  if(!empId){
+    // ค้นหาจากชื่อ
+    $('ciManualResults').innerHTML='<div style="color:var(--amb);font-size:12px;text-align:center">🔍 กำลังค้นหา...</div>';
+    const res=await apiGet('find_employee',{name:fname,surname:lname});
+    if(!res || !res.success){
+      $('ciManualResults').innerHTML='<div style="color:var(--red);font-size:12px;text-align:center">❌ '+((res&&res.message)||'ค้นหาไม่ได้')+'</div>';
+      return;
+    }
+    if(!res.matches || res.matches.length===0){
+      $('ciManualResults').innerHTML='<div style="color:var(--red);font-size:12px;text-align:center">❌ ไม่พบพนักงาน "'+fname+' '+lname+'"</div>';
+      return;
+    }
+    if(res.matches.length===1 || res.matches[0].exact){
+      empId=res.matches[0].empId;
+      $('ciManualResults').innerHTML='';
+    } else {
+      // หลายคน → ให้เลือก
+      const list=res.matches.slice(0,5).map(m=>'<button class="btn-checkin" style="background:var(--blue);margin-bottom:6px;text-align:left;padding:10px;width:100%" onclick="pickManualCandidate(\''+m.empId+'\')"><b>'+m.name+'</b>'+(m.nickname?' ('+m.nickname+')':'')+'<br><small style="opacity:.8">'+m.empId+' — '+m.company+(m.position?' • '+m.position:'')+'</small></button>').join('');
+      $('ciManualResults').innerHTML='<div style="color:var(--amb);font-size:12px;margin-bottom:6px">⚠️ พบหลายคน เลือกคนที่ใช่:</div>'+list;
+      return;
+    }
+  }
+
   identifiedEmp={empId:empId,name:empId,company:'',faceScore:0};
-  // Try to get employee info from API
+  // Get full info
   const d=await apiGet('employee_profile',{empId});
   if(d&&d.success){identifiedEmp.name=d.profile.name+' '+d.profile.surname;identifiedEmp.company=d.profile.company;}
   if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
   showStep2();
+}
+
+/** เลือก candidate จาก list — เซ็ต hidden empId แล้ว resubmit */
+function pickManualCandidate(empId){
+  $('ciManualId').value=empId;
+  manualIdentify();
 }
 
 function showStep2(){
@@ -1131,9 +1182,23 @@ async function submitCheckin(reason){
   });
   $('ciStep2').style.display='none';$('ciStepConfirm').style.display='none';$('ciStep3').style.display='block';
   if(result&&result.success){
-    $('resultContent').innerHTML='<div class="big">✅</div><h3 style="color:var(--grn)">'+result.message+'</h3><p style="color:var(--t2);margin-top:8px">'+identifiedEmp.name+'</p><p style="font-family:JetBrains Mono;font-size:20px;margin-top:12px">'+(result.data?result.data.time:'')+'</p>';
-    // Refresh dashboard data in background
+    const detectedComp=result.data&&result.data.detectedCompany?result.data.detectedCompany:'';
+    const gpsDist=result.data&&result.data.gpsDistance?result.data.gpsDistance:0;
+    const compInfo=detectedComp?'<p style="color:var(--blue);margin-top:6px;font-size:14px;font-weight:600">📍 ทำงานที่ '+detectedComp+(gpsDist?' ('+gpsDist+'m)':'')+'</p>':'';
+    $('resultContent').innerHTML='<div class="big">✅</div><h3 style="color:var(--grn)">'+result.message+'</h3><p style="color:var(--t2);margin-top:8px">'+identifiedEmp.name+'</p>'+compInfo+'<p style="font-family:JetBrains Mono;font-size:20px;margin-top:12px">'+(result.data?result.data.time:'')+'</p>';
     setTimeout(()=>loadAll(),1000);
+  }
+  else if(result && result.errorCode==='GPS_OUT_OF_RANGE'){
+    // ❌ อยู่ไกลจาก JKN/FC → แนะนำให้ใช้ Absent Mode
+    $('resultContent').innerHTML='<div class="big">📍</div><h3 style="color:var(--amb)">อยู่นอกพื้นที่ทำงาน</h3>'+
+      '<p style="color:var(--t2);margin-top:8px;line-height:1.6">คุณอยู่ไกลจาก JKN และ FC<br>ไม่สามารถ check-in จากตำแหน่งนี้ได้</p>'+
+      '<div style="margin-top:16px;padding:12px;background:var(--s2);border-radius:8px;font-size:13px;color:var(--t2);text-align:left;line-height:1.7">'+
+      '💡 <b>หากต้องการลา</b> ให้กลับไปและเลือกเหตุผล:<br>'+
+      '• 🤒 <b>ลาป่วย</b> (Sick Leave)<br>'+
+      '• 📋 <b>ลากิจ</b> (Personal Leave)<br>'+
+      '• 🔶 <b>ออกก่อนเวลา</b> (Early Leave)'+
+      '</div>'+
+      '<button class="btn-checkin" style="margin-top:12px;background:var(--blue)" onclick="restartCheckin()">↩️ กลับไปเลือกเหตุผลลา</button>';
   }
   else{$('resultContent').innerHTML='<div class="big">❌</div><h3 style="color:var(--red)">ไม่สำเร็จ</h3><p style="color:var(--t2);margin-top:8px">'+(result?result.message:'เชื่อมต่อไม่ได้')+'</p>';}
 }
@@ -1179,12 +1244,19 @@ function frReset(){
   $('frSubmitBtn').style.display='none';$('frStartBtn').style.display='block';
   $('frInstruction').style.display='none';$('frResult').textContent='';
   $('frCamStatus').textContent='กดปุ่มเพื่อเริ่ม';
+  // Clear new fields
+  if($('frFirstName')){$('frFirstName').value='';}
+  if($('frLastName')){$('frLastName').value='';}
+  if($('frEmpId')){$('frEmpId').value='';}
+  if($('frEmpPreview')){$('frEmpPreview').style.display='none';$('frEmpPreview').innerHTML='';}
   if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}
 }
 
 async function frStartScan(){
-  const empId=$('frEmpId').value.trim();
-  if(!empId){alert('กรุณากรอก Employee ID ก่อน');return;}
+  const firstName=$('frFirstName').value.trim();
+  const lastName=$('frLastName').value.trim();
+  if(!firstName && !lastName){alert('กรุณากรอกชื่อจริง และนามสกุล');return;}
+  if(!firstName){alert('กรุณากรอกชื่อจริง');return;}
   $('frStartBtn').style.display='none';
   $('frCamStatus').textContent='📸 กำลังเปิดกล้อง...';
   // Open camera
@@ -1253,15 +1325,40 @@ async function frCaptureFrame(){
 }
 
 async function frSubmit(){
-  const empId=$('frEmpId').value.trim();if(!empId){alert('กรอก Employee ID');return;}
+  const firstName=$('frFirstName').value.trim();
+  const lastName=$('frLastName').value.trim();
+  const manualEmpId=$('frEmpId').value.trim(); // ใช้ตอนเลือกจาก list candidates
+  if(!firstName && !manualEmpId){alert('กรอกชื่อจริง');return;}
+  if(frDescriptors.length<3){alert('สแกนใบหน้าได้น้อยเกินไป กรุณาสแกนใหม่');return;}
   $('frResult').innerHTML='<span style="color:var(--amb)">กำลังบันทึก... (เฉลี่ย '+frDescriptors.length+' จุด)</span>';
   // Average all descriptors
   const len=frDescriptors[0].length;const avg=new Array(len).fill(0);
   for(const desc of frDescriptors){for(let i=0;i<len;i++)avg[i]+=desc[i];}
   for(let i=0;i<len;i++)avg[i]/=frDescriptors.length;
-  const d=await apiPost({action:'face_register',empId,descriptor:JSON.stringify(avg),photos:frPhotos.slice(0,3)});
-  if(d&&d.success){$('frResult').innerHTML='<span style="color:var(--grn)">✅ ลงทะเบียนสำเร็จ! (เฉลี่ย '+frDescriptors.length+' จุด)</span>';await loadAllFaces();}
-  else{$('frResult').innerHTML='<span style="color:var(--red)">❌ '+(d?d.message:'ผิดพลาด')+'</span>';}
+
+  const payload={action:'face_register',descriptor:JSON.stringify(avg),photos:frPhotos.slice(0,3)};
+  if(manualEmpId){payload.empId=manualEmpId;}
+  else{payload.name=firstName;payload.surname=lastName;}
+
+  const d=await apiPost(payload);
+  if(d&&d.success){
+    $('frResult').innerHTML='<span style="color:var(--grn)">'+(d.message||'✅ ลงทะเบียนสำเร็จ')+'</span>';
+    $('frEmpPreview').style.display='block';
+    $('frEmpPreview').innerHTML='<div style="font-size:14px;font-weight:600;color:var(--grn)">✅ '+(d.name||firstName+' '+lastName)+'</div><div style="font-size:11px;color:var(--t2);margin-top:4px">'+(d.empId||'')+(d.company?' — '+d.company:'')+'</div>';
+    await loadAllFaces();
+  } else if(d && d.multipleMatches && d.candidates){
+    // หลายคนชื่อใกล้กัน → ให้เลือก
+    const list=d.candidates.map((c,i)=>'<button class="btn-checkin" style="background:var(--blue);margin-bottom:6px;text-align:left;padding:10px" onclick="frPickCandidate(\''+c.empId+'\')"><b>'+c.name+'</b>'+(c.nickname?' ('+c.nickname+')':'')+'<br><small style="opacity:.8">'+c.empId+' — '+c.company+(c.position?' • '+c.position:'')+'</small></button>').join('');
+    $('frResult').innerHTML='<div style="color:var(--amb);margin-bottom:10px">⚠️ พบหลายคนที่ชื่อใกล้เคียง กรุณาเลือกคนที่ใช่:</div>'+list;
+  } else {
+    $('frResult').innerHTML='<span style="color:var(--red)">❌ '+(d?d.message:'ผิดพลาด')+'</span>';
+  }
+}
+
+/** เลือก candidate จาก list (กรณีชื่อซ้ำ) แล้ว resubmit ด้วย empId */
+function frPickCandidate(empId){
+  $('frEmpId').value=empId;
+  frSubmit();
 }
 
 // ===== SUMMARY =====
