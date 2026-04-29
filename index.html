@@ -142,6 +142,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
   <input id="loginUser" placeholder="👤 Username" autofocus>
   <input id="loginPass" placeholder="🔒 Password" type="password" onkeydown="if(event.key==='Enter')doLogin()">
   <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+  <button onclick="showRegister()" style="width:100%;padding:12px;background:var(--grn-bg);border:1px solid var(--grn);border-radius:8px;color:var(--grn);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px">📝 สมัครสมาชิก</button>
   <div style="text-align:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)">
     <button onclick="guestCheckin()" style="width:100%;padding:12px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--amb);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">📸 Guest Check-in (ไม่ต้อง Login)</button>
     <p style="font-size:10px;color:var(--t3);margin-top:6px">สำหรับพนักงานที่ยืมมือถือคนอื่นสแกน</p>
@@ -150,15 +151,37 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 </div>
 </div>
 
+<!-- ⭐ v4.4: Register Screen -->
+<div id="registerScreen" style="display:none">
+<div class="login-box" style="max-width:420px">
+  <div class="avatar">📝</div>
+  <h2>สมัครสมาชิก</h2>
+  <p style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px">
+    กรอกข้อมูลให้ตรงกับที่ลงทะเบียนกับ HR<br>
+    ระบบจะดึง Employee ID ให้อัตโนมัติ<br>
+    หลังสมัครเสร็จจะให้ลงทะเบียนใบหน้าต่อ
+  </p>
+  <input id="regUser" placeholder="👤 Username (เช่น สมชายใจ)">
+  <input id="regPass" placeholder="🔒 Password (อย่างน้อย 4 ตัวอักษร)" type="password">
+  <input id="regFirstName" placeholder="ชื่อจริง (เช่น สมชาย)">
+  <input id="regLastName" placeholder="นามสกุล (เช่น ใจดี)">
+  <input id="regTel" placeholder="📱 เบอร์โทรศัพท์ (ไม่บังคับ)" type="tel">
+  <div id="regCandidates" style="display:none;max-height:200px;overflow-y:auto;margin-bottom:8px"></div>
+  <button class="btn-login" onclick="doRegister()" id="regBtn">📝 สมัครสมาชิก</button>
+  <button onclick="exitRegister()" style="width:100%;padding:10px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--t2);font-size:13px;cursor:pointer;font-family:inherit;margin-top:8px">↩️ กลับไป Login</button>
+  <div class="err" id="regErr"></div>
+</div>
+</div>
+
 <!-- APP -->
 <div class="app" id="appScreen" style="display:none">
 <aside class="sidebar" id="sidebar">
   <div class="logo"><h1><span>📸</span> HR v4</h1><p>PHOTO CHECKIN & FACE RECOGNITION</p></div>
   <nav>
-    <div class="sl">Overview</div>
-    <div class="ni active" data-page="dashboard"><span class="ic">📊</span>Dashboard</div>
+    <div class="sl role-emp-hide">Overview</div>
+    <div class="ni active role-emp-hide" data-page="dashboard"><span class="ic">📊</span>Dashboard</div>
     <div class="ni" data-page="checkin"><span class="ic">📸</span>Check-in</div>
-    <div class="ni" data-page="faceregister"><span class="ic">🤳</span>ลงทะเบียนใบหน้า</div>
+    <div class="ni" data-page="faceregister"><span class="ic">🤳</span>ลงทะเบียนใบหน้าใหม่</div>
     <div class="ni role-emp-hide" data-page="employees"><span class="ic">👥</span>Employees</div>
     <div class="ni" data-page="leavereq"><span class="ic">📝</span>ยื่นลา <span class="badge" id="bLeave" style="background:var(--pur);display:none">0</span></div>
     <div class="ni" data-page="advance"><span class="ic">💵</span>เบิกเงินล่วงหน้า</div>
@@ -206,7 +229,13 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
         <div class="card ora"><div class="ci">⏰</div><div class="cv" id="cLt60">—</div><div class="cl">Late>60min</div></div>
       </div>
       <div id="dashAlerts"></div>
-      <div class="tw"><div class="th_"><h3>📋 Employee Status Today</h3><div class="fl"><input type="text" id="dSrch" placeholder="🔍 Search..." oninput="filterDash()"><select id="dComp" onchange="filterDash()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select></div></div>
+      <div class="tw"><div class="th_"><h3 id="dashTitle">📋 Employee Status Today</h3><div class="fl">
+        <button onclick="dashPrevDay()" style="padding:5px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;cursor:pointer;font-size:13px" title="วันก่อนหน้า">◀️</button>
+        <input type="date" id="dashDate" onchange="loadDash()" style="padding:5px 8px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;font-size:12px;font-family:inherit">
+        <button onclick="dashNextDay()" style="padding:5px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;cursor:pointer;font-size:13px" title="วันถัดไป">▶️</button>
+        <button onclick="dashToday()" style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" title="กลับวันนี้">📅 วันนี้</button>
+        <input type="text" id="dSrch" placeholder="🔍 Search..." oninput="filterDash()">
+        <select id="dComp" onchange="filterDash()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select></div></div>
         <div style="overflow-x:auto"><table><thead id="dHd"></thead><tbody id="dBd"></tbody></table></div></div>
     </div>
 
@@ -304,7 +333,10 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="page" id="page-faceregister">
       <div class="checkin-container">
         <div class="checkin-card">
-          <h3>🤳 ลงทะเบียนใบหน้า</h3>
+          <h3>🤳 ลงทะเบียนใบหน้าใหม่</h3>
+          <div style="background:var(--amb-bg);border:1px solid var(--amb);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--amb);line-height:1.5">
+            ⚠️ <b>หมายเหตุ:</b> หากคุณเคยลงทะเบียนแล้ว ระบบจะ<b>ลบข้อมูลใบหน้าเก่าทิ้ง</b>และอัพเดทเป็นปัจจุบัน
+          </div>
           <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">กรอกชื่อ-นามสกุล แล้วถ่ายใบหน้าหลายมุม ระบบจะค้นหาคุณในฐานข้อมูลให้อัตโนมัติ</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
             <div>
@@ -588,6 +620,37 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 </div>
 </div>
 
+<!-- ⭐ v4.4: Register → Face Registration screen -->
+<div id="regFaceScreen" style="display:none;position:fixed;inset:0;z-index:9998;background:var(--bg);overflow-y:auto">
+  <div style="max-width:500px;margin:0 auto;padding:16px;min-height:100vh">
+    <div style="background:var(--grn-bg);border:1px solid var(--grn);border-radius:8px;padding:14px;margin-bottom:14px;text-align:center">
+      <div style="font-size:20px;margin-bottom:4px">✅</div>
+      <div style="color:var(--grn);font-weight:600;font-size:14px">สมัครสมาชิกสำเร็จ!</div>
+      <div style="color:var(--t2);font-size:12px;margin-top:4px" id="regFaceSubtitle">กรุณาลงทะเบียนใบหน้าเป็นขั้นตอนสุดท้าย</div>
+    </div>
+    <div class="checkin-container">
+      <div class="checkin-card">
+        <h3>🤳 ลงทะเบียนใบหน้า</h3>
+        <p style="text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px">ถ่ายใบหน้าหลายมุม ระบบจะใช้สำหรับยืนยันตัวตนตอน Check-in</p>
+        <div class="camera-area">
+          <video id="rfVideo" autoplay playsinline muted></video>
+          <canvas id="rfCanvas" style="display:none"></canvas>
+          <div class="overlay"></div>
+          <div class="status" id="rfCamStatus">กดปุ่มเพื่อเริ่ม</div>
+        </div>
+        <div id="rfInstruction" style="display:none;background:var(--amb-bg);border:1px solid var(--amb);border-radius:8px;padding:10px;margin:10px 0;font-size:13px;color:var(--amb);text-align:center">หันหน้าตรง...</div>
+        <div id="rfProgress" style="display:none;text-align:center;margin:10px 0">
+          <div style="background:var(--s2);height:8px;border-radius:4px;overflow:hidden"><div id="rfProgressBar" style="height:100%;background:var(--grn);width:0%;transition:width 0.3s"></div></div>
+          <div id="rfProgressText" style="font-size:12px;color:var(--t2);margin-top:6px">0 / 5</div>
+        </div>
+        <button class="btn-checkin" onclick="rfStartScan()" id="rfStartBtn">📸 เริ่มสแกน</button>
+        <button class="btn-checkin" onclick="rfSubmit()" id="rfSubmitBtn" style="display:none;background:var(--grn);margin-top:8px">✅ บันทึกและไปหน้า Login</button>
+        <div id="rfResult" style="margin-top:12px;text-align:center;font-size:13px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Settings Modal -->
 <div id="setMo" style="display:none" class="modal-overlay" onclick="if(event.target===this)this.style.display='none'">
 <div class="modal-box">
@@ -633,6 +696,148 @@ async function doLogin(){
   else $('loginErr').textContent='❌ '+d.message;}catch(e){$('loginErr').textContent='❌ เชื่อมต่อไม่ได้';}
 }
 function doLogout(){curUser=null;localStorage.removeItem('hr_session');stopCamera();stopGPS();location.reload();}
+
+// ===== ⭐ v4.4: REGISTER FLOW =====
+let regUserData=null; // เก็บข้อมูล user ที่สมัครสำเร็จ — ใช้ส่งไปลงทะเบียนใบหน้า
+let regSelectedEmpId=''; // เก็บ empId ตอนเลือกจาก candidate list
+
+function showRegister(){
+  $('loginScreen').style.display='none';
+  $('registerScreen').style.display='flex';
+  $('regUser').focus();
+  // clear fields
+  ['regUser','regPass','regFirstName','regLastName','regTel'].forEach(id=>{if($(id))$(id).value='';});
+  $('regErr').textContent='';
+  $('regCandidates').style.display='none';
+  $('regCandidates').innerHTML='';
+  regSelectedEmpId='';
+}
+function exitRegister(){
+  $('registerScreen').style.display='none';
+  $('loginScreen').style.display='flex';
+}
+
+async function doRegister(){
+  const username=$('regUser').value.trim();
+  const password=$('regPass').value;
+  const firstName=$('regFirstName').value.trim();
+  const lastName=$('regLastName').value.trim();
+  const tel=$('regTel').value.trim();
+  if(!username||!password){$('regErr').textContent='กรุณากรอก Username และ Password';return;}
+  if(password.length<4){$('regErr').textContent='Password ต้องอย่างน้อย 4 ตัวอักษร';return;}
+  if(!firstName||!lastName){$('regErr').textContent='กรุณากรอกชื่อจริงและนามสกุล';return;}
+  $('regErr').textContent='⏳ กำลังตรวจสอบ...';
+  $('regBtn').disabled=true;
+  const d=await apiPost({action:'register',username,password,firstName,lastName,tel});
+  $('regBtn').disabled=false;
+  if(d&&d.success){
+    regUserData=d.user;
+    $('regErr').innerHTML='<span style="color:var(--grn)">✅ สมัครสำเร็จ! กำลังไปหน้าลงทะเบียนใบหน้า...</span>';
+    setTimeout(()=>{
+      $('registerScreen').style.display='none';
+      $('regFaceScreen').style.display='block';
+      $('regFaceSubtitle').textContent=regUserData.displayName+' ('+regUserData.empId+')';
+    },1200);
+  } else if(d && d.multipleMatches && d.candidates){
+    // หลายคนชื่อใกล้เคียง → ให้เลือก
+    $('regErr').innerHTML='<span style="color:var(--amb)">⚠️ พบ '+d.candidates.length+' คนชื่อใกล้เคียง — ตรวจชื่อ-นามสกุลให้ตรงเป๊ะ</span>';
+    $('regCandidates').style.display='block';
+    $('regCandidates').innerHTML='<div style="font-size:11px;color:var(--t2);margin-bottom:6px">หรือกรอกชื่อ-นามสกุลให้ตรงเป๊ะกว่านี้</div>';
+  } else {
+    $('regErr').innerHTML='<span style="color:var(--red)">❌ '+(d?d.message:'เชื่อมต่อไม่ได้')+'</span>';
+  }
+}
+
+// ===== ⭐ v4.4: Register Face Capture Flow =====
+let rfStream=null,rfDescriptors=[],rfPhotos=[],rfScanning=false;
+
+async function rfStartScan(){
+  if(!regUserData){alert('ข้อมูลผู้สมัครหาย กรุณาสมัครใหม่');exitRegFace();return;}
+  $('rfStartBtn').style.display='none';
+  $('rfCamStatus').textContent='⏳ กำลังเปิดกล้อง...';
+  try{
+    rfStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
+    $('rfVideo').srcObject=rfStream;
+    await new Promise(r=>{$('rfVideo').onloadeddata=r;setTimeout(r,3000);});
+    // Wait for face-api models (use shared loadFaceApi from page-faceregister)
+    if(typeof loadFaceApi==='function')await loadFaceApi();
+    $('rfCamStatus').textContent='✅ พร้อมแล้ว';
+    $('rfInstruction').style.display='block';
+    $('rfProgress').style.display='block';
+    rfDescriptors=[];rfPhotos=[];rfScanning=true;
+    rfCaptureLoop();
+  }catch(e){
+    $('rfCamStatus').innerHTML='<span style="color:var(--red)">❌ '+e.message+'</span>';
+    $('rfStartBtn').style.display='block';
+  }
+}
+
+async function rfCaptureLoop(){
+  const TARGET=5; // ต้องการ 5 frames
+  const instructions=['หันหน้าตรง','เอียงหน้าซ้ายเล็กน้อย','เอียงหน้าขวาเล็กน้อย','ก้มหน้าเล็กน้อย','เงยหน้าเล็กน้อย'];
+  while(rfScanning && rfDescriptors.length<TARGET){
+    $('rfInstruction').textContent='👉 '+instructions[rfDescriptors.length];
+    const video=$('rfVideo');
+    if(!video || video.videoWidth===0){await new Promise(r=>setTimeout(r,500));continue;}
+    try{
+      const detection=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+      if(detection && detection.descriptor){
+        rfDescriptors.push(Array.from(detection.descriptor));
+        // Capture photo
+        const canvas=$('rfCanvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+        const ctx=canvas.getContext('2d');ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0);ctx.setTransform(1,0,0,1,0,0);
+        if(rfDescriptors.length<=3)rfPhotos.push(canvas.toDataURL('image/jpeg',0.7).split(',')[1]);
+        const pct=Math.round(rfDescriptors.length/TARGET*100);
+        $('rfProgressBar').style.width=pct+'%';
+        $('rfProgressText').textContent=rfDescriptors.length+' / '+TARGET;
+        await new Promise(r=>setTimeout(r,800));
+      } else {
+        await new Promise(r=>setTimeout(r,300));
+      }
+    }catch(err){await new Promise(r=>setTimeout(r,500));}
+  }
+  if(rfDescriptors.length>=TARGET){
+    $('rfInstruction').innerHTML='<span style="color:var(--grn)">✅ ครบ '+TARGET+' จุดแล้ว — กดปุ่มบันทึก</span>';
+    $('rfSubmitBtn').style.display='block';
+    rfScanning=false;
+    if(rfStream){rfStream.getTracks().forEach(t=>t.stop());rfStream=null;}
+  }
+}
+
+async function rfSubmit(){
+  if(rfDescriptors.length<3){alert('สแกนใบหน้าได้น้อยเกินไป กรุณาสแกนใหม่');return;}
+  $('rfResult').innerHTML='<span style="color:var(--amb)">⏳ กำลังบันทึก...</span>';
+  // Average descriptors
+  const len=rfDescriptors[0].length;const avg=new Array(len).fill(0);
+  for(const desc of rfDescriptors){for(let i=0;i<len;i++)avg[i]+=desc[i];}
+  for(let i=0;i<len;i++)avg[i]/=rfDescriptors.length;
+  const d=await apiPost({action:'face_register',empId:regUserData.empId,
+    descriptor:JSON.stringify(avg),photos:rfPhotos.slice(0,3)});
+  if(d&&d.success){
+    $('rfResult').innerHTML='<span style="color:var(--grn)">'+(d.message||'✅ ลงทะเบียนสำเร็จ')+'</span>';
+    setTimeout(()=>{
+      alert('🎉 เสร็จเรียบร้อย! กรุณา Login เข้าสู่ระบบ');
+      exitRegFace();
+    },1500);
+  } else {
+    $('rfResult').innerHTML='<span style="color:var(--red)">❌ '+(d?d.message:'ผิดพลาด')+'</span>';
+  }
+}
+
+function exitRegFace(){
+  rfScanning=false;
+  if(rfStream){rfStream.getTracks().forEach(t=>t.stop());rfStream=null;}
+  rfDescriptors=[];rfPhotos=[];regUserData=null;
+  $('regFaceScreen').style.display='none';
+  $('loginScreen').style.display='flex';
+  // Reset UI
+  $('rfStartBtn').style.display='block';
+  $('rfSubmitBtn').style.display='none';
+  $('rfInstruction').style.display='none';
+  $('rfProgress').style.display='none';
+  $('rfResult').textContent='';
+  $('rfCamStatus').textContent='กดปุ่มเพื่อเริ่ม';
+}
 
 // ===== GUEST CHECK-IN =====
 let guestMode=false;
@@ -757,6 +962,15 @@ function showApp(){
     // Auto-fill empId ในฟอร์มที่ต้องใช้
     const empId=curUser.empId||'';
     if($('lrEmpId')){$('lrEmpId').value=empId;$('lrEmpId').readOnly=true;$('lrEmpId').style.opacity='0.7';}
+    // ⭐ ซ่อน filter "All Companies" ใน Time Records (พนักงานคนเดียวจะ filter ทำไม)
+    if($('atComp'))$('atComp').style.display='none';
+    // ⭐ Dashboard ถูกซ่อน → เปลี่ยน landing page เป็น Check-in
+    document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    const checkinNav=document.querySelector('[data-page="checkin"]');
+    const checkinPage=$('page-checkin');
+    if(checkinNav){checkinNav.classList.add('active');$('pageTitle').textContent=checkinNav.textContent.trim();}
+    if(checkinPage)checkinPage.classList.add('active');
   }
   const t=new Date(),d26=new Date(t.getFullYear(),t.getMonth()-1,26);
   if($('atFrom'))$('atFrom').value=fmt(d26);if($('atTo'))$('atTo').value=fmt(t);
@@ -800,9 +1014,9 @@ async function apiGet(action,params={}){
 async function apiPost(body){try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});return await r.json();}catch(e){return{success:false,message:e.toString()};}}
 
 async function loadAll(){
-  loadSum();loadDash();loadNotifications();loadAnnouncements();loadEarlyClose();
-  // ⭐ Admin/HR only — alerts + late
-  if(isAdmin()){loadAlerts();loadLate();}
+  loadNotifications();loadAnnouncements();loadEarlyClose();
+  // ⭐ Admin/HR only — Dashboard, Summary, Alerts, Late
+  if(isAdmin()){loadSum();loadDash();loadAlerts();loadLate();}
 }
 function loadPage(p){
   if(p==='dashboard'){loadSum();loadDash();loadAnnouncements();loadEarlyClose()}else if(p==='checkin'){resetCheckin();startCheckinFlow()}
@@ -1418,9 +1632,20 @@ async function loadSum(){
 
 // ===== DASHBOARD =====
 async function loadDash(){
-  const d=await apiGet('dashboard');if(!d||!d.success||!d.data)return;
-  // ⭐ Employee filter: เห็นเฉพาะแถวของตัวเอง
+  // ⭐ v4.4: รองรับเลือกวันที่ดู (default = วันนี้)
+  const dateInput=$('dashDate'),today=fmt(new Date());
+  if(dateInput && !dateInput.value)dateInput.value=today;
+  const selDate=dateInput?dateInput.value:today;
+  const isToday=(selDate===today);
+  // อัพเดท title
+  if($('dashTitle')){
+    if(isToday)$('dashTitle').textContent='📋 Employee Status Today ('+selDate+')';
+    else $('dashTitle').textContent='📋 Employee Status — '+selDate+' (ย้อนหลัง)';
+  }
+  const d=await apiGet('dashboard',{date:selDate});
+  if(!d||!d.success||!d.data)return;
   let data=d.data;
+  // ⭐ Employee filter: เห็นเฉพาะแถวของตัวเอง
   if(isEmployee()){
     const myEmpId=(curUser.empId||'').toString().trim().toUpperCase();
     if(!myEmpId){
@@ -1428,15 +1653,29 @@ async function loadDash(){
       $('dBd').innerHTML='<tr><td class="empty">⚠️ บัญชีของคุณยังไม่ได้ผูกกับ Employee ID — ติดต่อ Admin</td></tr>';
       return;
     }
-    // หาแถว header แล้ว keep header + เฉพาะแถวของ user
     let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&data[i][0].toString().includes('ID')){hi=i;break;}}
     const header=data[hi];
     const myRows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim().toUpperCase()===myEmpId);
-    data=[data[0],data[1],data[2],header,...myRows]; // keep title rows + header + my rows
+    data=[data[0]||[''],data[1]||[''],data[2]||[''],header,...myRows];
   }
   allDash=data;renderDash(data);
   $('lastUpd').textContent='อัพเดท: '+new Date().toLocaleTimeString('th-TH');
 }
+
+/** ⭐ v4.4: Navigate dashboard date */
+function dashPrevDay(){
+  const cur=$('dashDate').value||fmt(new Date());
+  const d=new Date(cur);d.setDate(d.getDate()-1);
+  $('dashDate').value=fmt(d);loadDash();
+}
+function dashNextDay(){
+  const cur=$('dashDate').value||fmt(new Date());
+  const d=new Date(cur);d.setDate(d.getDate()+1);
+  const today=new Date();today.setHours(0,0,0,0);
+  if(d>today){alert('ไม่สามารถเลือกวันในอนาคตได้');return;}
+  $('dashDate').value=fmt(d);loadDash();
+}
+function dashToday(){$('dashDate').value=fmt(new Date());loadDash();}
 function renderDash(data){
   if(data.length<2){$('dBd').innerHTML='<tr><td colspan="13" class="empty">No data</td></tr>';return}
   let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&(data[i][0].toString().includes('ID'))){hi=i;break}}
