@@ -186,6 +186,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="ni role-admin" data-page="applications" style="display:none"><span class="ic">📋</span>ใบสมัครงาน <span class="badge" id="bApps" style="background:var(--ora);display:none">0</span></div>
     <div class="ni" data-page="leavereq"><span class="ic">📝</span>ยื่นลา <span class="badge" id="bLeave" style="background:var(--pur);display:none">0</span></div>
     <div class="ni" data-page="advance"><span class="ic">💵</span>เบิกเงินล่วงหน้า</div>
+    <div class="ni role-admin" data-page="advancereport" style="display:none"><span class="ic">📊</span>รายงานเบิกเงิน</div>
     <div class="sl">Alerts</div>
     <div class="ni" data-page="notifications"><span class="ic">🔔</span>Notifications <span class="badge" id="bNotif" style="display:none">0</span></div>
     <div class="ni" data-page="announcements"><span class="ic">📢</span>Announcements</div>
@@ -231,10 +232,10 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
       </div>
       <div id="dashAlerts"></div>
       <div class="tw"><div class="th_"><h3 id="dashTitle">📋 Employee Status Today</h3><div class="fl">
-        <button onclick="dashPrevDay()" style="padding:5px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;cursor:pointer;font-size:13px" title="วันก่อนหน้า">◀️</button>
-        <input type="date" id="dashDate" onchange="loadDash()" style="padding:5px 8px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;font-size:12px;font-family:inherit">
-        <button onclick="dashNextDay()" style="padding:5px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;cursor:pointer;font-size:13px" title="วันถัดไป">▶️</button>
-        <button onclick="dashToday()" style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" title="กลับวันนี้">📅 วันนี้</button>
+        <button onclick="dashPrevDay()" style="padding:8px 12px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;cursor:pointer;font-size:14px;min-width:42px" title="วันก่อนหน้า">◀</button>
+        <input type="date" id="dashDate" style="padding:8px 12px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;font-size:14px;font-family:inherit;min-width:150px;cursor:pointer">
+        <button onclick="dashNextDay()" style="padding:8px 12px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;cursor:pointer;font-size:14px;min-width:42px" title="วันถัดไป">▶</button>
+        <button onclick="dashToday()" style="padding:8px 14px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600" title="กลับวันนี้">📅 วันนี้</button>
         <input type="text" id="dSrch" placeholder="🔍 Search..." oninput="filterDash()">
         <select id="dComp" onchange="filterDash()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select></div></div>
         <div style="overflow-x:auto"><table><thead id="dHd"></thead><tbody id="dBd"></tbody></table></div></div>
@@ -475,6 +476,38 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           <div style="border-top:1px solid var(--bd);padding:12px 16px"><h4 style="font-size:13px;margin:0 0 8px">รายการเบิกเงิน</h4>
             <div style="overflow-x:auto"><table><thead><tr><th>วันที่</th><th>ID</th><th>ชื่อ</th><th>ขอเบิก</th><th>Pre-Sum</th><th>เหตุผล</th><th>สถานะ</th><th>อนุมัติ</th><th class="role-admin" style="display:none">Action</th></tr></thead><tbody id="advBody"></tbody></table></div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⭐ v4.6: ADVANCE REPORT - สรุปเป็นรายวัน -->
+    <div class="page" id="page-advancereport">
+      <div class="tw">
+        <div class="th_">
+          <h3>📊 รายงานเบิกเงินล่วงหน้า</h3>
+          <div class="fl">
+            <label style="font-size:11px;color:var(--t2)">จาก</label>
+            <input type="date" id="arFrom" style="padding:6px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;font-size:12px;font-family:inherit">
+            <label style="font-size:11px;color:var(--t2)">ถึง</label>
+            <input type="date" id="arTo" style="padding:6px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;font-size:12px;font-family:inherit">
+            <select id="arCompany" style="padding:6px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;font-size:12px;font-family:inherit">
+              <option value="">All</option><option>JKN</option><option>FC</option>
+            </select>
+            <select id="arStatus" style="padding:6px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;font-size:12px;font-family:inherit">
+              <option value="">All Status</option>
+              <option>Pending</option>
+              <option>Approved</option>
+              <option>Rejected</option>
+            </select>
+            <button onclick="loadAdvanceReport()" style="padding:6px 14px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600">🔄 โหลด</button>
+          </div>
+        </div>
+        <div style="padding:14px">
+          <div id="arSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+          <div style="background:var(--amb-bg);border:1px solid var(--amb);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--amb)">
+            💡 <b>หมายเหตุ:</b> ปกติพนักงานเบิกได้เฉพาะ<b>วันที่กลางเดือน</b> (รอบเงินเดือน 26-25 จะเบิกได้รอบวันที่ 10-15) — รายการที่อยู่นอกช่วงนี้จะถูกเน้นด้วยสีส้ม
+          </div>
+          <div id="arResults"></div>
         </div>
       </div>
     </div>
@@ -1010,7 +1043,7 @@ function showApp(){
     $('page-'+p).classList.add('active');$('pageTitle').textContent=n.textContent.trim();loadPage(p);$('sidebar').classList.remove('open');
     if(p!=='checkin'&&p!=='faceregister'){stopCamera();stopGPS();}
   }));
-  startRef();loadAll();loadAllFaces();
+  startRef();loadAll();loadAllFaces();setupDashDateInput();
   // Block print/screenshot shortcuts for employee role
   if(curUser.role==='employee'||curUser.role==='manager'){
     document.addEventListener('keydown',function(e){
@@ -1040,8 +1073,16 @@ async function apiPost(body){try{const r=await fetch(API,{method:'POST',headers:
 
 async function loadAll(){
   loadNotifications();loadAnnouncements();loadEarlyClose();
-  // ⭐ Admin/HR only — Dashboard, Summary, Alerts, Late, Applications badge
-  if(isAdmin()){loadSum();loadDash();loadAlerts();loadLate();checkPendingApps();}
+  if(isAdmin()){
+    loadSum();
+    // ⭐ v4.6: skip dashboard refresh ถ้ากำลังดูย้อนหลัง หรือกำลังเลือกวัน
+    if(!window._dashDateFocus){
+      const dateInput=$('dashDate'),today=fmt(new Date());
+      const selDate=dateInput?dateInput.value:today;
+      if(!selDate||selDate===today){loadDash();}
+    }
+    loadAlerts();loadLate();checkPendingApps();
+  }
 }
 async function checkPendingApps(){
   try{
@@ -1063,6 +1104,7 @@ function loadPage(p){
   else if(p==='location')loadLocation();
   else if(p==='qrmanage')initQRManage();
   else if(p==='advance')initAdvance();
+  else if(p==='advancereport')initAdvanceReport();
   else if(p==='leavereq')loadLeaveReq();else if(p==='notifications')loadNotifications();
   else if(p==='announcements')loadAnnouncements();else if(p==='earlyclose')loadEarlyClose();
   else if(p==='applications')loadApplications();
@@ -1667,38 +1709,64 @@ async function loadSum(){
 }
 
 // ===== DASHBOARD =====
+let dashLoading=false;
+
 async function loadDash(){
-  // ⭐ v4.4: รองรับเลือกวันที่ดู (default = วันนี้)
-  const dateInput=$('dashDate'),today=fmt(new Date());
-  if(dateInput && !dateInput.value)dateInput.value=today;
-  const selDate=dateInput?dateInput.value:today;
-  const isToday=(selDate===today);
-  // อัพเดท title
-  if($('dashTitle')){
-    if(isToday)$('dashTitle').textContent='📋 Employee Status Today ('+selDate+')';
-    else $('dashTitle').textContent='📋 Employee Status — '+selDate+' (ย้อนหลัง)';
-  }
-  const d=await apiGet('dashboard',{date:selDate});
-  if(!d||!d.success||!d.data)return;
-  let data=d.data;
-  // ⭐ Employee filter: เห็นเฉพาะแถวของตัวเอง
-  if(isEmployee()){
-    const myEmpId=(curUser.empId||'').toString().trim().toUpperCase();
-    if(!myEmpId){
-      $('dHd').innerHTML='<tr><th>Status</th></tr>';
-      $('dBd').innerHTML='<tr><td class="empty">⚠️ บัญชีของคุณยังไม่ได้ผูกกับ Employee ID — ติดต่อ Admin</td></tr>';
-      return;
+  if(dashLoading)return;
+  dashLoading=true;
+  try{
+    const dateInput=$('dashDate'),today=fmt(new Date());
+    if(dateInput && !dateInput.value)dateInput.value=today;
+    const selDate=dateInput?dateInput.value:today;
+    const isToday=(selDate===today);
+    if($('dashTitle')){
+      if(isToday)$('dashTitle').textContent='📋 Employee Status Today ('+selDate+')';
+      else $('dashTitle').textContent='📋 Employee Status — '+selDate+' (ย้อนหลัง)';
     }
-    let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&data[i][0].toString().includes('ID')){hi=i;break;}}
-    const header=data[hi];
-    const myRows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim().toUpperCase()===myEmpId);
-    data=[data[0]||[''],data[1]||[''],data[2]||[''],header,...myRows];
+    // ⭐ v4.6: ส่ง date param + cache buster เสมอ (แทนการใช้ apiGet)
+    const u=new URL(API);
+    u.searchParams.set('action','dashboard');
+    u.searchParams.set('date',selDate);
+    u.searchParams.set('_t',Date.now());
+    const r=await fetch(u);
+    const d=await r.json();
+    if(!d||!d.success||!d.data){return;}
+    let data=d.data;
+    if(isEmployee()){
+      const myEmpId=(curUser.empId||'').toString().trim().toUpperCase();
+      if(!myEmpId){
+        $('dHd').innerHTML='<tr><th>Status</th></tr>';
+        $('dBd').innerHTML='<tr><td class="empty">⚠️ บัญชีของคุณยังไม่ได้ผูกกับ Employee ID — ติดต่อ Admin</td></tr>';
+        return;
+      }
+      let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&data[i][0].toString().includes('ID')){hi=i;break;}}
+      const header=data[hi];
+      const myRows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim().toUpperCase()===myEmpId);
+      data=[data[0]||[''],data[1]||[''],data[2]||[''],header,...myRows];
+    }
+    allDash=data;renderDash(data);
+    $('lastUpd').textContent='อัพเดท: '+new Date().toLocaleTimeString('th-TH');
+  }catch(e){
+    console.error('loadDash error:',e);
+  }finally{
+    dashLoading=false;
   }
-  allDash=data;renderDash(data);
-  $('lastUpd').textContent='อัพเดท: '+new Date().toLocaleTimeString('th-TH');
 }
 
-/** ⭐ v4.4: Navigate dashboard date */
+/** ⭐ v4.6: Setup date picker listener — ใช้ทั้ง change + input event */
+function setupDashDateInput(){
+  const inp=$('dashDate');
+  if(!inp || inp._setup) return;
+  inp._setup=true;
+  // ทั้ง 'change' และ 'input' — รองรับ browser หลายแบบ
+  inp.addEventListener('change',()=>loadDash());
+  inp.addEventListener('input',()=>loadDash());
+  // mark focus state เพื่อกัน auto-refresh แทรกขณะกำลังเลือก
+  inp.addEventListener('focus',()=>{window._dashDateFocus=true;});
+  inp.addEventListener('blur',()=>{setTimeout(()=>{window._dashDateFocus=false;},500);});
+}
+
+/** ⭐ v4.6: Navigate dashboard date */
 function dashPrevDay(){
   const cur=$('dashDate').value||fmt(new Date());
   const d=new Date(cur);d.setDate(d.getDate()-1);
@@ -2351,6 +2419,93 @@ async function rejectAdvance(rowIdx){
   if(!confirm('ปฏิเสธคำขอเบิกเงินนี้?'))return;
   const d=await apiPost({action:'approve_advance',rowIdx,approvedAmount:0,status:'Rejected',approver:curUser.username});
   alert(d.message);loadAdvances();
+}
+
+// ===== ⭐ v4.6: ADVANCE REPORT =====
+function initAdvanceReport(){
+  // default range = เดือนนี้
+  const now=new Date();
+  const first=new Date(now.getFullYear(),now.getMonth(),1);
+  const last=new Date(now.getFullYear(),now.getMonth()+1,0);
+  if(!$('arFrom').value)$('arFrom').value=fmt(first);
+  if(!$('arTo').value)$('arTo').value=fmt(last);
+  loadAdvanceReport();
+}
+
+async function loadAdvanceReport(){
+  const from=$('arFrom').value,to=$('arTo').value;
+  const company=$('arCompany').value,status=$('arStatus').value;
+  $('arResults').innerHTML='<div class="empty" style="padding:24px">⏳ กำลังโหลด...</div>';
+  $('arSummary').innerHTML='';
+  const d=await apiPost({action:'advance_report',from,to,company,status});
+  if(!d||!d.success){$('arResults').innerHTML='<div class="empty">❌ โหลดไม่ได้</div>';return;}
+  const s=d.summary||{};
+  // Summary cards
+  $('arSummary').innerHTML=`
+    <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--t3)">วันที่มีเบิก</div>
+      <div style="font-size:22px;font-weight:700;margin-top:4px">${s.days||0}</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--t3)">รายการทั้งหมด</div>
+      <div style="font-size:22px;font-weight:700;margin-top:4px">${s.totalCount||0}</div>
+    </div>
+    <div style="background:var(--grn-bg);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--grn)">อนุมัติแล้ว</div>
+      <div style="font-size:18px;font-weight:700;margin-top:4px;color:var(--grn)">${(s.approvedAmount||0).toLocaleString()} ฿</div>
+      <div style="font-size:11px;color:var(--grn)">${s.approvedCount||0} รายการ</div>
+    </div>
+    <div style="background:var(--amb-bg);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--amb)">รออนุมัติ</div>
+      <div style="font-size:22px;font-weight:700;margin-top:4px;color:var(--amb)">${s.pendingCount||0}</div>
+      <div style="font-size:11px;color:var(--amb)">รายการ</div>
+    </div>
+    <div style="background:var(--blue-bg);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--blue)">ยอดขอเบิกรวม</div>
+      <div style="font-size:18px;font-weight:700;margin-top:4px;color:var(--blue)">${(s.totalAmount||0).toLocaleString()} ฿</div>
+    </div>
+  `;
+  if(!d.byDay||d.byDay.length===0){
+    $('arResults').innerHTML='<div class="empty" style="padding:32px">📭 ไม่มีข้อมูลในช่วงเวลานี้</div>';
+    return;
+  }
+  // Group by day
+  $('arResults').innerHTML=d.byDay.map(g=>{
+    // ตรวจวันที่ — ปกติเบิกได้กลางเดือน (วันที่ 10-15)
+    const day=parseInt(g.date.substring(8,10));
+    const inMidMonth=day>=10&&day<=15;
+    const dayLabel=new Date(g.date).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'short',year:'numeric'});
+    const warn=inMidMonth?'':' <span style="color:var(--amb);font-size:11px">⚠️ นอกวันเบิกปกติ (10-15)</span>';
+    return `<div style="background:var(--s2);border:1px solid ${inMidMonth?'var(--bd)':'var(--amb)'};border-radius:8px;margin-bottom:14px;overflow:hidden">
+      <div style="background:${inMidMonth?'var(--s3)':'var(--amb-bg)'};padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd)">
+        <div>
+          <div style="font-size:13px;font-weight:600">📅 ${dayLabel}${warn}</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">${g.count} รายการ • รวม ${g.total.toLocaleString()} ฿ • อนุมัติ ${g.approvedAmt.toLocaleString()} ฿</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${g.approvedCount>0?`<span class="sb0 w">${g.approvedCount} ✅</span>`:''}
+          ${g.pendingCount>0?`<span class="sb0 la">${g.pendingCount} ⏳</span>`:''}
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table style="width:100%"><thead><tr>
+        <th>ID</th><th>ชื่อ</th><th>บริษัท</th><th>ขอเบิก</th><th>Pre-Sum</th><th>เหตุผล</th><th>สถานะ</th><th>อนุมัติ</th>
+      </tr></thead><tbody>
+        ${g.items.map(it=>{
+          const stCl=it.status==='Approved'?'w':it.status==='Rejected'?'a':'la';
+          return `<tr>
+            <td style="font-family:JetBrains Mono;font-size:11px">${it.empId}</td>
+            <td><b>${it.name}</b></td>
+            <td><span class="sb0 ${it.company==='JKN'?'h':'l'}">${it.company}</span></td>
+            <td style="font-family:JetBrains Mono">${it.requested.toLocaleString()}฿</td>
+            <td style="font-family:JetBrains Mono;color:var(--t3)">${it.preSummary.toLocaleString()}฿</td>
+            <td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${it.reason}</td>
+            <td><span class="sb0 ${stCl}">${it.status}</span></td>
+            <td style="font-family:JetBrains Mono">${it.status==='Approved'?it.approved.toLocaleString()+'฿':'—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody></table></div>
+    </div>`;
+  }).join('');
 }
 
 // ===== LEAVE REQUEST =====
