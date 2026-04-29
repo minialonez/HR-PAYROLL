@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ใบสมัครงาน — จงกลณีการไฟฟ้า & ฟาฉายไลติ้งโฮม</title>
+<title>ใบสมัครงาน — JKN & FACAI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -338,7 +338,7 @@ h1.title em{font-style:normal;color:var(--accent);font-weight:600}
   <div id="urlCfg" class="url-cfg" style="display:none">
     <strong>⚙️ Setup API URL</strong>
     <input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec">
-    <div class="url-cfg-status" id="urlStatus">https://script.google.com/macros/s/AKfycbzowQT19UUhQYp9KwLt0A1pANsnhSEsdGXoZDABfzEKBdiTXUK2uBweZAXD0HvEUbxZ/exec</div>
+    <div class="url-cfg-status" id="urlStatus">กรอก Web App URL ของ Apps Script</div>
   </div>
 
   <!-- Progress -->
@@ -419,9 +419,9 @@ h1.title em{font-style:normal;color:var(--accent);font-weight:600}
 
       <div class="row r3">
         <div class="field">
-          <label>วัน/เดือน/ปีเกิด (พ.ศ.) <span class="req">*</span></label>
-          <input type="text" id="dobBE" placeholder="2540-05-15" pattern="\d{4}-\d{2}-\d{2}" oninput="updateAge()">
-          <div class="field-hint">รูปแบบ YYYY-MM-DD เช่น 2540-05-15</div>
+          <label>วัน/เดือน/ปีเกิด <span class="req">*</span></label>
+          <input type="date" id="dob" oninput="updateAge()" max="">
+          <div class="field-hint" id="dobHint">เลือกวันเกิด (ระบบแสดงเป็น พ.ศ. ในใบสมัคร)</div>
         </div>
         <div class="field">
           <label>อายุ</label>
@@ -805,17 +805,24 @@ setupChips('military-chips','militaryStatus');
 
 // ==================== AGE CALC ====================
 function updateAge(){
-  const dobBE = $('dobBE').value.trim();
-  if(!dobBE.match(/^\d{4}-\d{2}-\d{2}$/)){ $('ageCalc').textContent='—'; return; }
-  const beYear = parseInt(dobBE.substring(0,4));
-  const adYear = beYear - 543;
-  const dob = new Date(adYear, parseInt(dobBE.substring(5,7))-1, parseInt(dobBE.substring(8,10)));
+  const dobAD = $('dob').value;  // ISO YYYY-MM-DD (ค.ศ.)
+  if(!dobAD || !dobAD.match(/^\d{4}-\d{2}-\d{2}$/)){
+    $('ageCalc').textContent='—';
+    $('dobHint').textContent='เลือกวันเกิด (ระบบแสดงเป็น พ.ศ. ในใบสมัคร)';
+    return;
+  }
+  const dob = new Date(dobAD);
   if(isNaN(dob.getTime())){ $('ageCalc').textContent='—'; return; }
   const now = new Date();
   let age = now.getFullYear() - dob.getFullYear();
   const m = now.getMonth() - dob.getMonth();
   if(m < 0 || (m===0 && now.getDate() < dob.getDate())) age--;
   $('ageCalc').textContent = age + ' ปี';
+  // แสดง พ.ศ. ใน hint
+  const beYear = dob.getFullYear() + 543;
+  const dd = String(dob.getDate()).padStart(2,'0');
+  const mm = String(dob.getMonth()+1).padStart(2,'0');
+  $('dobHint').textContent = '📅 '+dd+'/'+mm+'/'+beYear+' (พ.ศ.) — อายุ '+age+' ปี';
 }
 
 function copyAddress(){
@@ -925,13 +932,13 @@ function validateStep(n){
     formData.firstName = $('firstName').value.trim();
     formData.lastName = $('lastName').value.trim();
     formData.nickname = $('nickname').value.trim();
-    formData.dobBE = $('dobBE').value.trim();
+    formData.dob = $('dob').value.trim(); // ⭐ ISO ค.ศ. YYYY-MM-DD
     formData.nationality = $('nationality').value.trim();
     formData.nationalId = $('nationalId').value.trim();
     formData.numChildren = $('numChildren').value;
     formData.specialSkills = $('specialSkills').value.trim();
     if(!formData.firstName||!formData.lastName){ alert('กรุณากรอกชื่อ-นามสกุล'); return false; }
-    if(!formData.dobBE.match(/^\d{4}-\d{2}-\d{2}$/)){ alert('รูปแบบวันเกิดไม่ถูก (YYYY-MM-DD)'); return false; }
+    if(!formData.dob.match(/^\d{4}-\d{2}-\d{2}$/)){ alert('กรุณาเลือกวันเกิด'); return false; }
     if(!formData.gender){ alert('กรุณาเลือกเพศ'); return false; }
     if(!formData.nationalId || formData.nationalId.length!==13){ alert('เลขบัตรประชาชน 13 หลัก'); return false; }
   }
@@ -975,7 +982,7 @@ async function submitApp(){
     company: formData.company, position: formData.position,
     wageType: formData.wageType, expectedWage: formData.expectedWage,
     firstName: formData.firstName, lastName: formData.lastName, nickname: formData.nickname,
-    dobBE: formData.dobBE, gender: formData.gender, religion: formData.religion,
+    dob: formData.dob, gender: formData.gender, religion: formData.religion,
     nationality: formData.nationality, nationalId: formData.nationalId,
     maritalStatus: formData.maritalStatus, hasChildren: formData.hasChildren,
     numChildren: formData.numChildren, militaryStatus: formData.militaryStatus,
@@ -1022,6 +1029,10 @@ function tick(){
 setInterval(tick, 1000); tick();
 
 // init
+// Set DOB max = today (no future dates)
+const _td=new Date();
+const _maxD=_td.getFullYear()+'-'+String(_td.getMonth()+1).padStart(2,'0')+'-'+String(_td.getDate()).padStart(2,'0');
+if($('dob'))$('dob').max=_maxD;
 showStep(1);
 </script>
 
