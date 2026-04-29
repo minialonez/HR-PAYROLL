@@ -1057,7 +1057,49 @@ function showApp(){
 function isAdmin(){return curUser&&(curUser.role==='admin'||curUser.role==='hr');}
 function isEmployee(){return curUser&&(curUser.role==='employee'||curUser.role==='manager');}
 
+// ⭐ v4.7 — Date Format Standard:
+// Storage/API: YYYY-MM-DD (ISO 8601) เสมอ
+// Display: DD/MM/YYYY (คนไทยอ่านง่าย)
+// แปลง 1 จุดเดียว: dispD() / dispDT()
 function fmt(d){return d.getFullYear()+'-'+(''+(d.getMonth()+1)).padStart(2,'0')+'-'+(''+(d.getDate())).padStart(2,'0')}
+
+/** ⭐ v4.7: ISO (YYYY-MM-DD) → DD/MM/YYYY สำหรับแสดงผล */
+function dispD(s){
+  if(!s)return '';
+  s=s.toString().trim();
+  // จาก backend อาจมีกรณี:
+  // 1. "2026-04-30" — ISO date
+  // 2. "2026-04-30 14:30" — ISO datetime
+  // 3. "14:30:00" — time only (ส่งกลับเดิม)
+  // 4. "Status: 2026-04-30" — title row (ส่งกลับเดิม)
+  // 5. ไม่ใช่ date — ส่งกลับเดิม
+  const isoMatch=s.match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/);
+  if(isoMatch){
+    return isoMatch[3]+'/'+isoMatch[2]+'/'+isoMatch[1]+(isoMatch[4]||'');
+  }
+  return s; // ไม่ใช่ ISO date — return เดิม
+}
+
+/** ⭐ v4.7: ISO datetime → DD/MM/YYYY HH:mm */
+function dispDT(s){
+  if(!s)return '';
+  // เหมือน dispD แต่จัดการ HH:mm ด้วย
+  return dispD(s);
+}
+
+/** ⭐ v4.7: parse DD/MM/YYYY (กรณี user พิมพ์มือ) → ISO YYYY-MM-DD */
+function parseInputDate(s){
+  if(!s)return '';
+  s=s.toString().trim();
+  // Already ISO?
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.substring(0,10);
+  // DD/MM/YYYY
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m){
+    return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  }
+  return s; // ไม่รู้จัก
+}
 function startRef(){if(timer)clearInterval(timer);timer=setInterval(()=>loadAll(),REF*1000)}
 // Live clock
 setInterval(()=>{const el=$('liveClock');if(el)el.textContent=new Date().toLocaleTimeString('th-TH');},1000);
@@ -1720,8 +1762,8 @@ async function loadDash(){
     const selDate=dateInput?dateInput.value:today;
     const isToday=(selDate===today);
     if($('dashTitle')){
-      if(isToday)$('dashTitle').textContent='📋 Employee Status Today ('+selDate+')';
-      else $('dashTitle').textContent='📋 Employee Status — '+selDate+' (ย้อนหลัง)';
+      if(isToday)$('dashTitle').textContent='📋 Employee Status Today ('+dispD(selDate)+')';
+      else $('dashTitle').textContent='📋 Employee Status — '+dispD(selDate)+' (ย้อนหลัง)';
     }
     // ⭐ v4.6: ส่ง date param + cache buster เสมอ (แทนการใช้ apiGet)
     const u=new URL(API);
@@ -1820,7 +1862,7 @@ async function showProfile(empId){
   $('profileContent').innerHTML=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(p.nickname||p.name||'?')[0]}</div><div class="profile-info"><h3>${p.title||''} ${p.name} ${p.surname}</h3><p>${p.id} — ${p.company} — ${p.position||'-'}</p><p style="font-size:11px;color:var(--t3)">${p.nickname||''} | ${p.gender||''} | ${p.religion||''}</p></div></div>
   <div class="profile-grid">
     <div class="profile-item"><div class="label">Status</div><div class="value"><span class="sb0 ${p.status==='ACTIVE'?'w':'a'}">${p.status}</span></div></div>
-    <div class="profile-item"><div class="label">Start Date</div><div class="value">${p.startDate||'-'}</div></div>
+    <div class="profile-item"><div class="label">Start Date</div><div class="value">${dispD(p.startDate)||'-'}</div></div>
     <div class="profile-item"><div class="label">Salary</div><div class="value">${(p.wage||0).toLocaleString()} ฿</div></div>
     <div class="profile-item"><div class="label">Wage Type</div><div class="value">${p.wageType||'-'}</div></div>
     <div class="profile-item"><div class="label">Leave Quota</div><div class="value">${p.quotaLeave||0} days</div></div>
@@ -1912,7 +1954,7 @@ function renderAppCard(r){
   return `<div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:12px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
       <div>
-        <div style="font-family:JetBrains Mono;font-size:11px;color:var(--t3)">${appId} · ${submitDate}</div>
+        <div style="font-family:JetBrains Mono;font-size:11px;color:var(--t3)">${appId} · ${dispD(submitDate)}</div>
         <div style="font-size:16px;font-weight:600;margin-top:4px">${fullName} <span style="font-size:12px;color:var(--t3)">(${age} ปี)</span></div>
         <div style="font-size:12px;color:var(--t2);margin-top:4px">
           <span class="sb0 ${company==='JKN'?'h':'l'}">${company}</span>
@@ -2006,13 +2048,13 @@ function copyApplyUrl(){
 }
 async function loadAlerts(){const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;renderTbl('fHd','fBd',d.data);
   const p=d.data.filter((r,i)=>i>0&&(r[6]==='Pending'||r[6]==='รอแก้ไข'||r[6]==='รอดำเนินการ'));$('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
-  $('alertL').innerHTML=p.length===0?'<div class="empty">No data</div>':p.map(r=>'<div class="ai"><span>⚠️</span><span style="flex:1"><b>'+(r[2]||r[1])+'</b> ('+(r[3]||'')+') — '+(r[4]||'')+'</span><span style="font-size:10px;color:var(--t3)">'+r[0]+'</span></div>').join('')}
+  $('alertL').innerHTML=p.length===0?'<div class="empty">No data</div>':p.map(r=>'<div class="ai"><span>⚠️</span><span style="flex:1"><b>'+(r[2]||r[1])+'</b> ('+(r[3]||'')+') — '+(r[4]||'')+'</span><span style="font-size:10px;color:var(--t3)">'+dispD(r[0])+'</span></div>').join('')}
 async function loadLate(){const d=await apiGet('late_alerts');if(!d||!d.success||!d.data)return;
   const fr=$('ltFrom').value,to=$('ltTo').value;const fl=d.data.filter(r=>{const dt=r.date||'';return(!fr||dt>=fr)&&(!to||dt<=to)});
   const o60=fl.filter(r=>r.lateMins>60);$('bLate').textContent=o60.length;$('bLate').style.display=o60.length>0?'inline':'none';
-  $('lateAlertL').innerHTML=o60.length===0?'<div class="empty">No data</div>':o60.map(r=>'<div class="ai"><span>🚨</span><span style="flex:1"><b>'+r.name+'</b> ('+r.empId+' '+r.company+') — <b>'+r.lateMins+'m</b></span><span style="font-size:10px;color:var(--t3)">'+r.date+'</span></div>').join('');
+  $('lateAlertL').innerHTML=o60.length===0?'<div class="empty">No data</div>':o60.map(r=>'<div class="ai"><span>🚨</span><span style="flex:1"><b>'+r.name+'</b> ('+r.empId+' '+r.company+') — <b>'+r.lateMins+'m</b></span><span style="font-size:10px;color:var(--t3)">'+dispD(r.date)+'</span></div>').join('');
   $('ltBd').innerHTML=fl.length?fl.map(r=>{const c=r.lateMins>60?'danger':r.lateMins>30?'la':'';const y=r.deductYN==='N'?'w':r.deductYN==='Y'?'a':'x';
-    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+r.date+'</td><td>'+r.empId+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+(r.company==='JKN'?'h':'l')+'">'+r.company+'</span></td><td><span class="sb0 '+c+'">'+r.lateMins+'m</span></td><td style="font-size:11px">'+(r.reason||'-')+'</td><td><span class="sb0 '+y+'">'+(r.deductYN==='Y'?'Deduct':r.deductYN==='N'?'No':'Pending')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt+'฿':'—')+'</td><td>'+(r.warning||'')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No data</td></tr>'}
+    return'<tr><td style="font-family:JetBrains Mono;font-size:11px">'+dispD(r.date)+'</td><td>'+r.empId+'</td><td><b>'+r.name+'</b></td><td><span class="sb0 '+(r.company==='JKN'?'h':'l')+'">'+r.company+'</span></td><td><span class="sb0 '+c+'">'+r.lateMins+'m</span></td><td style="font-size:11px">'+(r.reason||'-')+'</td><td><span class="sb0 '+y+'">'+(r.deductYN==='Y'?'Deduct':r.deductYN==='N'?'No':'Pending')+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(r.deductAmt>0?r.deductAmt+'฿':'—')+'</td><td>'+(r.warning||'')+'</td></tr>';}).join(''):'<tr><td colspan="9" class="empty">No data</td></tr>'}
 async function loadAtt(){
   const params={from:$('atFrom').value,to:$('atTo').value,company:$('atComp')?$('atComp').value:''};
   const d=await apiGet('attendance',params);if(!d||!d.success)return;
@@ -2406,7 +2448,7 @@ async function loadAdvances(){
   if(!d||!d.success||!d.data||d.data.length<2){$('advBody').innerHTML='<tr><td colspan="9" class="empty">ไม่มีข้อมูล</td></tr>';return;}
   $('advBody').innerHTML=d.data.slice(1).map((r,idx)=>{
     const st=r[7]||'Pending';const stClass=st==='Approved'?'w':st==='Rejected'?'a':'x';
-    return'<tr><td style="font-size:11px">'+r[0]+'</td><td style="font-family:JetBrains Mono;font-size:11px">'+r[1]+'</td><td><b>'+r[2]+'</b></td><td style="text-align:right;font-family:JetBrains Mono">'+(parseFloat(r[4])||0).toLocaleString()+'</td><td style="text-align:right;font-family:JetBrains Mono;font-size:11px">'+(parseFloat(r[5])||0).toLocaleString()+'</td><td style="font-size:11px">'+r[6]+'</td><td><span class="sb0 '+stClass+'">'+st+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(parseFloat(r[8])||0).toLocaleString()+'</td>'+(isAdmin&&st==='Pending'?'<td><button onclick="approveAdvance('+(idx+2)+','+r[4]+')" style="padding:3px 8px;background:var(--grn);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-right:2px">✅</button><button onclick="rejectAdvance('+(idx+2)+')" style="padding:3px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">❌</button></td>':'')+'</tr>';
+    return'<tr><td style="font-size:11px">'+dispD(r[0])+'</td><td style="font-family:JetBrains Mono;font-size:11px">'+r[1]+'</td><td><b>'+r[2]+'</b></td><td style="text-align:right;font-family:JetBrains Mono">'+(parseFloat(r[4])||0).toLocaleString()+'</td><td style="text-align:right;font-family:JetBrains Mono;font-size:11px">'+(parseFloat(r[5])||0).toLocaleString()+'</td><td style="font-size:11px">'+r[6]+'</td><td><span class="sb0 '+stClass+'">'+st+'</span></td><td style="font-family:JetBrains Mono;font-size:11px">'+(parseFloat(r[8])||0).toLocaleString()+'</td>'+(isAdmin&&st==='Pending'?'<td><button onclick="approveAdvance('+(idx+2)+','+r[4]+')" style="padding:3px 8px;background:var(--grn);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-right:2px">✅</button><button onclick="rejectAdvance('+(idx+2)+')" style="padding:3px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">❌</button></td>':'')+'</tr>';
   }).join('');
 }
 
@@ -2474,7 +2516,10 @@ async function loadAdvanceReport(){
     // ตรวจวันที่ — ปกติเบิกได้กลางเดือน (วันที่ 10-15)
     const day=parseInt(g.date.substring(8,10));
     const inMidMonth=day>=10&&day<=15;
-    const dayLabel=new Date(g.date).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'short',year:'numeric'});
+    // ⭐ v4.7: Thai display - DD/MM/YYYY (วัน...)
+    const dt=new Date(g.date);
+    const weekdays=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
+    const dayLabel='วัน'+weekdays[dt.getDay()]+' '+dispD(g.date);
     const warn=inMidMonth?'':' <span style="color:var(--amb);font-size:11px">⚠️ นอกวันเบิกปกติ (10-15)</span>';
     return `<div style="background:var(--s2);border:1px solid ${inMidMonth?'var(--bd)':'var(--amb)'};border-radius:8px;margin-bottom:14px;overflow:hidden">
       <div style="background:${inMidMonth?'var(--s3)':'var(--amb-bg)'};padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd)">
@@ -2527,7 +2572,7 @@ async function loadLeaveReq(){
   // Show pending for admin only
   if(isAdmin()){
     const pending=d.data.filter((r,i)=>i>0&&r[10]==='Pending');
-    $('lrPending').innerHTML=pending.length===0?'<div class="empty" style="padding:16px">ไม่มีรายการรออนุมัติ</div>':pending.map(r=>'<div class="ai" style="padding:10px 16px"><span style="flex:1"><b>'+r[2]+'</b> ('+r[1]+') — '+r[4]+': '+r[5]+' ถึง '+r[6]+'<br><span style="font-size:11px;color:var(--t3)">'+r[8]+'</span></span><button onclick="approveLv(\''+r[0]+'\',\'Approved\')" style="padding:4px 10px;background:var(--grn);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px">✅ อนุมัติ</button><button onclick="approveLv(\''+r[0]+'\',\'Rejected\')" style="padding:4px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px">❌ ไม่อนุมัติ</button></div>').join('');
+    $('lrPending').innerHTML=pending.length===0?'<div class="empty" style="padding:16px">ไม่มีรายการรออนุมัติ</div>':pending.map(r=>'<div class="ai" style="padding:10px 16px"><span style="flex:1"><b>'+r[2]+'</b> ('+r[1]+') — '+r[4]+': '+dispD(r[5])+' ถึง '+dispD(r[6])+'<br><span style="font-size:11px;color:var(--t3)">'+r[8]+'</span></span><button onclick="approveLv(\''+r[0]+'\',\'Approved\')" style="padding:4px 10px;background:var(--grn);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px">✅ อนุมัติ</button><button onclick="approveLv(\''+r[0]+'\',\'Rejected\')" style="padding:4px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px">❌ ไม่อนุมัติ</button></div>').join('');
   }
 }
 async function approveLv(lvId,action){const d=await apiPost({action:'approve_leave',lvId,action_type:action,note:''});alert(d.message);loadLeaveReq();}
@@ -2539,7 +2584,7 @@ async function loadNotifications(){
   $('bNotif').textContent=unread.length;$('bNotif').style.display=unread.length>0?'inline':'none';
   $('ntList').innerHTML=d.data.length===0?'<div class="empty" style="padding:16px">No notifications</div>':d.data.map(n=>{
     const tc=n.type==='urgent'?'danger':n.type==='warning'?'f':'la';
-    return'<div class="ai" style="padding:10px 16px;'+(n.read!=='Y'?'background:var(--s2);':'')+'">'+(n.type==='urgent'?'🚨':n.type==='warning'?'⚠️':'ℹ️')+' <span style="flex:1"><b>'+n.title+'</b><br><span style="font-size:11px;color:var(--t2)">'+n.message+'</span><br><span style="font-size:10px;color:var(--t3)">'+n.date+' | '+n.createdBy+'</span></span>'+(n.read!=='Y'?'<button onclick="markRead('+n.row+')" style="padding:3px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">อ่านแล้ว</button>':'<span class="sb0 w">อ่านแล้ว</span>')+'</div>';}).join('');
+    return'<div class="ai" style="padding:10px 16px;'+(n.read!=='Y'?'background:var(--s2);':'')+'">'+(n.type==='urgent'?'🚨':n.type==='warning'?'⚠️':'ℹ️')+' <span style="flex:1"><b>'+n.title+'</b><br><span style="font-size:11px;color:var(--t2)">'+n.message+'</span><br><span style="font-size:10px;color:var(--t3)">'+dispD(n.date)+' | '+n.createdBy+'</span></span>'+(n.read!=='Y'?'<button onclick="markRead('+n.row+')" style="padding:3px 8px;background:var(--blue);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px">อ่านแล้ว</button>':'<span class="sb0 w">อ่านแล้ว</span>')+'</div>';}).join('');
 }
 async function sendNotification(){
   const d=await apiPost({action:'send_notification',to:$('ntTo').value.trim(),title:$('ntTitle').value.trim(),message:$('ntMsg').value.trim(),type:$('ntType').value,createdBy:curUser.displayName||curUser.username});
@@ -2550,7 +2595,7 @@ async function markRead(row){await apiPost({action:'mark_notification_read',row}
 // ===== ANNOUNCEMENTS =====
 async function loadAnnouncements(){
   const d=await apiGet('announcements');if(!d||!d.success)return;
-  $('anList').innerHTML=d.data.length===0?'<div class="empty" style="padding:16px">No announcements</div>':d.data.map(a=>'<div style="padding:16px;border-bottom:1px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="font-size:14px">📢 '+a.title+'</h4><span style="font-size:10px;color:var(--t3)">'+a.date+'</span></div><p style="font-size:12px;color:var(--t2);margin-top:6px;white-space:pre-wrap">'+a.message+'</p><span style="font-size:10px;color:var(--t3)">By '+a.createdBy+(a.company&&a.company!=='ALL'?' | '+a.company:'')+'</span>'+(curUser&&curUser.role==='admin'?' <button onclick="delAnnouncement('+a.row+')" style="padding:2px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-left:8px">🗑️ ลบ</button>':'')+'</div>').join('');
+  $('anList').innerHTML=d.data.length===0?'<div class="empty" style="padding:16px">No announcements</div>':d.data.map(a=>'<div style="padding:16px;border-bottom:1px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="font-size:14px">📢 '+a.title+'</h4><span style="font-size:10px;color:var(--t3)">'+dispD(a.date)+'</span></div><p style="font-size:12px;color:var(--t2);margin-top:6px;white-space:pre-wrap">'+a.message+'</p><span style="font-size:10px;color:var(--t3)">By '+a.createdBy+(a.company&&a.company!=='ALL'?' | '+a.company:'')+'</span>'+(curUser&&curUser.role==='admin'?' <button onclick="delAnnouncement('+a.row+')" style="padding:2px 8px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:10px;margin-left:8px">🗑️ ลบ</button>':'')+'</div>').join('');
   // Show announcement banner on dashboard if any
   if(d.data.length>0){const latest=d.data[0];$('dashAlerts').innerHTML='<div class="ap" style="border-color:var(--cyn);margin-bottom:12px"><h3 style="color:var(--cyn)">📢 '+latest.title+'</h3><p style="font-size:12px;color:var(--t2);margin-top:4px">'+latest.message+'</p></div>'+($('dashAlerts').innerHTML||'');}
 }
@@ -2570,7 +2615,7 @@ async function setEarlyClose(){
 }
 async function loadEarlyClose(){
   const d=await apiGet('early_close');if(!d||!d.success)return;
-  $('ecHistory').innerHTML=d.data.length===0?'<div class="empty" style="padding:16px">No data</div>':d.data.map(e=>'<div class="ai" style="padding:10px 16px">🔔 <span style="flex:1"><b>'+e.date+'</b> — ปิด '+e.closeTime+(e.company&&e.company!=='ALL'?' ('+e.company+')':' (ทุกบริษัท)')+'<br><span style="font-size:11px;color:var(--t3)">'+e.reason+'</span></span></div>').join('');
+  $('ecHistory').innerHTML=d.data.length===0?'<div class="empty" style="padding:16px">No data</div>':d.data.map(e=>'<div class="ai" style="padding:10px 16px">🔔 <span style="flex:1"><b>'+dispD(e.date)+'</b> — ปิด '+e.closeTime+(e.company&&e.company!=='ALL'?' ('+e.company+')':' (ทุกบริษัท)')+'<br><span style="font-size:11px;color:var(--t3)">'+e.reason+'</span></span></div>').join('');
   // Show on dashboard if early close today
   if(d.data.length>0){const ec=d.data[0];$('dashAlerts').innerHTML+='<div class="ap danger"><h3>🔔 วันนี้ปิดก่อนกำหนด: '+ec.closeTime+(ec.reason?' — '+ec.reason:'')+'</h3></div>';}
 }
@@ -2581,6 +2626,8 @@ function renderTbl(hId,bId,data){
   $(hId).innerHTML='<tr>'+data[0].map(h=>'<th>'+(h||'')+'</th>').join('')+'</tr>';
   const rows=data.slice(1).filter(r=>r&&r[0]!==undefined&&r[0]!=='');
   $(bId).innerHTML=rows.map(r=>'<tr>'+r.map(c=>{let v=c===null||c===undefined?'':c;const s=v.toString();
+    // ⭐ v4.7: auto-format ISO date → DD/MM/YYYY
+    if(/^\d{4}-\d{2}-\d{2}(\s\d{2}:\d{2})?$/.test(s)){return'<td>'+dispD(s)+'</td>';}
     if(s.includes('✅')||s==='ACTIVE'||s==='Approved')return'<td><span class="sb0 w">'+s+'</span></td>';
     if(s.includes('❌')||s==='INACTIVE'||s==='RESIGNED')return'<td><span class="sb0 a">'+s+'</span></td>';
     if(s.includes('eave')||s.includes('📅'))return'<td><span class="sb0 l">'+s+'</span></td>';
