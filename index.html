@@ -727,17 +727,40 @@ let identifiedEmp=null; // {empId,name,company,descriptor,faceScore}
 let capturedPhoto=null; // base64 photo from scan step
 let gpsWatchId=null;
 const $=id=>document.getElementById(id);
-const API_KEY='HR PAYROLL TOPPY';
-const DEFAULT_API='https://script.google.com/macros/s/AKfycbzowQT19UUhQYp9KwLt0A1pANsnhSEsdGXoZDABfzEKBdiTXUK2uBweZAXD0HvEUbxZ/exec';
+// ⭐ v4.7 SECURITY: เปลี่ยนค่า 2 บรรทัดนี้ก่อน deploy production
+//
+// API_KEY ต้องตรงกับค่าใน Google Sheet → Settings → API Key
+// ตัวอย่างค่าที่ดี: HR-2026-Toppy-K9xQp7mN2vL  (ยาว, รวมตัวเลข+ตัวอักษร+ขีด)
+const API_KEY='__CHANGE_ME_API_KEY__';
+//
+// DEFAULT_API คือ Web App URL ของ Apps Script Deployment
+// ดูได้จาก Apps Script → Deploy → Manage deployments → ดู URL ที่ลงท้ายด้วย /exec
+// ⚠️ ห้าม commit URL จริงเข้า GitHub public repo (ถือเป็น secret)
+const DEFAULT_API='__CHANGE_ME_WEB_APP_URL__';
 const COMPANY_GPS={JKN:{lat:6.558967,lng:101.291800},FC:{lat:6.555377452490964,lng:101.27216648232881}};
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded',()=>{
-  API=localStorage.getItem('hr_api')||DEFAULT_API;
-  localStorage.setItem('hr_api',API);
+  // ⭐ v4.7 SECURITY: ถ้ายังไม่ได้ setup → บังคับให้กรอก settings ก่อน
+  const stored=localStorage.getItem('hr_api');
+  const isPlaceholder=DEFAULT_API.startsWith('__CHANGE_ME');
+  if(stored){
+    API=stored;
+  } else if(!isPlaceholder){
+    API=DEFAULT_API;
+    localStorage.setItem('hr_api',API);
+  } else {
+    // ยังไม่มีค่า + DEFAULT_API ยังเป็น placeholder
+    API='';
+  }
   REF=parseInt(localStorage.getItem('hr_ref')||'30');
   const sess=localStorage.getItem('hr_session');
   if(sess)try{curUser=JSON.parse(sess)}catch(e){}
+  // ⭐ ถ้ายังไม่มี API URL → บังคับเปิด settings
+  if(!API){
+    document.body.innerHTML='<div style="max-width:500px;margin:80px auto;padding:30px;background:#1a1f2e;border:1px solid #2a3f5f;border-radius:12px;font-family:sans-serif;color:#e2e8f0"><h2 style="color:#3b82f6;margin-top:0">⚙️ ต้องตั้งค่าระบบก่อน</h2><p style="color:#94a3b8;line-height:1.7">ระบบยังไม่ได้กำหนด Web App URL<br><br>กรุณากรอก URL ของ Apps Script Deployment:</p><input id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%;padding:10px;background:#0f172a;border:1px solid #2a3f5f;border-radius:6px;color:#e2e8f0;font-family:monospace;font-size:12px;margin-bottom:12px"><button onclick="(function(){const u=document.getElementById(\'cfgUrl\').value.trim();if(!u||!u.startsWith(\'https://script.google.com\')){alert(\'⚠️ URL ไม่ถูกต้อง\');return;}localStorage.setItem(\'hr_api\',u);location.reload();})()" style="width:100%;padding:12px;background:#3b82f6;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer">บันทึกและเริ่มใช้งาน</button><p style="font-size:11px;color:#64748b;margin-top:14px;line-height:1.6">💡 หา URL ได้จาก Apps Script Editor → Deploy → Manage deployments</p></div>';
+    return;
+  }
   if(!curUser){$('loginScreen').style.display='flex';return;}
   showApp();
 });
@@ -1107,11 +1130,21 @@ setInterval(()=>{const el=$('liveClock');if(el)el.textContent=new Date().toLocal
 // ===== API =====
 async function apiGet(action,params={}){
   if(!API)return null;const u=new URL(API);u.searchParams.set('action',action);
+  // ⭐ v4.7 SECURITY: ส่ง apiKey ทุก request
+  u.searchParams.set('apiKey',API_KEY);
   for(const[k,v]of Object.entries(params))if(v)u.searchParams.set(k,v);
   try{const r=await fetch(u);const d=await r.json();$('sDot').style.display='inline-block';$('connSt').textContent='Connected';$('lastUpd').textContent=new Date().toLocaleString('th-TH');return d;}
   catch(e){$('sDot').style.display='none';$('connSt').textContent='❌ Disconnected';return null}
 }
-async function apiPost(body){try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});return await r.json();}catch(e){return{success:false,message:e.toString()};}}
+async function apiPost(body){
+  // ⭐ v4.7 SECURITY: ส่ง apiKey ทุก request (ยกเว้น public actions)
+  const PUBLIC_ACTIONS=['login','register'];
+  if(!PUBLIC_ACTIONS.includes(body.action)&&!body.apiKey){
+    body.apiKey=API_KEY;
+  }
+  try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});return await r.json();}
+  catch(e){return{success:false,message:e.toString()};}
+}
 
 async function loadAll(){
   loadNotifications();loadAnnouncements();loadEarlyClose();
@@ -1769,6 +1802,7 @@ async function loadDash(){
     const u=new URL(API);
     u.searchParams.set('action','dashboard');
     u.searchParams.set('date',selDate);
+    u.searchParams.set('apiKey',API_KEY); // ⭐ v4.7 SECURITY
     u.searchParams.set('_t',Date.now());
     const r=await fetch(u);
     const d=await r.json();
