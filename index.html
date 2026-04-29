@@ -183,6 +183,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="ni" data-page="checkin"><span class="ic">📸</span>Check-in</div>
     <div class="ni" data-page="faceregister"><span class="ic">🤳</span>ลงทะเบียนใบหน้าใหม่</div>
     <div class="ni role-emp-hide" data-page="employees"><span class="ic">👥</span>Employees</div>
+    <div class="ni role-admin" data-page="applications" style="display:none"><span class="ic">📋</span>ใบสมัครงาน <span class="badge" id="bApps" style="background:var(--ora);display:none">0</span></div>
     <div class="ni" data-page="leavereq"><span class="ic">📝</span>ยื่นลา <span class="badge" id="bLeave" style="background:var(--pur);display:none">0</span></div>
     <div class="ni" data-page="advance"><span class="ic">💵</span>เบิกเงินล่วงหน้า</div>
     <div class="sl">Alerts</div>
@@ -374,11 +375,14 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     </div>
 
     <!-- EMPLOYEES -->
-    <div class="page" id="page-employees"><div class="tw"><div class="th_"><h3>👥 Employees</h3><div class="fl"><select id="empComp" onchange="loadEmp()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select><button style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="$('addEmpForm').style.display=$('addEmpForm').style.display==='none'?'block':'none'">➕ Add Employee</button></div></div>
+    <div class="page" id="page-employees"><div class="tw"><div class="th_"><h3>👥 Employees</h3><div class="fl"><select id="empComp" onchange="loadEmp()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select><button style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="toggleAddEmp()">➕ Add Employee</button></div></div>
       <div id="addEmpForm" style="display:none;padding:16px;border-bottom:1px solid var(--bd)">
+        <div style="margin-bottom:10px;padding:10px;background:var(--blue-bg);border:1px solid rgba(59,130,246,0.3);border-radius:6px;font-size:12px;color:var(--blue);line-height:1.5">
+          💡 <b>Auto-generate ID</b>: ปล่อย Employee ID ว่างเพื่อให้ระบบสร้างให้อัตโนมัติ — รูปแบบ <b>JK6901</b> / <b>FC6901</b> (JK/FC + ปี พ.ศ. 2 ตัว + running)
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <input id="neEmpId" placeholder="Employee ID (e.g. JKN001)" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
-          <select id="neComp" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit"><option>JKN</option><option>FC</option></select>
+          <input id="neEmpId" placeholder="Employee ID (เว้นว่างเพื่อ auto-gen)" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+          <select id="neComp" onchange="previewNextEmpId()" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit"><option>JKN</option><option>FC</option></select>
           <select id="neGender" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit"><option>Male</option><option>Female</option></select>
           <select id="neTitle" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit"><option>นาย</option><option>นาง</option><option>นางสาว</option><option>Mr.</option><option>Mrs.</option><option>Ms.</option></select>
           <input id="neName" placeholder="Name (ชื่อ)" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
@@ -388,11 +392,32 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           <input id="nePosition" placeholder="Position (ตำแหน่ง)" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
           <input id="neTel" placeholder="Phone" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
           <input id="neWage" placeholder="Wage (Baht)" type="number" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit">
-          <div></div>
+          <select id="neWageType" style="padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit"><option value="Monthly">รายเดือน</option><option value="Daily">รายวัน</option></select>
         </div>
+        <div id="empIdPreview" style="margin-top:8px;padding:8px;background:var(--s2);border-radius:6px;font-size:12px;color:var(--t2);font-family:JetBrains Mono"></div>
         <button style="width:100%;padding:8px;background:var(--grn);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px" onclick="addEmployee()">✅ Add Employee</button>
       </div>
       <div style="overflow-x:auto"><table><thead id="eHd"></thead><tbody id="eBd"></tbody></table></div></div></div>
+
+    <!-- ⭐ v4.5: Job Applications page (Admin) -->
+    <div class="page" id="page-applications">
+      <div class="tw">
+        <div class="th_">
+          <h3>📋 ใบสมัครงาน</h3>
+          <div class="fl">
+            <select id="appStatus" onchange="loadApplications()">
+              <option value="ALL">ทั้งหมด</option>
+              <option value="Pending" selected>รออนุมัติ</option>
+              <option value="Approved">อนุมัติแล้ว</option>
+              <option value="Rejected">ปฏิเสธแล้ว</option>
+            </select>
+            <button onclick="loadApplications()" style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px">🔄 Refresh</button>
+            <button onclick="copyApplyUrl()" style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px">🔗 Copy Apply URL</button>
+          </div>
+        </div>
+        <div id="appList" style="padding:8px"></div>
+      </div>
+    </div>
 
     <!-- PROFILE -->
     <div class="page" id="page-profile"><div id="profileContent"></div></div>
@@ -1015,8 +1040,18 @@ async function apiPost(body){try{const r=await fetch(API,{method:'POST',headers:
 
 async function loadAll(){
   loadNotifications();loadAnnouncements();loadEarlyClose();
-  // ⭐ Admin/HR only — Dashboard, Summary, Alerts, Late
-  if(isAdmin()){loadSum();loadDash();loadAlerts();loadLate();}
+  // ⭐ Admin/HR only — Dashboard, Summary, Alerts, Late, Applications badge
+  if(isAdmin()){loadSum();loadDash();loadAlerts();loadLate();checkPendingApps();}
+}
+async function checkPendingApps(){
+  try{
+    const d=await apiPost({action:'list_applications',status:'Pending'});
+    if(d&&d.success&&d.data&&$('bApps')){
+      const count=Math.max(0,d.data.length-1);
+      if(count>0){$('bApps').textContent=count;$('bApps').style.display='inline';}
+      else{$('bApps').style.display='none';}
+    }
+  }catch(e){}
 }
 function loadPage(p){
   if(p==='dashboard'){loadSum();loadDash();loadAnnouncements();loadEarlyClose()}else if(p==='checkin'){resetCheckin();startCheckinFlow()}
@@ -1030,6 +1065,7 @@ function loadPage(p){
   else if(p==='advance')initAdvance();
   else if(p==='leavereq')loadLeaveReq();else if(p==='notifications')loadNotifications();
   else if(p==='announcements')loadAnnouncements();else if(p==='earlyclose')loadEarlyClose();
+  else if(p==='applications')loadApplications();
 }
 
 // ===== LOAD ALL FACE DESCRIPTORS =====
@@ -1733,10 +1769,172 @@ async function showProfile(empId){
 // ===== REST =====
 async function loadEmp(){const c=$('empComp')?$('empComp').value:'';const d=await apiGet('employees');if(!d||!d.success)return;
   let data=d.data;if(c)data=[data[0],...data.slice(1).filter(r=>r[1]===c)];renderTbl('eHd','eBd',data)}
+
+/** ⭐ v4.5: toggle add employee form + preview empId */
+function toggleAddEmp(){
+  const f=$('addEmpForm');const open=f.style.display!=='block';
+  f.style.display=open?'block':'none';
+  if(open)previewNextEmpId();
+}
+async function previewNextEmpId(){
+  const company=$('neComp').value;
+  const d=await apiPost({action:'preview_next_empid',company});
+  if(d&&d.success){
+    $('empIdPreview').innerHTML='💡 ถ้าไม่กรอก Employee ID จะ auto-gen เป็น: <b style="color:var(--grn)">'+d.empId+'</b>';
+  }
+}
+
 async function addEmployee(){
-  const empId=$('neEmpId').value.trim();if(!empId){alert('กรุณากรอก Employee ID');return;}
-  const d=await apiPost({action:'add_employee',empId,company:$('neComp').value,gender:$('neGender').value,title:$('neTitle').value,name:$('neName').value.trim(),surname:$('neSurname').value.trim(),nickname:$('neNickname').value.trim(),religion:$('neReligion').value,position:$('nePosition').value.trim(),tel:$('neTel').value.trim(),wage:$('neWage').value||0,wageType:'Monthly',quotaLeave:6});
-  alert(d.message);if(d.success){$('neEmpId').value='';$('neName').value='';$('neSurname').value='';$('neNickname').value='';$('nePosition').value='';$('neTel').value='';$('neWage').value='';$('addEmpForm').style.display='none';loadEmp();}
+  const empId=$('neEmpId').value.trim(); // อาจจะว่าง — backend จะ auto-gen
+  const d=await apiPost({action:'add_employee',
+    empId, // ส่งว่างได้ — backend จะ generate ให้
+    company:$('neComp').value,
+    gender:$('neGender').value,title:$('neTitle').value,
+    name:$('neName').value.trim(),surname:$('neSurname').value.trim(),nickname:$('neNickname').value.trim(),
+    religion:$('neReligion').value,position:$('nePosition').value.trim(),
+    tel:$('neTel').value.trim(),wage:$('neWage').value||0,
+    wageType:$('neWageType')?$('neWageType').value:'Monthly',
+    quotaLeave:6});
+  alert(d.message);
+  if(d.success){
+    ['neEmpId','neName','neSurname','neNickname','nePosition','neTel','neWage'].forEach(id=>{if($(id))$(id).value='';});
+    $('addEmpForm').style.display='none';loadEmp();
+  }
+}
+
+/** ⭐ v4.5: Job Applications (Admin) */
+async function loadApplications(){
+  const status=$('appStatus')?$('appStatus').value:'Pending';
+  $('appList').innerHTML='<div class="empty" style="padding:24px">⏳ กำลังโหลด...</div>';
+  const d=await apiPost({action:'list_applications',status});
+  if(!d||!d.success){$('appList').innerHTML='<div class="empty">❌ โหลดไม่ได้</div>';return;}
+  const data=d.data||[];
+  if(data.length<=1){$('appList').innerHTML='<div class="empty" style="padding:32px">📭 ไม่มีใบสมัครในสถานะนี้</div>';
+    if($('bApps')){$('bApps').style.display='none';}return;}
+  // count pending for badge
+  const pendingCount=data.slice(1).filter(r=>r[2]==='Pending').length;
+  if($('bApps')){
+    if(pendingCount>0){$('bApps').textContent=pendingCount;$('bApps').style.display='inline';}
+    else{$('bApps').style.display='none';}
+  }
+  $('appList').innerHTML=data.slice(1).map(r=>renderAppCard(r)).join('');
+}
+
+function renderAppCard(r){
+  // r = [appId, submitDate, status, company, position, wageType, expectedWage,
+  //      firstName, lastName, nickname, dobBE, age, gender, religion, nationality,
+  //      nationalId, marital, hasChildren, numChildren, military,
+  //      currentAddr, regAddr, tel, emergencyTel, emergencyName, emergencyRel, backupTel,
+  //      specialSkills, photoFace, photoId, photoMC, photoCar, photoHouse,
+  //      testScore, testAnswers, approvedBy, approveDate, approvedEmpId, rejectReason, notes]
+  const appId=r[0]||'',submitDate=r[1]||'',status=r[2]||'Pending';
+  const stClass=status==='Approved'?'w':status==='Rejected'?'a':'x';
+  const fullName=(r[7]||'')+' '+(r[8]||'');
+  const company=r[3]||'',position=r[4]||'',expectedWage=parseFloat(r[6])||0;
+  const age=r[11]||'-',tel=r[22]||'-',testScore=r[33]||0;
+  const photos=[
+    {label:'หน้าตรง',url:r[28]},
+    {label:'บัตร ปชช.',url:r[29]},
+    {label:'ใบขับขี่ จยย.',url:r[30]},
+    {label:'ใบขับขี่รถยนต์',url:r[31]},
+    {label:'ทะเบียนบ้าน',url:r[32]}
+  ].filter(p=>p.url);
+  const photoStrip=photos.map(p=>'<a href="'+p.url+'" target="_blank" style="display:inline-block;padding:4px 8px;background:var(--s2);border-radius:4px;font-size:10px;color:var(--blue);text-decoration:none;margin-right:4px">📎 '+p.label+'</a>').join('');
+
+  return `<div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+      <div>
+        <div style="font-family:JetBrains Mono;font-size:11px;color:var(--t3)">${appId} · ${submitDate}</div>
+        <div style="font-size:16px;font-weight:600;margin-top:4px">${fullName} <span style="font-size:12px;color:var(--t3)">(${age} ปี)</span></div>
+        <div style="font-size:12px;color:var(--t2);margin-top:4px">
+          <span class="sb0 ${company==='JKN'?'h':'l'}">${company}</span>
+          • ${position} • ${expectedWage.toLocaleString()} บาท ${r[5]==='Daily'?'/วัน':'/เดือน'}
+        </div>
+      </div>
+      <span class="sb0 ${stClass}">${status}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;color:var(--t2);margin:10px 0;padding:10px;background:var(--s1);border-radius:6px">
+      <div>📞 ${tel}</div>
+      <div>🪪 ${r[15]||'-'}</div>
+      <div>📊 Test: <b style="color:${testScore>=30?'var(--grn)':testScore>=20?'var(--amb)':'var(--red)'}">${testScore}/40</b></div>
+    </div>
+    ${photoStrip?'<div style="margin:8px 0">'+photoStrip+'</div>':''}
+    ${status==='Pending'?`
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button onclick="viewApplication('${appId}')" style="flex:1;padding:8px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600">👁️ ดูรายละเอียด</button>
+        <button onclick="approveApp('${appId}','${company}','${(r[7]||'').replace(/'/g,"\\'")}','${(r[8]||'').replace(/'/g,"\\'")}')" style="flex:1;padding:8px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600">✅ อนุมัติ</button>
+        <button onclick="rejectApp('${appId}')" style="flex:1;padding:8px;background:var(--red);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600">❌ ปฏิเสธ</button>
+      </div>
+    `:`
+      <div style="margin-top:10px;padding:8px;background:var(--s1);border-radius:6px;font-size:11px;color:var(--t3)">
+        ${status==='Approved'?'✅ อนุมัติแล้ว → '+(r[37]||'-')+' โดย '+(r[35]||'-'):'❌ ปฏิเสธ — '+(r[38]||'')}
+      </div>
+    `}
+  </div>`;
+}
+
+async function approveApp(appId,company,firstName,lastName){
+  if(!confirm('อนุมัติใบสมัคร '+appId+'?\n\nระบบจะสร้างพนักงานใหม่ใน '+company+' (auto-gen Employee ID)'))return;
+  const d=await apiPost({action:'approve_application',applicationId:appId,status:'Approved',approver:curUser.username});
+  alert(d.message);
+  if(d.success){loadApplications();loadEmp();}
+}
+async function rejectApp(appId){
+  const reason=prompt('เหตุผลที่ปฏิเสธ (ถ้าไม่ระบุปล่อยว่าง):');
+  if(reason===null)return;
+  const d=await apiPost({action:'approve_application',applicationId:appId,status:'Rejected',rejectReason:reason||'',approver:curUser.username});
+  alert(d.message);if(d.success)loadApplications();
+}
+
+async function viewApplication(appId){
+  const d=await apiPost({action:'list_applications',status:'ALL'});
+  if(!d||!d.success)return;
+  const r=d.data.slice(1).find(x=>x[0]===appId);
+  if(!r){alert('ไม่พบใบสมัคร');return;}
+  // แสดงรายละเอียดทั้งหมดใน modal
+  let answers={};try{answers=JSON.parse(r[34]||'{}');}catch(e){}
+  const mo=document.createElement('div');mo.className='modal-overlay';mo.onclick=function(ev){if(ev.target===mo)mo.remove()};
+  mo.innerHTML=`<div class="modal-box" style="max-width:600px;max-height:90vh;overflow-y:auto">
+    <h3>${appId}</h3>
+    <div style="font-size:13px;line-height:1.8">
+      <div style="background:var(--s2);padding:12px;border-radius:6px;margin-bottom:10px">
+        <b>👤 ข้อมูลส่วนตัว</b><br>
+        ${r[7]} ${r[8]} ${r[9]?'('+r[9]+')':''} • ${r[12]} • ${r[11]} ปี<br>
+        เกิด: ${r[10]} • ${r[13]} • ${r[14]}<br>
+        บัตร ปชช.: ${r[15]} • ${r[16]} ${r[17]==='Yes'?'• มีบุตร '+r[18]+' คน':''}<br>
+        ${r[19]?'เกณฑ์ทหาร: '+r[19]+'<br>':''}
+      </div>
+      <div style="background:var(--s2);padding:12px;border-radius:6px;margin-bottom:10px">
+        <b>📞 ติดต่อ</b><br>
+        เบอร์: ${r[22]} ${r[26]?'• สำรอง: '+r[26]:''}<br>
+        ที่อยู่ปัจจุบัน: ${r[20]||'-'}<br>
+        ที่อยู่ทะเบียน: ${r[21]||'-'}<br>
+        🚨 ฉุกเฉิน: ${r[24]} (${r[25]||'-'}) — ${r[23]}
+      </div>
+      <div style="background:var(--s2);padding:12px;border-radius:6px;margin-bottom:10px">
+        <b>💼 งาน</b><br>
+        บริษัท: ${r[3]} • ตำแหน่ง: ${r[4]}<br>
+        ค่าจ้าง: ${parseFloat(r[6]).toLocaleString()} บาท ${r[5]==='Daily'?'/วัน':'/เดือน'}<br>
+        ${r[27]?'<br>ทักษะ: '+r[27]:''}
+      </div>
+      <div style="background:var(--s2);padding:12px;border-radius:6px;margin-bottom:10px">
+        <b>📊 แบบทดสอบ: ${r[33]}/40 คะแนน</b><br>
+        ${Object.keys(answers).map(k=>'<div style="font-size:11px;color:var(--t3)">ข้อ '+(parseInt(k)+1)+': '+answers[k].score+' คะแนน</div>').join('')}
+      </div>
+    </div>
+    <div class="modal-btns"><button onclick="this.closest('.modal-overlay').remove()" style="background:var(--s3);color:var(--t2)">ปิด</button></div>
+  </div>`;
+  document.body.appendChild(mo);
+}
+
+function copyApplyUrl(){
+  const base=location.origin+location.pathname.replace(/\/[^/]+$/,'/');
+  const url=base+'apply.html';
+  navigator.clipboard.writeText(url).then(()=>{
+    alert('✅ คัดลอก URL ใบสมัครงานแล้ว:\n\n'+url+'\n\nส่งให้ผู้สมัครได้เลย');
+  }).catch(()=>{
+    prompt('คัดลอก URL นี้:',url);
+  });
 }
 async function loadAlerts(){const d=await apiGet('alerts');if(!d||!d.success||!d.data)return;renderTbl('fHd','fBd',d.data);
   const p=d.data.filter((r,i)=>i>0&&(r[6]==='Pending'||r[6]==='รอแก้ไข'||r[6]==='รอดำเนินการ'));$('bScan').textContent=p.length;$('bScan').style.display=p.length>0?'inline':'none';
