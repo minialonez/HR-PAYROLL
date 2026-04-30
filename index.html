@@ -436,7 +436,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
     <div class="page" id="page-attendance"><div class="tw"><div class="th_"><h3>📋 Time Records</h3><div class="fl"><input type="date" id="atFrom" onchange="loadAtt()"><input type="date" id="atTo" onchange="loadAtt()"><select id="atComp" onchange="loadAtt()"><option value="">All Companies</option><option>JKN</option><option>FC</option></select></div></div><div style="overflow-x:auto"><table><thead id="atHd"></thead><tbody id="atBd"></tbody></table></div></div></div>
 
     <!-- PAYROLL -->
-    <div class="page" id="page-payroll"><div class="tw"><div class="th_"><h3>💰 Payroll</h3><div class="fl"><input type="text" id="payP" placeholder="e.g. 03/2026 → 04/2026" style="width:180px"><select id="payComp"><option value="">All Companies</option><option>JKN</option><option>FC</option></select><button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPay()">Load</button><button class="role-admin" style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="publishPayroll()">📢 Publish</button><button class="role-admin" style="padding:5px 10px;background:var(--red);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="unpublishPayroll()">🔒 Unpublish</button></div></div><div style="overflow-x:auto"><table><thead id="pyHd"></thead><tbody id="pyBd"></tbody></table></div></div></div>
+    <div class="page" id="page-payroll"><div class="tw"><div class="th_"><h3>💰 Payroll</h3><div class="fl"><input type="text" id="payP" placeholder="e.g. 03/2026 → 04/2026" style="width:180px"><select id="payComp"><option value="">All Companies</option><option>JKN</option><option>FC</option></select><button style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px" onclick="loadPay()">Load</button><button class="role-admin" style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="publishPayroll()">📢 Publish</button><button class="role-admin" style="padding:5px 10px;background:var(--red);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="unpublishPayroll()">🔒 Unpublish</button><button class="role-admin" style="padding:5px 10px;background:var(--purple,#7c3aed);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="lockPayroll()" title="ป้องกันการ recalculate">🔒 Lock Period</button><button class="role-admin" style="padding:5px 10px;background:var(--amb);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="unlockPayroll()" title="อนุญาตให้ recalculate">🔓 Unlock Period</button></div></div><div style="overflow-x:auto"><table><thead id="pyHd"></thead><tbody id="pyBd"></tbody></table></div></div></div>
 
     <!-- PAYSLIP -->
     <div class="page" id="page-payslip">
@@ -731,12 +731,12 @@ const $=id=>document.getElementById(id);
 //
 // API_KEY ต้องตรงกับค่าใน Google Sheet → Settings → API Key
 // ตัวอย่างค่าที่ดี: HR-2026-Toppy-K9xQp7mN2vL  (ยาว, รวมตัวเลข+ตัวอักษร+ขีด)
-const API_KEY='HR-2026-zJPENJ9grSe3kfeP';
+const API_KEY='__CHANGE_ME_API_KEY__';
 //
 // DEFAULT_API คือ Web App URL ของ Apps Script Deployment
 // ดูได้จาก Apps Script → Deploy → Manage deployments → ดู URL ที่ลงท้ายด้วย /exec
 // ⚠️ ห้าม commit URL จริงเข้า GitHub public repo (ถือเป็น secret)
-const DEFAULT_API='https://script.google.com/macros/s/AKfycbzowQT19UUhQYp9KwLt0A1pANsnhSEsdGXoZDABfzEKBdiTXUK2uBweZAXD0HvEUbxZ/exec';
+const DEFAULT_API='__CHANGE_ME_WEB_APP_URL__';
 const COMPANY_GPS={JKN:{lat:6.558967,lng:101.291800},FC:{lat:6.555377452490964,lng:101.27216648232881}};
 
 // ===== INIT =====
@@ -1523,9 +1523,15 @@ function buildSmartReasons(scanned){
     reasons.push({reason:'Prayer In',emoji:'🤲',label:'กลับจากละหมาด'});
     $('smartReasons').innerHTML=renderReasonBtns(reasons);return;
   }
+  // On errand → only Errand In
+  if(has('Personal Errand Out')&&!has('Personal Errand In')){
+    reasons.push({reason:'Personal Errand In',emoji:'🔙',label:'กลับจากธุระ'});
+    $('smartReasons').innerHTML=renderReasonBtns(reasons);return;
+  }
   // Working — show available options
   if(!has('Break Out'))reasons.push({reason:'Break Out',emoji:'🍽️',label:'ไปพัก'});
   if(!has('Prayer Out'))reasons.push({reason:'Prayer Out',emoji:'🕌',label:'ไปละหมาด'});
+  if(!has('Personal Errand Out'))reasons.push({reason:'Personal Errand Out',emoji:'🚪',label:'ออกธุระ'});
   reasons.push({reason:'Check Out',emoji:'🏠',label:'เลิกงาน'});
   reasons.push({reason:'Early Leave',emoji:'🔶',label:'กลับก่อนเวลา',form:true});
 
@@ -1857,23 +1863,24 @@ function dashNextDay(){
 }
 function dashToday(){$('dashDate').value=fmt(new Date());loadDash();}
 function renderDash(data){
-  if(data.length<2){$('dBd').innerHTML='<tr><td colspan="13" class="empty">No data</td></tr>';return}
+  if(data.length<2){$('dBd').innerHTML='<tr><td colspan="15" class="empty">No data</td></tr>';return}
   let hi=0;for(let i=0;i<data.length;i++){if(data[i]&&data[i][0]&&(data[i][0].toString().includes('ID'))){hi=i;break}}
-  const h=data[hi]||['ID','Name','Company','Position','Check In','Break Out','Break In','Pray Out','Pray In','Check Out','Status','Late','Remarks'];
+  const h=data[hi]||['ID','Name','Company','Position','Check In','Break Out','Break In','Pray Out','Pray In','Check Out','Errand Out','Errand In','Status','Late','Issues'];
   $('dHd').innerHTML='<tr>'+h.map(x=>'<th>'+(x||'')+'</th>').join('')+'</tr>';
   const rows=data.slice(hi+1).filter(r=>r&&r[0]&&r[0].toString().trim());
-  if(rows.length===0){$('dBd').innerHTML='<tr><td colspan="13" class="empty">ยังไม่มีข้อมูล</td></tr>';return;}
-  const canEditStatus=isAdmin(); // ⭐ employee แก้ status ไม่ได้
-  $('dBd').innerHTML=rows.map(r=>{const st=(r[10]||'').toString();let bc='x';
+  if(rows.length===0){$('dBd').innerHTML='<tr><td colspan="15" class="empty">ยังไม่มีข้อมูล</td></tr>';return;}
+  const canEditStatus=isAdmin();
+  // ⭐ v4.8: 15 cols — Status=12, Late=13, Issues=14
+  $('dBd').innerHTML=rows.map(r=>{const st=(r[12]||'').toString();let bc='x';
     if(st.includes('Working')||st.includes('Left'))bc='w';else if(st.includes('Absent'))bc='a';
     else if(st.includes('eave'))bc='l';else if(st.includes('Missed')||st.includes('⚠️'))bc='f';else if(st.includes('Holiday'))bc='h';
-    const lt=parseInt(r[11])||0;const lc=lt>60?'danger':lt>0?'la':'';const eid=r[0]||'';const ename=r[1]||'';
+    const lt=parseInt(r[13])||0;const lc=lt>60?'danger':lt>0?'la':'';const eid=r[0]||'';const ename=r[1]||'';
     let statusCell;
     if(st.includes('Not arrived')&&st.includes('late')){statusCell=canEditStatus?'<span class="sb0 danger" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="Click to set status">⚠️ สายมาก ✏️</span>':'<span class="sb0 danger">⚠️ สายมาก</span>';}
     else if(st.includes('Not arrived')){statusCell=canEditStatus?'<span class="sb0 la" style="cursor:pointer" onclick="showAbsentModal(\''+eid+'\',\''+ename+'\')" title="Click to set status">⏳ ยังไม่มา ✏️</span>':'<span class="sb0 la">⏳ ยังไม่มา</span>';}
     else{statusCell='<span class="sb0 '+bc+'">'+st+'</span>';}
     const idCell=canEditStatus?'<td style="font-family:JetBrains Mono;font-size:11px;cursor:pointer;color:var(--blue)" onclick="showProfile(\''+eid+'\')">'+eid+'</td><td><b style="cursor:pointer" onclick="showProfile(\''+eid+'\')">'+ename+'</b></td>':'<td style="font-family:JetBrains Mono;font-size:11px">'+eid+'</td><td><b>'+ename+'</b></td>';
-    return'<tr>'+idCell+'<td><span class="sb0 '+(r[2]==='JKN'?'h':'l')+'">'+(r[2]||'')+'</span></td><td>'+(r[3]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[4]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[5]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[6]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[7]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[8]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[9]||'-')+'</td><td>'+statusCell+'</td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[12]||'')+'</td></tr>';
+    return'<tr>'+idCell+'<td><span class="sb0 '+(r[2]==='JKN'?'h':'l')+'">'+(r[2]||'')+'</span></td><td>'+(r[3]||'')+'</td><td style="font-family:JetBrains Mono">'+(r[4]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[5]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[6]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[7]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[8]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[9]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[10]||'-')+'</td><td style="font-family:JetBrains Mono">'+(r[11]||'-')+'</td><td>'+statusCell+'</td><td>'+(lt>0?'<span class="sb0 '+lc+'">'+lt+'m</span>':'—')+'</td><td style="font-size:11px;color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(r[14]||'')+'</td></tr>';
   }).join('');
 }
 function filterDash(){const q=$('dSrch').value.toLowerCase(),c=$('dComp').value;if(!q&&!c){renderDash(allDash);return}
@@ -2116,6 +2123,24 @@ async function unpublishPayroll(){
   if(!confirm('🔒 ซ่อน Payslip งวด '+period+' จากพนักงาน?'))return;
   const d=await apiPost({action:'unpublish_payroll',period});
   alert(d.message);
+}
+
+// ⭐ v4.8: Lock/Unlock Period — ป้องกันการ recalculate Payroll โดยไม่ตั้งใจ
+async function lockPayroll(){
+  const period=$('payP').value.trim();
+  if(!period){alert('กรอก Period ก่อน เช่น "03/2026 → 04/2026"');return;}
+  if(!confirm('🔒 Lock period: '+period+'?\n\nหลัง Lock:\n• Calculate Payroll จะ skip period นี้\n• ค่า wage/SSO ใน rows นี้จะไม่เปลี่ยน\n• Unlock เมื่อต้องการแก้ไข'))return;
+  const d=await apiPost({action:'lock_payroll',period});
+  if(d&&d.success){alert(d.message);loadPay();}
+  else alert('Error: '+(d?d.message:'fail'));
+}
+async function unlockPayroll(){
+  const period=$('payP').value.trim();
+  if(!period){alert('กรอก Period ก่อน');return;}
+  if(!confirm('🔓 Unlock period: '+period+'?\n\n⚠️ การ Unlock จะอนุญาตให้ recalculate\nค่า wage/SSO ปัจจุบันจะถูกใช้แทน'))return;
+  const d=await apiPost({action:'unlock_payroll',period});
+  if(d&&d.success){alert(d.message);loadPay();}
+  else alert('Error: '+(d?d.message:'fail'));
 }
 
 // ===== PAYSLIP =====
