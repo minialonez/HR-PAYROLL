@@ -499,6 +499,10 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
               <option>Approved</option>
               <option>Rejected</option>
             </select>
+            <select id="arGroupBy" onchange="loadAdvanceReport()" style="padding:6px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--t1);border-radius:5px;font-size:12px;font-family:inherit" title="จัดกลุ่ม">
+              <option value="period" selected>📋 รอบที่หัก</option>
+              <option value="day">📅 วันที่เบิก</option>
+            </select>
             <button onclick="loadAdvanceReport()" style="padding:6px 14px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600">🔄 โหลด</button>
           </div>
         </div>
@@ -731,12 +735,12 @@ const $=id=>document.getElementById(id);
 //
 // API_KEY ต้องตรงกับค่าใน Google Sheet → Settings → API Key
 // ตัวอย่างค่าที่ดี: HR-2026-Toppy-K9xQp7mN2vL  (ยาว, รวมตัวเลข+ตัวอักษร+ขีด)
-const API_KEY='HR-2026-zJPENJ9grSe3kfeP';
+const API_KEY='__CHANGE_ME_API_KEY__';
 //
 // DEFAULT_API คือ Web App URL ของ Apps Script Deployment
 // ดูได้จาก Apps Script → Deploy → Manage deployments → ดู URL ที่ลงท้ายด้วย /exec
 // ⚠️ ห้าม commit URL จริงเข้า GitHub public repo (ถือเป็น secret)
-const DEFAULT_API='_https://script.google.com/macros/s/AKfycbzowQT19UUhQYp9KwLt0A1pANsnhSEsdGXoZDABfzEKBdiTXUK2uBweZAXD0HvEUbxZ/exec';
+const DEFAULT_API='__CHANGE_ME_WEB_APP_URL__';
 const COMPANY_GPS={JKN:{lat:6.558967,lng:101.291800},FC:{lat:6.555377452490964,lng:101.27216648232881}};
 
 // ===== INIT =====
@@ -1552,7 +1556,7 @@ function renderReasonBtns(reasons){
   }).join('');
 }
 
-const REASON_MAP={'Check In':{emoji:'🟢',label:'เข้างาน'},'Break Out':{emoji:'🍽️',label:'ไปพัก'},'Break In':{emoji:'🔙',label:'กลับจากพัก'},'Prayer Out':{emoji:'🕌',label:'ไปละหมาด'},'Prayer In':{emoji:'🤲',label:'กลับจากละหมาด'},'Check Out':{emoji:'🏠',label:'เลิกงาน'},'Early Leave':{emoji:'🔶',label:'กลับก่อนเวลา'},'OT In':{emoji:'⏰',label:'OT เข้า'},'OT Out':{emoji:'🔚',label:'OT ออก'}};
+const REASON_MAP={'Check In':{emoji:'🟢',label:'เข้างาน'},'Break Out':{emoji:'🍽️',label:'ไปพัก'},'Break In':{emoji:'🔙',label:'กลับจากพัก'},'Prayer Out':{emoji:'🕌',label:'ไปละหมาด'},'Prayer In':{emoji:'🤲',label:'กลับจากละหมาด'},'Check Out':{emoji:'🏠',label:'เลิกงาน'},'Early Leave':{emoji:'🔶',label:'กลับก่อนเวลา'},'OT In':{emoji:'⏰',label:'OT เข้า'},'OT Out':{emoji:'🔚',label:'OT ออก'},'Personal Errand Out':{emoji:'🚪',label:'ออกธุระ'},'Personal Errand In':{emoji:'🔙',label:'กลับจากธุระ'}};
 
 function confirmCheckin(reason){
   pendingReason=reason;
@@ -2536,6 +2540,7 @@ function initAdvanceReport(){
 async function loadAdvanceReport(){
   const from=$('arFrom').value,to=$('arTo').value;
   const company=$('arCompany').value,status=$('arStatus').value;
+  const groupBy=$('arGroupBy')?$('arGroupBy').value:'period'; // ⭐ default = by deduct period
   $('arResults').innerHTML='<div class="empty" style="padding:24px">⏳ กำลังโหลด...</div>';
   $('arSummary').innerHTML='';
   const d=await apiPost({action:'advance_report',from,to,company,status});
@@ -2544,8 +2549,8 @@ async function loadAdvanceReport(){
   // Summary cards
   $('arSummary').innerHTML=`
     <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center">
-      <div style="font-size:11px;color:var(--t3)">วันที่มีเบิก</div>
-      <div style="font-size:22px;font-weight:700;margin-top:4px">${s.days||0}</div>
+      <div style="font-size:11px;color:var(--t3)">${groupBy==='period'?'รอบที่หัก':'วันที่มีเบิก'}</div>
+      <div style="font-size:22px;font-weight:700;margin-top:4px">${groupBy==='period'?(s.periodCount||0):(s.days||0)}</div>
     </div>
     <div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center">
       <div style="font-size:11px;color:var(--t3)">รายการทั้งหมด</div>
@@ -2566,50 +2571,88 @@ async function loadAdvanceReport(){
       <div style="font-size:18px;font-weight:700;margin-top:4px;color:var(--blue)">${(s.totalAmount||0).toLocaleString()} ฿</div>
     </div>
   `;
-  if(!d.byDay||d.byDay.length===0){
+  // ⭐ Render based on group mode
+  const groups=groupBy==='period'?(d.byPeriod||[]):(d.byDay||[]);
+  if(groups.length===0){
     $('arResults').innerHTML='<div class="empty" style="padding:32px">📭 ไม่มีข้อมูลในช่วงเวลานี้</div>';
     return;
   }
-  // Group by day
-  $('arResults').innerHTML=d.byDay.map(g=>{
-    // ตรวจวันที่ — ปกติเบิกได้กลางเดือน (วันที่ 10-15)
-    const day=parseInt(g.date.substring(8,10));
-    const inMidMonth=day>=10&&day<=15;
-    // ⭐ v4.7: Thai display - DD/MM/YYYY (วัน...)
-    const dt=new Date(g.date);
-    const weekdays=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
-    const dayLabel='วัน'+weekdays[dt.getDay()]+' '+dispD(g.date);
-    const warn=inMidMonth?'':' <span style="color:var(--amb);font-size:11px">⚠️ นอกวันเบิกปกติ (10-15)</span>';
-    return `<div style="background:var(--s2);border:1px solid ${inMidMonth?'var(--bd)':'var(--amb)'};border-radius:8px;margin-bottom:14px;overflow:hidden">
-      <div style="background:${inMidMonth?'var(--s3)':'var(--amb-bg)'};padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd)">
-        <div>
-          <div style="font-size:13px;font-weight:600">📅 ${dayLabel}${warn}</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">${g.count} รายการ • รวม ${g.total.toLocaleString()} ฿ • อนุมัติ ${g.approvedAmt.toLocaleString()} ฿</div>
+  if(groupBy==='period'){
+    // Group by deduct period
+    $('arResults').innerHTML=groups.map(g=>{
+      return `<div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;margin-bottom:14px;overflow:hidden">
+        <div style="background:var(--s3);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd)">
+          <div>
+            <div style="font-size:13px;font-weight:600">💰 รอบหัก: ${g.period}</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">${g.count} รายการ • รวม ${g.total.toLocaleString()} ฿ • อนุมัติ ${g.approvedAmt.toLocaleString()} ฿</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            ${g.approvedCount>0?`<span class="sb0 w">${g.approvedCount} ✅</span>`:''}
+            ${g.pendingCount>0?`<span class="sb0 la">${g.pendingCount} ⏳</span>`:''}
+          </div>
         </div>
-        <div style="display:flex;gap:6px">
-          ${g.approvedCount>0?`<span class="sb0 w">${g.approvedCount} ✅</span>`:''}
-          ${g.pendingCount>0?`<span class="sb0 la">${g.pendingCount} ⏳</span>`:''}
+        <div style="overflow-x:auto"><table style="width:100%"><thead><tr>
+          <th>วันที่เบิก</th><th>ID</th><th>ชื่อ</th><th>บริษัท</th><th>ขอเบิก</th><th>เหตุผล</th><th>สถานะ</th><th>อนุมัติ</th><th>หักแล้ว?</th>
+        </tr></thead><tbody>
+          ${g.items.map(it=>{
+            const stCl=it.status==='Approved'?'w':it.status==='Rejected'?'a':'la';
+            const ded=it.isDeducted?'<span class="sb0 w">✅ หักแล้ว</span>':'<span class="sb0 la">⏳ รอหัก</span>';
+            return `<tr>
+              <td style="font-family:JetBrains Mono;font-size:11px">${dispD(it.requestDate)}</td>
+              <td style="font-family:JetBrains Mono;font-size:11px">${it.empId}</td>
+              <td><b>${it.name}</b></td>
+              <td><span class="sb0 ${it.company==='JKN'?'h':'l'}">${it.company}</span></td>
+              <td style="font-family:JetBrains Mono">${it.requested.toLocaleString()}฿</td>
+              <td style="font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis">${it.reason}</td>
+              <td><span class="sb0 ${stCl}">${it.status}</span></td>
+              <td style="font-family:JetBrains Mono">${it.status==='Approved'?it.approved.toLocaleString()+'฿':'—'}</td>
+              <td>${it.status==='Approved'?ded:'—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody></table></div>
+      </div>`;
+    }).join('');
+  } else {
+    // Group by day (เดิม)
+    $('arResults').innerHTML=groups.map(g=>{
+      const day=parseInt(g.date.substring(8,10));
+      const inMidMonth=day>=10&&day<=15;
+      const dt=new Date(g.date);
+      const weekdays=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสฯ','ศุกร์','เสาร์'];
+      const dayLabel='วัน'+weekdays[dt.getDay()]+' '+dispD(g.date);
+      const warn=inMidMonth?'':' <span style="color:var(--amb);font-size:11px">⚠️ นอกวันเบิกปกติ (10-15)</span>';
+      return `<div style="background:var(--s2);border:1px solid ${inMidMonth?'var(--bd)':'var(--amb)'};border-radius:8px;margin-bottom:14px;overflow:hidden">
+        <div style="background:${inMidMonth?'var(--s3)':'var(--amb-bg)'};padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd)">
+          <div>
+            <div style="font-size:13px;font-weight:600">📅 ${dayLabel}${warn}</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">${g.count} รายการ • รวม ${g.total.toLocaleString()} ฿ • อนุมัติ ${g.approvedAmt.toLocaleString()} ฿</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            ${g.approvedCount>0?`<span class="sb0 w">${g.approvedCount} ✅</span>`:''}
+            ${g.pendingCount>0?`<span class="sb0 la">${g.pendingCount} ⏳</span>`:''}
+          </div>
         </div>
-      </div>
-      <div style="overflow-x:auto"><table style="width:100%"><thead><tr>
-        <th>ID</th><th>ชื่อ</th><th>บริษัท</th><th>ขอเบิก</th><th>Pre-Sum</th><th>เหตุผล</th><th>สถานะ</th><th>อนุมัติ</th>
-      </tr></thead><tbody>
-        ${g.items.map(it=>{
-          const stCl=it.status==='Approved'?'w':it.status==='Rejected'?'a':'la';
-          return `<tr>
-            <td style="font-family:JetBrains Mono;font-size:11px">${it.empId}</td>
-            <td><b>${it.name}</b></td>
-            <td><span class="sb0 ${it.company==='JKN'?'h':'l'}">${it.company}</span></td>
-            <td style="font-family:JetBrains Mono">${it.requested.toLocaleString()}฿</td>
-            <td style="font-family:JetBrains Mono;color:var(--t3)">${it.preSummary.toLocaleString()}฿</td>
-            <td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${it.reason}</td>
-            <td><span class="sb0 ${stCl}">${it.status}</span></td>
-            <td style="font-family:JetBrains Mono">${it.status==='Approved'?it.approved.toLocaleString()+'฿':'—'}</td>
-          </tr>`;
-        }).join('')}
-      </tbody></table></div>
-    </div>`;
-  }).join('');
+        <div style="overflow-x:auto"><table style="width:100%"><thead><tr>
+          <th>ID</th><th>ชื่อ</th><th>บริษัท</th><th>ขอเบิก</th><th>Pre-Sum</th><th>รอบหัก</th><th>เหตุผล</th><th>สถานะ</th><th>อนุมัติ</th>
+        </tr></thead><tbody>
+          ${g.items.map(it=>{
+            const stCl=it.status==='Approved'?'w':it.status==='Rejected'?'a':'la';
+            return `<tr>
+              <td style="font-family:JetBrains Mono;font-size:11px">${it.empId}</td>
+              <td><b>${it.name}</b></td>
+              <td><span class="sb0 ${it.company==='JKN'?'h':'l'}">${it.company}</span></td>
+              <td style="font-family:JetBrains Mono">${it.requested.toLocaleString()}฿</td>
+              <td style="font-family:JetBrains Mono;color:var(--t3)">${it.preSummary.toLocaleString()}฿</td>
+              <td style="font-size:11px">${it.deductPeriod||'-'}</td>
+              <td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis">${it.reason}</td>
+              <td><span class="sb0 ${stCl}">${it.status}</span></td>
+              <td style="font-family:JetBrains Mono">${it.status==='Approved'?it.approved.toLocaleString()+'฿':'—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody></table></div>
+      </div>`;
+    }).join('');
+  }
 }
 
 // ===== LEAVE REQUEST =====
