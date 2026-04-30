@@ -69,7 +69,8 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 .reason-btn.selected{border-color:var(--blue);background:rgba(59,130,246,.15);color:var(--blue)}
 .reason-btn .emoji{font-size:24px;display:block;margin-bottom:4px}
 .camera-area{position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:12px;overflow:hidden;margin:16px 0}
-.camera-area video{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;transform:scaleX(-1)}
+.camera-area video{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;transform:scaleX(-1);-webkit-transform:scaleX(-1)}
+.camera-area video.ios-safe{transform:none;-webkit-transform:none}
 .camera-area canvas{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;display:none}
 .camera-area .overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:180px;height:220px;border:3px solid rgba(59,130,246,.6);border-radius:50%;pointer-events:none;z-index:5}
 .camera-area .status{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;z-index:5}
@@ -370,7 +371,9 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           </div>
           <button class="btn-checkin" id="frStartBtn" onclick="frStartScan()">📸 เปิดกล้อง & เริ่มสแกน</button>
           <button class="btn-checkin" id="frSubmitBtn" onclick="frSubmit()" style="display:none;background:var(--grn)">✅ บันทึกลงทะเบียน</button>
+          <button onclick="frDebugTest()" style="margin-top:8px;padding:8px;background:var(--s3);color:var(--t2);border:1px dashed var(--bd);border-radius:6px;font-size:11px;width:100%;cursor:pointer">🧪 Debug — ทดสอบกล้อง+ใบหน้า (กดเพื่อ debug)</button>
           <div id="frResult" style="margin-top:12px;text-align:center;font-size:13px"></div>
+          <div id="frDebugLog" style="margin-top:8px;padding:8px;background:#000;color:#0f0;font-family:monospace;font-size:10px;border-radius:6px;max-height:200px;overflow-y:auto;display:none;text-align:left;white-space:pre-wrap"></div>
         </div>
       </div>
     </div>
@@ -965,9 +968,20 @@ let guestScanInterval=null,guestIdentified=null,guestPhoto=null,guestGpsData=nul
 async function startGuestFlow(){
   guestIdentified=null;guestPhoto=null;guestGpsData=null;
   try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
-  $('guestVideo').srcObject=camStream;
-  await new Promise(r=>{$('guestVideo').onloadeddata=r;setTimeout(r,3000);});await new Promise(r=>setTimeout(r,500));
-  }catch(e){$('guestCamStatus').textContent='❌ เปิดกล้องไม่ได้';return;}
+  const gv=$('guestVideo');
+  gv.srcObject=camStream;
+  gv.setAttribute('playsinline','true');gv.setAttribute('webkit-playsinline','true');gv.muted=true;
+  try{await gv.play();}catch(e){console.log('guest play err:',e);}
+  // Poll for video ready (iOS-friendly)
+  const t0=Date.now();
+  while(Date.now()-t0<5000){
+    if(gv.videoWidth>0 && gv.readyState>=2)break;
+    await new Promise(r=>setTimeout(r,100));
+  }
+  await new Promise(r=>setTimeout(r,300));
+  console.log('Guest camera ready:',gv.videoWidth,'x',gv.videoHeight);
+  if(gv.videoWidth===0){$('guestCamStatus').textContent='❌ กล้องไม่ส่งภาพ - รีเฟรช';return;}
+  }catch(e){$('guestCamStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;return;}
   $('guestCamStatus').textContent='📸 กล้องพร้อม';
   // GPS
   if(navigator.geolocation){navigator.geolocation.watchPosition(pos=>{guestGpsData={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};$('guestGps').className='gps-status ok';$('guestGps').textContent='📍 GPS พร้อม (±'+Math.round(guestGpsData.accuracy)+'m)';},err=>{$('guestGps').className='gps-status fail';$('guestGps').textContent='❌ GPS: '+err.message;},{enableHighAccuracy:true,timeout:30000,maximumAge:0});}
@@ -1683,18 +1697,22 @@ async function frStartScan(){
   const fv=$('frVideo');
   fv.srcObject=frStream;
   fv.setAttribute('playsinline','true'); // ⭐ iOS Safari requires this
+  fv.setAttribute('webkit-playsinline','true');
   fv.muted=true;
-  // ⭐ Wait for video to be playing — iOS-friendly
+  // ⭐ iOS Safari: video.play() ต้องเรียกหลัง srcObject + ใน user gesture context
   try{await fv.play();}catch(e){console.log('video.play err:',e);}
-  await new Promise((resolve)=>{
-    let resolved=false;
-    const done=()=>{if(!resolved){resolved=true;resolve();}};
-    fv.onloadeddata=done;
-    fv.oncanplay=done;
-    setTimeout(done,3000); // fallback
-  });
-  await new Promise(r=>setTimeout(r,500)); // extra buffer
+  // ⭐ Wait for video to be playing — iOS requires polling videoWidth (events อาจไม่ยิง)
+  const t0=Date.now();
+  while(Date.now()-t0<5000){
+    if(fv.videoWidth>0 && fv.readyState>=2)break;
+    await new Promise(r=>setTimeout(r,100));
+  }
+  await new Promise(r=>setTimeout(r,300)); // extra buffer for iOS
   console.log('Camera ready: video',fv.videoWidth,'x',fv.videoHeight,'readyState',fv.readyState);
+  if(fv.videoWidth===0){
+    $('frCamStatus').textContent='❌ กล้องไม่ส่งภาพ - ลองรีเฟรช หรือปิด-เปิด iPhone';
+    $('frStartBtn').style.display='block';return;
+  }
   }catch(e){$('frCamStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;$('frStartBtn').style.display='block';return;}
   // Load models
   $('frCamStatus').textContent='🤖 กำลังโหลด Face Model... (ลอง 3 แหล่ง)';
@@ -1731,6 +1749,63 @@ async function frStartScan(){
     $('frPoseText').textContent='⚠️ กรุณาลองใหม่';
     $('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';
   }
+}
+
+// ⭐ Debug: test camera + face detection ใน iOS
+async function frDebugTest(){
+  const log=$('frDebugLog');log.style.display='block';
+  const append=msg=>{log.textContent+=msg+'\n';log.scrollTop=log.scrollHeight;console.log('[DBG]',msg);};
+  log.textContent='';
+  append('=== Debug Test Start ===');
+  append('UserAgent: '+navigator.userAgent.slice(0,80));
+  append('HTTPS: '+(location.protocol==='https:'?'YES':'NO'));
+  append('faceapi loaded: '+(typeof faceapi!=='undefined'));
+  append('camStream active: '+(frStream?frStream.active:'no stream'));
+  if(!frStream){
+    append('--- Opening camera ---');
+    try{
+      frStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
+      append('Stream OK, tracks='+frStream.getTracks().length);
+      const fv=$('frVideo');fv.srcObject=frStream;
+      fv.setAttribute('playsinline','true');fv.setAttribute('webkit-playsinline','true');fv.muted=true;
+      try{await fv.play();append('video.play() OK');}catch(e){append('video.play() ERR: '+e.message);}
+    }catch(e){append('getUserMedia ERR: '+e.message);return;}
+  }
+  // Wait for video
+  const fv=$('frVideo');
+  append('Waiting for video data...');
+  for(let i=0;i<50;i++){
+    if(fv.videoWidth>0)break;
+    await new Promise(r=>setTimeout(r,100));
+  }
+  append('video: '+fv.videoWidth+'x'+fv.videoHeight+' rs='+fv.readyState+' paused='+fv.paused);
+  if(fv.videoWidth===0){append('❌ FAIL — กล้องไม่ส่งภาพ');return;}
+  // Test canvas draw
+  const canvas=$('frCanvas');
+  canvas.width=fv.videoWidth;canvas.height=fv.videoHeight;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(fv,0,0);
+  const data=ctx.getImageData(canvas.width/2,canvas.height/2,1,1).data;
+  append('Center pixel RGB: '+data[0]+','+data[1]+','+data[2]);
+  if(data[0]+data[1]+data[2]<10){append('⚠️ WARN — ภาพดำ! กล้องไม่ส่งข้อมูล');}
+  else{append('✅ Canvas drawing works');}
+  // Load models
+  if(!faceModelsLoaded){
+    append('Loading face models...');
+    const ok=await loadFaceModels();
+    append(ok?'✅ Models loaded':'❌ Models FAIL');
+    if(!ok)return;
+  }else append('Models already loaded');
+  // Try detect
+  append('Testing face detection (3 attempts)...');
+  for(let i=1;i<=3;i++){
+    ctx.drawImage(fv,0,0);
+    const det=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions({scoreThreshold:0.3,inputSize:416})).withFaceLandmarks(true).withFaceDescriptor();
+    if(det)append('  '+i+'. ✅ Face FOUND score='+det.detection.score.toFixed(3));
+    else append('  '+i+'. ❌ No face');
+    await new Promise(r=>setTimeout(r,500));
+  }
+  append('=== Test Done ===');
 }
 
 async function frCaptureFrame(){
