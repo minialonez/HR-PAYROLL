@@ -1,7 +1,11 @@
 <!DOCTYPE html>
+<!-- HR Payroll v4.8.2 - 2026-04-30-1130 -->
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -369,6 +373,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
             <div id="frScanCount" style="font-size:11px;color:var(--t3)">เก็บข้อมูล 0 จุด</div>
           </div>
           <button class="btn-checkin" id="frStartBtn" onclick="frStartScan()">📸 เปิดกล้อง & เริ่มสแกน</button>
+          <button id="frSkipBtn" onclick="frSkipCurrentPose()" style="display:none;margin-top:6px;padding:8px;background:var(--amb);color:#fff;border:none;border-radius:6px;font-size:12px;width:100%;cursor:pointer;font-weight:600">⏭️ ข้ามท่านี้ — ทำท่าถัดไป</button>
           <button class="btn-checkin" id="frSubmitBtn" onclick="frSubmit()" style="display:none;background:var(--grn)">✅ บันทึกลงทะเบียน</button>
           <button onclick="frDebugTest()" style="margin-top:8px;padding:8px;background:var(--s3);color:var(--t2);border:1px dashed var(--bd);border-radius:6px;font-size:11px;width:100%;cursor:pointer">🧪 Debug ทดสอบกล้อง</button>
           <div id="frResult" style="margin-top:12px;text-align:center;font-size:13px"></div>
@@ -1652,24 +1657,62 @@ function restartCheckin(){resetCheckin();startCheckinFlow();}
 
 // ===== FACE REGISTRATION — Video-guided multi-angle scan =====
 let frStream=null,frDescriptors=[],frPhotos=[],frScanning=false;
+// ⭐ v4.8.1: pose มี check function — ต้องหันถูกท่าจริงค่อยผ่าน
 const FR_POSES=[
-  {emoji:'😊',text:'หันหน้าตรง',duration:4000},
-  {emoji:'👈',text:'หันซ้ายเล็กน้อย',duration:3000},
-  {emoji:'👉',text:'หันขวาเล็กน้อย',duration:3000},
-  {emoji:'☝️',text:'เงยหน้าขึ้นเล็กน้อย',duration:3000},
-  {emoji:'👇',text:'ก้มหน้าลงเล็กน้อย',duration:3000},
+  {emoji:'😊',text:'หันหน้าตรง',minSamples:3,timeout:20000,check:(ld)=>{
+    const nose=ld.getNose(),jaw=ld.getJawOutline();
+    const noseX=nose[3].x;
+    const faceLeft=jaw[0].x,faceRight=jaw[16].x;
+    const faceCenter=(faceLeft+faceRight)/2;
+    const offset=Math.abs(noseX-faceCenter)/(faceRight-faceLeft);
+    return offset<0.08;
+  }},
+  {emoji:'👈',text:'หันซ้ายเล็กน้อย',minSamples:2,timeout:20000,check:(ld)=>{
+    const nose=ld.getNose(),jaw=ld.getJawOutline();
+    const noseX=nose[3].x;
+    const faceLeft=jaw[0].x,faceRight=jaw[16].x;
+    const faceCenter=(faceLeft+faceRight)/2;
+    const ratio=(noseX-faceCenter)/(faceRight-faceLeft);
+    return ratio>0.10;
+  }},
+  {emoji:'👉',text:'หันขวาเล็กน้อย',minSamples:2,timeout:20000,check:(ld)=>{
+    const nose=ld.getNose(),jaw=ld.getJawOutline();
+    const noseX=nose[3].x;
+    const faceLeft=jaw[0].x,faceRight=jaw[16].x;
+    const faceCenter=(faceLeft+faceRight)/2;
+    const ratio=(noseX-faceCenter)/(faceRight-faceLeft);
+    return ratio<-0.10;
+  }},
+  {emoji:'☝️',text:'เงยหน้าขึ้นเล็กน้อย',minSamples:2,timeout:20000,check:(ld)=>{
+    const nose=ld.getNose(),jaw=ld.getJawOutline();
+    const noseY=nose[3].y;
+    const faceTop=Math.min(...jaw.map(p=>p.y)),faceBot=Math.max(...jaw.map(p=>p.y));
+    const ratio=(noseY-faceTop)/(faceBot-faceTop);
+    return ratio<0.40;
+  }},
+  {emoji:'👇',text:'ก้มหน้าลงเล็กน้อย',minSamples:2,timeout:20000,check:(ld)=>{
+    const nose=ld.getNose(),jaw=ld.getJawOutline();
+    const noseY=nose[3].y;
+    const faceTop=Math.min(...jaw.map(p=>p.y)),faceBot=Math.max(...jaw.map(p=>p.y));
+    const ratio=(noseY-faceTop)/(faceBot-faceTop);
+    return ratio>0.62;
+  }},
 ];
 
+// ⭐ flag ให้ผู้ใช้ "ข้าม pose นี้"
+let frSkipPose=false;
+function frSkipCurrentPose(){frSkipPose=true;}
+
 function frReset(){
-  frDescriptors=[];frPhotos=[];frScanning=false;
+  frDescriptors=[];frPhotos=[];frScanning=false;frSkipPose=false;
   $('frSubmitBtn').style.display='none';$('frStartBtn').style.display='block';
   $('frInstruction').style.display='none';$('frResult').textContent='';
   $('frCamStatus').textContent='กดปุ่มเพื่อเริ่ม';
-  // Clear new fields
   if($('frFirstName')){$('frFirstName').value='';}
   if($('frLastName')){$('frLastName').value='';}
   if($('frEmpId')){$('frEmpId').value='';}
   if($('frEmpPreview')){$('frEmpPreview').style.display='none';$('frEmpPreview').innerHTML='';}
+  if($('frSkipBtn'))$('frSkipBtn').style.display='none';
   if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}
 }
 
@@ -1680,48 +1723,84 @@ async function frStartScan(){
   if(!firstName){alert('กรุณากรอกชื่อจริง');return;}
   $('frStartBtn').style.display='none';
   $('frCamStatus').textContent='📸 กำลังเปิดกล้อง...';
-  // Open camera
   try{frStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
   $('frVideo').srcObject=frStream;
-  // Wait for video to actually produce frames
   await new Promise((resolve)=>{$('frVideo').onloadeddata=resolve;setTimeout(resolve,3000);});
-  await new Promise(r=>setTimeout(r,500)); // extra buffer
+  await new Promise(r=>setTimeout(r,500));
   }catch(e){$('frCamStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;$('frStartBtn').style.display='block';return;}
-  // Load models
-  $('frCamStatus').textContent='🤖 กำลังโหลด Face Model... (ลอง 3 แหล่ง)';
+  $('frCamStatus').textContent='🤖 กำลังโหลด Face Model...';
   const ok=await loadFaceModels();
-  if(!ok){$('frCamStatus').textContent='⚠️ โหลด Face Model ไม่สำเร็จจากทุกแหล่ง — ลองรีเฟรชหน้าเว็บ หรือเปลี่ยน WiFi/เน็ต';$('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';return;}
+  if(!ok){$('frCamStatus').textContent='⚠️ โหลด Face Model ไม่สำเร็จ';$('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';return;}
   $('frInstruction').style.display='block';
+  if($('frSkipBtn'))$('frSkipBtn').style.display='block';
   frDescriptors=[];frPhotos=[];frScanning=true;
-  // Go through each pose
+  // ⭐ Loop pose — รอ pose ถูกจริงๆ + ผู้ใช้กดข้ามได้
   let totalPoses=FR_POSES.length,completedPoses=0;
   for(const pose of FR_POSES){
     if(!frScanning)break;
+    frSkipPose=false;
     $('frPoseText').textContent=pose.emoji+' '+pose.text;
-    $('frCamStatus').textContent='🎬 '+pose.text+'...';
+    $('frCamStatus').textContent='🎬 '+pose.text+' (รอท่าให้ถูก หรือกด "ข้าม")';
+    let samplesForPose=0;
     const startTime=Date.now();
-    while(Date.now()-startTime<pose.duration&&frScanning){
-      await frCaptureFrame();
-      const elapsed=Date.now()-startTime;
-      const progress=((completedPoses/totalPoses)+(elapsed/pose.duration/totalPoses))*100;
-      $('frProgressBar').style.width=Math.min(progress,100)+'%';
+    while(samplesForPose<pose.minSamples && frScanning && !frSkipPose){
+      if(Date.now()-startTime>pose.timeout){
+        $('frCamStatus').textContent='⏱️ ข้าม "'+pose.text+'" (timeout)';
+        await new Promise(r=>setTimeout(r,800));
+        break;
+      }
+      const got=await frCaptureFrameWithCheck(pose);
+      if(got){
+        samplesForPose++;
+        $('frCamStatus').textContent='✅ '+pose.text+' '+samplesForPose+'/'+pose.minSamples;
+      }
+      const poseProgress=samplesForPose/pose.minSamples;
+      const overall=((completedPoses+poseProgress)/totalPoses)*100;
+      $('frProgressBar').style.width=Math.min(overall,100)+'%';
       $('frScanCount').textContent='เก็บข้อมูล '+frDescriptors.length+' จุด';
-      await new Promise(r=>setTimeout(r,500));
+      await new Promise(r=>setTimeout(r,300));
     }
     completedPoses++;
   }
   $('frProgressBar').style.width='100%';
   if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}
   frScanning=false;
+  if($('frSkipBtn'))$('frSkipBtn').style.display='none';
   if(frDescriptors.length>=3){
     $('frCamStatus').textContent='✅ สแกนเสร็จ! เก็บได้ '+frDescriptors.length+' จุด';
     $('frPoseText').textContent='✅ สแกนเสร็จสมบูรณ์!';
     $('frSubmitBtn').style.display='block';
   }else{
-    $('frCamStatus').textContent='⚠️ เก็บได้น้อยเกินไป ('+frDescriptors.length+'/3) — ลองใหม่ ให้แสงสว่างเพียงพอ';
+    $('frCamStatus').textContent='⚠️ เก็บได้น้อยเกินไป ('+frDescriptors.length+'/3) — ลองใหม่';
     $('frPoseText').textContent='⚠️ กรุณาลองใหม่';
     $('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';
   }
+}
+
+// ⭐ ตรวจ pose แล้วเก็บ descriptor ถ้าผ่าน
+async function frCaptureFrameWithCheck(pose){
+  if(!frStream||!faceModelsLoaded)return false;
+  const video=$('frVideo');
+  if(!video||video.videoWidth===0||video.readyState<2)return false;
+  const canvas=$('frCanvas');
+  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  const ctx=canvas.getContext('2d');
+  ctx.translate(canvas.width,0);ctx.scale(-1,1);
+  ctx.drawImage(video,0,0);ctx.setTransform(1,0,0,1,0,0);
+  try{
+    const det=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions({scoreThreshold:0.3})).withFaceLandmarks(true).withFaceDescriptor();
+    if(!det){
+      $('frCamStatus').textContent='🔍 หาใบหน้าไม่เจอ';
+      return false;
+    }
+    if(!pose.check(det.landmarks)){
+      $('frCamStatus').textContent='🔄 '+pose.text+' (ทำท่าให้ถูก)';
+      return false;
+    }
+    frDescriptors.push(Array.from(det.descriptor));
+    if(frPhotos.length<3)frPhotos.push(canvas.toDataURL('image/jpeg',0.7).split(',')[1]);
+    return true;
+  }catch(e){console.log('frCaptureFrameWithCheck error:',e);return false;}
 }
 
 async function frCaptureFrame(){
