@@ -971,10 +971,26 @@ function showGuestManual(){$('guestManual').style.display='block';$('guestManual
 let guestScanInterval=null,guestIdentified=null,guestPhoto=null,guestGpsData=null;
 async function startGuestFlow(){
   guestIdentified=null;guestPhoto=null;guestGpsData=null;
-  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
-  $('guestVideo').srcObject=camStream;
-  await new Promise(r=>{$('guestVideo').onloadeddata=r;setTimeout(r,3000);});await new Promise(r=>setTimeout(r,500));
-  }catch(e){$('guestCamStatus').textContent='❌ เปิดกล้องไม่ได้';return;}
+  $('guestCamStatus').textContent='📸 กำลังขอสิทธิ์ใช้กล้อง...';
+  // ⭐ Timeout protection: ถ้า getUserMedia ไม่ตอบใน 15 วิ → fail
+  try{
+    const camPromise=navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
+    const timeoutPromise=new Promise((_,rej)=>setTimeout(()=>rej(new Error('TIMEOUT: รออนุญาตเกิน 15 วินาที')),15000));
+    camStream=await Promise.race([camPromise,timeoutPromise]);
+    $('guestCamStatus').textContent='📸 กล้องเปิดแล้ว รอภาพ...';
+    $('guestVideo').srcObject=camStream;
+    await new Promise(r=>{$('guestVideo').onloadeddata=r;setTimeout(r,3000);});await new Promise(r=>setTimeout(r,500));
+  }catch(e){
+    let msg='❌ ';
+    if(e.name==='NotAllowedError')msg+='ปฏิเสธสิทธิ์กล้อง — กดอนุญาตที่ Settings';
+    else if(e.name==='NotFoundError')msg+='ไม่พบกล้อง';
+    else if(e.name==='NotReadableError')msg+='กล้องถูกใช้งานโดยแอปอื่น — ปิดแอปอื่นก่อน';
+    else if(e.message&&e.message.startsWith('TIMEOUT'))msg+=e.message+' — กดอนุญาตที่ popup';
+    else msg+='เปิดกล้องไม่ได้: '+(e.name||'')+' '+(e.message||'');
+    $('guestCamStatus').textContent=msg;
+    console.error('startGuestFlow camera err:',e);
+    return;
+  }
   $('guestCamStatus').textContent='📸 กล้องพร้อม';
   // GPS
   if(navigator.geolocation){navigator.geolocation.watchPosition(pos=>{guestGpsData={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};$('guestGps').className='gps-status ok';$('guestGps').textContent='📍 GPS พร้อม (±'+Math.round(guestGpsData.accuracy)+'m)';},err=>{$('guestGps').className='gps-status fail';$('guestGps').textContent='❌ GPS: '+err.message;},{enableHighAccuracy:true,timeout:30000,maximumAge:0});}
@@ -1063,6 +1079,8 @@ function showApp(){
     const checkinPage=$('page-checkin');
     if(checkinNav){checkinNav.classList.add('active');$('pageTitle').textContent=checkinNav.textContent.trim();}
     if(checkinPage)checkinPage.classList.add('active');
+    // ⭐ v4.8.3: trigger camera+GPS init ตอน auto-redirect (เดิมขาดเรียก loadPage)
+    setTimeout(()=>loadPage('checkin'),100);
   }
   const t=new Date(),d26=new Date(t.getFullYear(),t.getMonth()-1,26);
   if($('atFrom'))$('atFrom').value=fmt(d26);if($('atTo'))$('atTo').value=fmt(t);
@@ -1209,9 +1227,25 @@ async function loadAllFaces(){
 // ===== CAMERA =====
 async function startCamera(videoEl){
   // Reuse existing stream if still active
-  if(camStream&&camStream.active){videoEl.srcObject=camStream;return true;}
-  try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
-  videoEl.srcObject=camStream;return true;}catch(e){return false;}
+  if(camStream&&camStream.active){
+    videoEl.srcObject=camStream;
+    videoEl.setAttribute('playsinline','true');videoEl.setAttribute('webkit-playsinline','true');videoEl.muted=true;
+    try{await videoEl.play();}catch(e){}
+    return true;
+  }
+  try{
+    // ⭐ Timeout 15s
+    const camPromise=navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
+    const timeoutPromise=new Promise((_,rej)=>setTimeout(()=>rej(new Error('TIMEOUT')),15000));
+    camStream=await Promise.race([camPromise,timeoutPromise]);
+    videoEl.srcObject=camStream;
+    videoEl.setAttribute('playsinline','true');videoEl.setAttribute('webkit-playsinline','true');videoEl.muted=true;
+    try{await videoEl.play();}catch(e){console.log('videoEl.play err:',e.message);}
+    return true;
+  }catch(e){
+    console.log('startCamera err:',e);
+    return false;
+  }
 }
 function stopCamera(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}}
 function stopGPS(){if(gpsWatchId){navigator.geolocation.clearWatch(gpsWatchId);gpsWatchId=null;}}
@@ -1290,10 +1324,24 @@ async function startCheckinFlow(){
     $('camStatus').textContent='📸 กล้องพร้อม';
   }else{
     $('faceStatus').innerHTML='🤖 กำลังเตรียมระบบ...';
+    $('camStatus').textContent='📸 กำลังขอสิทธิ์ใช้กล้อง...';
     const ok=await startCamera($('camVideo'));
-    if(!ok){$('camStatus').textContent='❌ เปิดกล้องไม่ได้';return;}
-    await new Promise((resolve)=>{$('camVideo').onloadeddata=resolve;setTimeout(resolve,3000);});
-    await new Promise(r=>setTimeout(r,500));
+    if(!ok){
+      $('camStatus').textContent='❌ เปิดกล้องไม่ได้ — กดอนุญาตที่ Settings → Safari → Camera';
+      return;
+    }
+    $('camStatus').textContent='📸 รอภาพจากกล้อง...';
+    // Poll videoWidth (iOS-friendly)
+    const cv=$('camVideo');
+    const t0=Date.now();
+    while(Date.now()-t0<5000){
+      if(cv.videoWidth>0 && cv.readyState>=2)break;
+      await new Promise(r=>setTimeout(r,100));
+    }
+    if(cv.videoWidth===0){
+      $('camStatus').textContent='❌ กล้องไม่ส่งภาพ — รีเฟรชหน้า';
+      return;
+    }
     $('camStatus').textContent='📸 กล้องพร้อม';
   }
   // Start GPS if not running
@@ -1722,12 +1770,37 @@ async function frStartScan(){
   if(!firstName && !lastName){alert('กรุณากรอกชื่อจริง และนามสกุล');return;}
   if(!firstName){alert('กรุณากรอกชื่อจริง');return;}
   $('frStartBtn').style.display='none';
-  $('frCamStatus').textContent='📸 กำลังเปิดกล้อง...';
-  try{frStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
-  $('frVideo').srcObject=frStream;
-  await new Promise((resolve)=>{$('frVideo').onloadeddata=resolve;setTimeout(resolve,3000);});
-  await new Promise(r=>setTimeout(r,500));
-  }catch(e){$('frCamStatus').textContent='❌ เปิดกล้องไม่ได้: '+e.message;$('frStartBtn').style.display='block';return;}
+  $('frCamStatus').textContent='📸 กำลังขอสิทธิ์ใช้กล้อง...';
+  // ⭐ Timeout protection
+  try{
+    const camPromise=navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}});
+    const timeoutPromise=new Promise((_,rej)=>setTimeout(()=>rej(new Error('TIMEOUT: รออนุญาต 15 วินาที')),15000));
+    frStream=await Promise.race([camPromise,timeoutPromise]);
+    $('frCamStatus').textContent='📸 กล้องเปิดแล้ว รอภาพ...';
+    const fv=$('frVideo');
+    fv.srcObject=frStream;
+    fv.setAttribute('playsinline','true');fv.setAttribute('webkit-playsinline','true');fv.muted=true;
+    try{await fv.play();}catch(e){console.log('fv.play err:',e.message);}
+    // Poll videoWidth (iOS-friendly)
+    const t0=Date.now();
+    while(Date.now()-t0<5000){
+      if(fv.videoWidth>0 && fv.readyState>=2)break;
+      await new Promise(r=>setTimeout(r,100));
+    }
+    if(fv.videoWidth===0){
+      $('frCamStatus').textContent='❌ กล้องไม่ส่งภาพ — ลองรีเฟรช';
+      $('frStartBtn').style.display='block';return;
+    }
+  }catch(e){
+    let msg='❌ ';
+    if(e.name==='NotAllowedError')msg+='ปฏิเสธสิทธิ์กล้อง — Settings → Safari → Camera';
+    else if(e.name==='NotFoundError')msg+='ไม่พบกล้อง';
+    else if(e.name==='NotReadableError')msg+='กล้องถูกใช้งานโดยแอปอื่น';
+    else if(e.message&&e.message.startsWith('TIMEOUT'))msg+=e.message+' — กดอนุญาตที่ popup';
+    else msg+='เปิดกล้องไม่ได้: '+(e.name||'')+' '+(e.message||'');
+    $('frCamStatus').textContent=msg;
+    $('frStartBtn').style.display='block';return;
+  }
   $('frCamStatus').textContent='🤖 กำลังโหลด Face Model...';
   const ok=await loadFaceModels();
   if(!ok){$('frCamStatus').textContent='⚠️ โหลด Face Model ไม่สำเร็จ';$('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';return;}
