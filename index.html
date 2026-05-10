@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HR Payroll v4.8.4 - 2026-05-10 — bug fixes + leave quota + payslip PDF + auto OT -->
+<!-- HR Payroll v4.8.2 - 2026-04-30-1130 -->
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -451,7 +451,6 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
         <div class="tw"><div class="th_"><h3>🧾 Payslip</h3><div class="fl">
           <select id="psComp" onchange="loadPayslipList()" style="display:none"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select>
           <select id="psPeriod" onchange="onPeriodChange()" style="min-width:180px"><option value="">-- เลือกงวด --</option></select>
-          <button id="psPdfBtn" style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="downloadPayslipPDF()">📄 PDF</button>
           <button id="psPrintBtn" style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="printPayslip()">🖨️ Print</button>
         </div></div>
         <div id="psAdminBar" style="display:none;padding:8px 16px;border-bottom:1px solid var(--bd);font-size:12px">
@@ -534,11 +533,9 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           <h3>📝 ยื่นขอลาล่วงหน้า</h3>
           <div class="absent-form">
             <label>Employee ID</label>
-            <input id="lrEmpId" placeholder="เช่น JKN001" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onchange="loadLeaveQuota()">
-            <!-- ⭐ v4.8.4: Quota balance display -->
-            <div id="lrQuotaInfo" style="margin-bottom:10px"></div>
+            <input id="lrEmpId" placeholder="เช่น JKN001" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
             <label>ประเภทการลา</label>
-            <select id="lrType" onchange="loadLeaveQuota()"><option value="Annual">ลาพักร้อน (Annual)</option><option value="Sick">ลาป่วย (Sick)</option><option value="Personal">ลากิจ (Personal)</option><option value="Maternity">ลาคลอด (Maternity)</option><option value="Other">อื่นๆ (Other)</option></select>
+            <select id="lrType"><option value="Vacation">ลาพักร้อน</option><option value="Sick Leave">ลาป่วย</option><option value="Personal Leave">ลากิจ</option><option value="Maternity">ลาคลอด</option><option value="Other">อื่นๆ</option></select>
             <label>วันเริ่มลา</label>
             <input type="date" id="lrStart">
             <label>วันสิ้นสุดลา</label>
@@ -1709,44 +1706,49 @@ function restartCheckin(){resetCheckin();startCheckinFlow();}
 // ===== FACE REGISTRATION — Video-guided multi-angle scan =====
 let frStream=null,frDescriptors=[],frPhotos=[],frScanning=false;
 // ⭐ v4.8.1: pose มี check function — ต้องหันถูกท่าจริงค่อยผ่าน
+// ⭐ v4.8.4: Face ID Style — hold pose 1.5s ก่อนผ่าน
+// canvas mirrored แล้ว coords ตรงกับสิ่งที่ผู้ใช้เห็นบนจอ
+// nose.x น้อย (left side of screen) = ผู้ใช้หันซ้าย
+// nose.x มาก (right side of screen) = ผู้ใช้หันขวา
+const FR_POSE_HOLD_MS=1500;  // ต้อง hold ท่า 1.5 วินาที
 const FR_POSES=[
-  {emoji:'😊',text:'หันหน้าตรง',minSamples:3,timeout:20000,check:(ld)=>{
+  {emoji:'😊',text:'หันหน้าตรง',timeout:30000,check:(ld)=>{
     const nose=ld.getNose(),jaw=ld.getJawOutline();
     const noseX=nose[3].x;
     const faceLeft=jaw[0].x,faceRight=jaw[16].x;
     const faceCenter=(faceLeft+faceRight)/2;
     const offset=Math.abs(noseX-faceCenter)/(faceRight-faceLeft);
-    return offset<0.08;
+    return offset<0.06; // หน้าตรงค่อนข้าง strict
   }},
-  {emoji:'👈',text:'หันซ้ายเล็กน้อย',minSamples:2,timeout:20000,check:(ld)=>{
+  {emoji:'👈',text:'หันซ้ายช้าๆ',timeout:30000,check:(ld)=>{
     const nose=ld.getNose(),jaw=ld.getJawOutline();
     const noseX=nose[3].x;
     const faceLeft=jaw[0].x,faceRight=jaw[16].x;
     const faceCenter=(faceLeft+faceRight)/2;
     const ratio=(noseX-faceCenter)/(faceRight-faceLeft);
-    return ratio>0.10;
+    return ratio<-0.12; // หันซ้าย = nose ไปทางซ้ายของจอ (ค่าน้อย)
   }},
-  {emoji:'👉',text:'หันขวาเล็กน้อย',minSamples:2,timeout:20000,check:(ld)=>{
+  {emoji:'👉',text:'หันขวาช้าๆ',timeout:30000,check:(ld)=>{
     const nose=ld.getNose(),jaw=ld.getJawOutline();
     const noseX=nose[3].x;
     const faceLeft=jaw[0].x,faceRight=jaw[16].x;
     const faceCenter=(faceLeft+faceRight)/2;
     const ratio=(noseX-faceCenter)/(faceRight-faceLeft);
-    return ratio<-0.10;
+    return ratio>0.12; // หันขวา = nose ไปทางขวาของจอ (ค่ามาก)
   }},
-  {emoji:'☝️',text:'เงยหน้าขึ้นเล็กน้อย',minSamples:2,timeout:20000,check:(ld)=>{
+  {emoji:'☝️',text:'เงยหน้าขึ้น',timeout:30000,check:(ld)=>{
     const nose=ld.getNose(),jaw=ld.getJawOutline();
     const noseY=nose[3].y;
     const faceTop=Math.min(...jaw.map(p=>p.y)),faceBot=Math.max(...jaw.map(p=>p.y));
     const ratio=(noseY-faceTop)/(faceBot-faceTop);
-    return ratio<0.40;
+    return ratio<0.38; // เงยหน้า = nose ไปบน
   }},
-  {emoji:'👇',text:'ก้มหน้าลงเล็กน้อย',minSamples:2,timeout:20000,check:(ld)=>{
+  {emoji:'👇',text:'ก้มหน้าลง',timeout:30000,check:(ld)=>{
     const nose=ld.getNose(),jaw=ld.getJawOutline();
     const noseY=nose[3].y;
     const faceTop=Math.min(...jaw.map(p=>p.y)),faceBot=Math.max(...jaw.map(p=>p.y));
     const ratio=(noseY-faceTop)/(faceBot-faceTop);
-    return ratio>0.62;
+    return ratio>0.65; // ก้มหน้า = nose ไปล่าง
   }},
 ];
 
@@ -1810,31 +1812,58 @@ async function frStartScan(){
   $('frInstruction').style.display='block';
   if($('frSkipBtn'))$('frSkipBtn').style.display='block';
   frDescriptors=[];frPhotos=[];frScanning=true;
-  // ⭐ Loop pose — รอ pose ถูกจริงๆ + ผู้ใช้กดข้ามได้
+  // ⭐ v4.8.4 Face ID Style: hold pose 1.5s ก่อนผ่าน
   let totalPoses=FR_POSES.length,completedPoses=0;
   for(const pose of FR_POSES){
     if(!frScanning)break;
     frSkipPose=false;
     $('frPoseText').textContent=pose.emoji+' '+pose.text;
-    $('frCamStatus').textContent='🎬 '+pose.text+' (รอท่าให้ถูก หรือกด "ข้าม")';
-    let samplesForPose=0;
-    const startTime=Date.now();
-    while(samplesForPose<pose.minSamples && frScanning && !frSkipPose){
-      if(Date.now()-startTime>pose.timeout){
+    $('frCamStatus').textContent='🎬 ทำท่า: '+pose.text;
+    
+    let holdStart=null;          // เวลาที่เริ่ม hold pose ที่ถูกต้อง
+    let captured=false;          // เก็บ descriptor แล้วหรือยัง
+    const poseStartTime=Date.now();
+    
+    while(!captured && frScanning && !frSkipPose){
+      // Timeout ทั้ง pose
+      if(Date.now()-poseStartTime>pose.timeout){
         $('frCamStatus').textContent='⏱️ ข้าม "'+pose.text+'" (timeout)';
         await new Promise(r=>setTimeout(r,800));
         break;
       }
-      const got=await frCaptureFrameWithCheck(pose);
-      if(got){
-        samplesForPose++;
-        $('frCamStatus').textContent='✅ '+pose.text+' '+samplesForPose+'/'+pose.minSamples;
+      
+      const result=await frCheckPose(pose);
+      
+      if(result.poseOk){
+        // ผู้ใช้ทำท่าถูก — เริ่ม/ดำเนินการ hold
+        if(!holdStart)holdStart=Date.now();
+        const heldFor=Date.now()-holdStart;
+        const holdProgress=Math.min(heldFor/FR_POSE_HOLD_MS,1);
+        $('frCamStatus').textContent='✋ ค้างไว้... '+Math.round(holdProgress*100)+'%';
+        
+        // Update progress bar (รวมทุก pose)
+        const overall=((completedPoses+holdProgress)/totalPoses)*100;
+        $('frProgressBar').style.width=Math.min(overall,100)+'%';
+        
+        // ถ้า hold ครบ → capture descriptor
+        if(heldFor>=FR_POSE_HOLD_MS && result.descriptor){
+          frDescriptors.push(Array.from(result.descriptor));
+          if(frPhotos.length<3 && result.photo)frPhotos.push(result.photo);
+          $('frCamStatus').textContent='✅ '+pose.text+' สำเร็จ!';
+          $('frScanCount').textContent='เก็บข้อมูล '+frDescriptors.length+' จุด';
+          captured=true;
+          await new Promise(r=>setTimeout(r,500)); // pause สั้นๆ ก่อน pose ถัดไป
+        }
+      }else{
+        // ทำท่าไม่ถูก — reset hold
+        holdStart=null;
+        if(result.noFace){
+          $('frCamStatus').textContent='🔍 หาใบหน้าไม่เจอ';
+        }else{
+          $('frCamStatus').textContent='🔄 '+pose.text+' (ทำท่าให้ถูก)';
+        }
       }
-      const poseProgress=samplesForPose/pose.minSamples;
-      const overall=((completedPoses+poseProgress)/totalPoses)*100;
-      $('frProgressBar').style.width=Math.min(overall,100)+'%';
-      $('frScanCount').textContent='เก็บข้อมูล '+frDescriptors.length+' จุด';
-      await new Promise(r=>setTimeout(r,300));
+      await new Promise(r=>setTimeout(r,150)); // poll ทุก 150ms
     }
     completedPoses++;
   }
@@ -1853,11 +1882,11 @@ async function frStartScan(){
   }
 }
 
-// ⭐ ตรวจ pose แล้วเก็บ descriptor ถ้าผ่าน
-async function frCaptureFrameWithCheck(pose){
-  if(!frStream||!faceModelsLoaded)return false;
+// ⭐ v4.8.4: ตรวจ pose แต่ไม่ capture เลย — return ผลให้ caller ตัดสินใจ
+async function frCheckPose(pose){
+  if(!frStream||!faceModelsLoaded)return {poseOk:false,noFace:true};
   const video=$('frVideo');
-  if(!video||video.videoWidth===0||video.readyState<2)return false;
+  if(!video||video.videoWidth===0||video.readyState<2)return {poseOk:false,noFace:true};
   const canvas=$('frCanvas');
   canvas.width=video.videoWidth;canvas.height=video.videoHeight;
   const ctx=canvas.getContext('2d');
@@ -1865,18 +1894,18 @@ async function frCaptureFrameWithCheck(pose){
   ctx.drawImage(video,0,0);ctx.setTransform(1,0,0,1,0,0);
   try{
     const det=await faceapi.detectSingleFace(canvas,new faceapi.TinyFaceDetectorOptions({scoreThreshold:0.3})).withFaceLandmarks(true).withFaceDescriptor();
-    if(!det){
-      $('frCamStatus').textContent='🔍 หาใบหน้าไม่เจอ';
-      return false;
-    }
-    if(!pose.check(det.landmarks)){
-      $('frCamStatus').textContent='🔄 '+pose.text+' (ทำท่าให้ถูก)';
-      return false;
-    }
-    frDescriptors.push(Array.from(det.descriptor));
-    if(frPhotos.length<3)frPhotos.push(canvas.toDataURL('image/jpeg',0.7).split(',')[1]);
-    return true;
-  }catch(e){console.log('frCaptureFrameWithCheck error:',e);return false;}
+    if(!det)return {poseOk:false,noFace:true};
+    const poseOk=pose.check(det.landmarks);
+    return {
+      poseOk:poseOk,
+      noFace:false,
+      descriptor:poseOk?det.descriptor:null,
+      photo:poseOk?canvas.toDataURL('image/jpeg',0.7).split(',')[1]:null
+    };
+  }catch(e){
+    console.log('frCheckPose error:',e);
+    return {poseOk:false,noFace:true};
+  }
 }
 
 async function frCaptureFrame(){
@@ -2387,14 +2416,11 @@ async function initPayslip(){
     $('psAdminBar').style.display='';
     $('psEmpList').style.display='';
     $('psPrintBtn').style.display='';
-    $('psPdfBtn').style.display=''; // ⭐ v4.8.4: PDF available to all
   }else{
     $('psComp').style.display='none';
     $('psAdminBar').style.display='none';
     $('psEmpList').style.display='none';
     $('psPrintBtn').style.display='none';
-    // ⭐ v4.8.4: Employee ดาวน์โหลด PDF ของตัวเองได้
-    $('psPdfBtn').style.display='';
   }
   const empId=curUser.empId||'';
   $('psEmpId').value=empId;
@@ -2527,35 +2553,6 @@ function printPayslip(){
   const content=$('payslipPrint');
   if(!content){alert('โหลด Payslip ก่อน');return;}
   window.print();
-}
-
-// ⭐ v4.8.4: Download Payslip PDF — เรียก backend, รอ Google Doc render → PDF → Drive link
-async function downloadPayslipPDF(){
-  const empId=$('psEmpId').value.trim(),period=$('psPeriod').value;
-  if(!empId||!period){alert('เลือก Period และ Employee ก่อน');return;}
-  const btn=$('psPdfBtn');
-  const orig=btn.innerHTML;
-  btn.disabled=true;
-  btn.innerHTML='⏳ Generating...';
-  try{
-    const d=await apiPost({
-      action:'generate_payslip_pdf',
-      empId,period,
-      viewerRole:curUser.role||'employee',
-      viewerEmpId:curUser.empId||''
-    });
-    if(d&&d.success&&d.url){
-      // เปิดในแท็บใหม่ — ผู้ใช้กด Download ใน Drive viewer ได้
-      window.open(d.url,'_blank');
-    }else{
-      alert(d?d.message:'❌ เชื่อมต่อไม่ได้');
-    }
-  }catch(e){
-    alert('❌ '+e.message);
-  }finally{
-    btn.disabled=false;
-    btn.innerHTML=orig;
-  }
 }
 async function loadHol(){const d=await apiGet('holidays');if(!d||!d.success)return;renderTbl('hlHd','hlBd',d.data)}
 async function loadPrayer(){const d=await apiGet('prayer_log');if(!d||!d.success)return;renderTbl('prHd','prBd',d.data)}
@@ -2919,45 +2916,6 @@ async function loadAdvanceReport(){
 }
 
 // ===== LEAVE REQUEST =====
-// ⭐ v4.8.4: แสดง quota balance ตามประเภทที่เลือก + เลข remaining ของทุก type
-async function loadLeaveQuota(){
-  const el=$('lrQuotaInfo');if(!el)return;
-  const empId=isEmployee()?(curUser.empId||''):($('lrEmpId').value||'').trim();
-  if(!empId){el.innerHTML='';return;}
-  const year=new Date().getFullYear();
-  const d=await apiGet('leave_quota',{empId,year});
-  if(!d||!d.success){el.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center">ไม่สามารถโหลด quota</div>';return;}
-  const lt=$('lrType').value;
-  const used=d.used[lt]||0;
-  const max=d.quotas[lt];
-  const rem=d.remaining[lt];
-  let html='<div style="padding:10px 12px;background:var(--s2);border-radius:8px;font-size:12px;border-left:3px solid ';
-  if(max===undefined){
-    // No quota configured for this type — unlimited
-    html+='var(--t3)"><span style="color:var(--t3)">⚠️ ประเภท "'+lt+'" ยังไม่มี quota ใน Settings — ไม่จำกัด</span>';
-  } else if(rem<=0){
-    html+='var(--red)"><span style="color:var(--red);font-weight:600">❌ '+lt+' โควต้าหมดแล้ว — ใช้ '+used+'/'+max+' วัน (ปี '+year+')</span>';
-  } else {
-    const pct=Math.round(used*100/max);
-    const c=pct>=80?'var(--red)':pct>=50?'var(--amb)':'var(--grn)';
-    html+=c+'"><span style="color:'+c+';font-weight:600">'+lt+' (ปี '+year+'): เหลือ '+rem+' / '+max+' วัน</span> <span style="color:var(--t3);margin-left:6px">ใช้ไป '+used+' วัน</span>';
-    // mini progress bar
-    html+='<div style="margin-top:6px;height:4px;background:var(--s3);border-radius:2px;overflow:hidden"><div style="width:'+Math.min(100,pct)+'%;height:100%;background:'+c+';transition:width .3s"></div></div>';
-  }
-  // Breakdown ของทุก type ใน quota
-  const types=Object.keys(d.quotas);
-  if(types.length>0){
-    html+='<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--bd);font-size:10px;color:var(--t3);display:flex;flex-wrap:wrap;gap:8px">';
-    types.forEach(t=>{
-      const r=d.remaining[t],m=d.quotas[t];
-      html+='<span><b>'+t+'</b> '+r+'/'+m+'</span>';
-    });
-    html+='</div>';
-  }
-  html+='</div>';
-  el.innerHTML=html;
-}
-
 async function submitLeaveReq(){
   // Employee → ใช้ empId ตัวเอง (read-only)
   const empId=isEmployee()?(curUser.empId||''):$('lrEmpId').value.trim();
@@ -2965,31 +2923,21 @@ async function submitLeaveReq(){
   if(!empId){alert('กรุณากรอก Employee ID');return;}if(!s||!e){alert('กรุณาเลือกวันที่');return;}if(!r){alert('กรุณาระบุเหตุผล');return;}
   $('lrResult').innerHTML='<span style="color:var(--amb)">กำลังส่ง...</span>';
   const d=await apiPost({action:'submit_leave',eid:empId,lt,s,e,half,r});
-  // ⭐ v4.8.4: backend ตอนนี้ return success:false ถ้า quota ไม่พอ — เช็คทั้ง success flag และ message prefix
-  const ok=d&&(d.success===true||(d.message||'').indexOf('✅')===0);
-  $('lrResult').innerHTML=ok
-    ?'<span style="color:var(--grn)">'+(d.message||'OK')+'</span>'
-    :'<span style="color:var(--red);white-space:pre-line">'+(d?d.message:'เชื่อมต่อไม่ได้')+'</span>';
-  if(ok){$('lrReason').value='';loadLeaveReq();loadLeaveQuota();}
+  $('lrResult').innerHTML=d.message.includes('✅')?'<span style="color:var(--grn)">'+d.message+'</span>':'<span style="color:var(--red)">'+d.message+'</span>';
+  if(d.message.includes('✅')){$('lrReason').value='';loadLeaveReq();}
 }
 async function loadLeaveReq(){
   // ⭐ Employee → ส่ง empId param ให้ backend filter ให้
   const params=isEmployee()?{empId:curUser.empId||''}:{};
   const d=await apiGet('leave_requests',params);if(!d||!d.success)return;
   renderTbl('lrHd','lrBd',d.data);
-  // ⭐ v4.8.4: โหลด quota display พร้อมกับ history
-  loadLeaveQuota();
   // Show pending for admin only
   if(isAdmin()){
     const pending=d.data.filter((r,i)=>i>0&&r[10]==='Pending');
     $('lrPending').innerHTML=pending.length===0?'<div class="empty" style="padding:16px">ไม่มีรายการรออนุมัติ</div>':pending.map(r=>'<div class="ai" style="padding:10px 16px"><span style="flex:1"><b>'+r[2]+'</b> ('+r[1]+') — '+r[4]+': '+dispD(r[5])+' ถึง '+dispD(r[6])+'<br><span style="font-size:11px;color:var(--t3)">'+r[8]+'</span></span><button onclick="approveLv(\''+r[0]+'\',\'Approved\')" style="padding:4px 10px;background:var(--grn);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px">✅ อนุมัติ</button><button onclick="approveLv(\''+r[0]+'\',\'Rejected\')" style="padding:4px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px">❌ ไม่อนุมัติ</button></div>').join('');
   }
 }
-async function approveLv(lvId,action){
-  const d=await apiPost({action:'approve_leave',lvId,action_type:action,note:''});
-  alert(d.message);
-  loadLeaveReq();
-}
+async function approveLv(lvId,action){const d=await apiPost({action:'approve_leave',lvId,action_type:action,note:''});alert(d.message);loadLeaveReq();}
 
 // ===== NOTIFICATIONS =====
 async function loadNotifications(){
