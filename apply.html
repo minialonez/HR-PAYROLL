@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HR Payroll v4.8.6 - 2026-04-30 - Fix: GPS race condition + GPS_REQUIRED handler -->
+<!-- HR Payroll v4.8.7 - 2026-04-30 - Face ID UX (3 poses, circular ring, dots, glow) -->
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -77,6 +77,37 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
 .camera-area canvas{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;display:none}
 .camera-area .overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:180px;height:220px;border:3px solid rgba(59,130,246,.6);border-radius:50%;pointer-events:none;z-index:5}
 .camera-area .status{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;z-index:5}
+
+/* ⭐ v4.8.7 Face ID Style — circular face frame + progress ring */
+.faceid-area{position:relative;width:100%;aspect-ratio:1/1;max-width:380px;background:#000;border-radius:50%;overflow:hidden;margin:16px auto;box-shadow:0 0 60px rgba(59,130,246,.15)}
+.faceid-area video{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;transform:scaleX(-1)}
+.faceid-area canvas{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;display:none}
+/* SVG progress ring overlay */
+.faceid-ring{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5}
+.faceid-ring circle.bg{fill:none;stroke:rgba(255,255,255,0.15);stroke-width:6}
+.faceid-ring circle.fg{fill:none;stroke:var(--blue);stroke-width:6;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.4s ease, stroke 0.3s ease}
+.faceid-ring circle.fg.detect{stroke:var(--teal)}
+.faceid-ring circle.fg.complete{stroke:var(--grn)}
+/* Face frame guide (circle outline) */
+.faceid-area::before{content:'';position:absolute;top:50%;left:50%;width:60%;height:60%;transform:translate(-50%,-50%);border:2px dashed rgba(255,255,255,0.25);border-radius:50%;pointer-events:none;z-index:3;transition:opacity 0.3s}
+.faceid-area.detected::before{opacity:0}
+/* Detected glow */
+.faceid-area.detected{box-shadow:0 0 80px rgba(20,184,166,.5),inset 0 0 0 4px rgba(20,184,166,.6)}
+.faceid-area.holding{box-shadow:0 0 80px rgba(20,184,166,.7),inset 0 0 0 5px rgba(20,184,166,.85)}
+.faceid-area.complete{box-shadow:0 0 100px rgba(34,197,94,.7),inset 0 0 0 6px rgba(34,197,94,.95)}
+/* Pose dots (ticks) — 5 จุดรอบวงกลม แสดงท่าที่ผ่าน */
+.faceid-dots{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:6}
+.faceid-dots .dot{position:absolute;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:all 0.3s;font-weight:700}
+.faceid-dots .dot.active{background:var(--blue);border-color:var(--blue);transform:scale(1.2);box-shadow:0 0 12px var(--blue)}
+.faceid-dots .dot.done{background:var(--grn);border-color:var(--grn);transform:scale(1.1)}
+.faceid-dots .dot.done::after{content:'✓';font-size:13px}
+/* Center status badge */
+.faceid-status{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:8px 20px;border-radius:24px;font-size:13px;font-weight:600;z-index:7;text-align:center;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);max-width:80%}
+/* Pulse animation when detecting */
+@keyframes faceid-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.02);opacity:0.95}}
+.faceid-area.scanning{animation:faceid-pulse 2s ease-in-out infinite}
+@keyframes faceid-success{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+.faceid-area.pulse-success{animation:faceid-success 0.5s ease-out}
 .gps-status{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--s2);border-radius:8px;margin:12px 0;font-size:12px}
 .gps-status.ok{border:1px solid var(--grn);color:var(--grn)}.gps-status.fail{border:1px solid var(--red);color:var(--red)}.gps-status.loading{border:1px solid var(--amb);color:var(--amb)}
 .btn-checkin{width:100%;padding:16px;background:linear-gradient(135deg,#3b82f6,#14b8a6);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;margin-top:12px}
@@ -358,20 +389,33 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           <input id="frEmpId" type="hidden" value="">
           <!-- Auto-detected employee preview -->
           <div id="frEmpPreview" style="display:none;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px;margin-bottom:12px;text-align:center"></div>
-          <div class="camera-area">
+          <!-- ⭐ v4.8.7 Face ID Style — circular frame + progress ring + dots -->
+          <div class="faceid-area" id="frArea">
             <video id="frVideo" autoplay playsinline muted></video>
-            <canvas id="frCanvas" style="display:none"></canvas>
-            <div class="overlay"></div>
-            <div class="status" id="frCamStatus">กดปุ่มเพื่อเริ่ม</div>
-          </div>
-          <!-- Instruction overlay -->
-          <div id="frInstruction" style="text-align:center;margin:12px 0;display:none">
-            <div id="frPoseText" style="font-size:22px;font-weight:700;margin-bottom:8px">😊 หันหน้าตรง</div>
-            <div style="background:var(--s2);border-radius:8px;overflow:hidden;height:8px;margin:8px 0">
-              <div id="frProgressBar" style="background:linear-gradient(90deg,var(--blue),var(--teal));height:100%;width:0%;transition:width 0.3s"></div>
+            <canvas id="frCanvas"></canvas>
+            <!-- SVG progress ring -->
+            <svg class="faceid-ring" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+              <circle class="bg" cx="50" cy="50" r="46"/>
+              <circle class="fg" id="frRing" cx="50" cy="50" r="46" stroke-dasharray="289" stroke-dashoffset="289"/>
+            </svg>
+            <!-- 5 pose dots รอบวงกลม (top, top-right, bottom-right, bottom-left, top-left) -->
+            <div class="faceid-dots" id="frDots">
+              <div class="dot" id="frDot0" style="top:5%;left:50%;transform:translateX(-50%)"></div>
+              <div class="dot" id="frDot1" style="top:25%;right:8%"></div>
+              <div class="dot" id="frDot2" style="bottom:25%;right:8%"></div>
+              <div class="dot" id="frDot3" style="bottom:25%;left:8%"></div>
+              <div class="dot" id="frDot4" style="top:25%;left:8%"></div>
             </div>
+            <!-- Center status -->
+            <div class="faceid-status" id="frCamStatus">กดปุ่มเพื่อเริ่ม</div>
+          </div>
+          <!-- Pose text (above the circle) -->
+          <div id="frInstruction" style="text-align:center;margin:12px 0;display:none">
+            <div id="frPoseText" style="font-size:20px;font-weight:700;margin-bottom:6px">😊 หันหน้าตรง</div>
             <div id="frScanCount" style="font-size:11px;color:var(--t3)">เก็บข้อมูล 0 จุด</div>
           </div>
+          <!-- Hidden progress bar (used by old code path; replaced visually by ring) -->
+          <div id="frProgressBar" style="display:none"></div>
           <button class="btn-checkin" id="frStartBtn" onclick="frStartScan()">📸 เปิดกล้อง & เริ่มสแกน</button>
           <button id="frSkipBtn" onclick="frSkipCurrentPose()" style="display:none;margin-top:6px;padding:8px;background:var(--amb);color:#fff;border:none;border-radius:6px;font-size:12px;width:100%;cursor:pointer;font-weight:600">⏭️ ข้ามท่านี้ — ทำท่าถัดไป</button>
           <button class="btn-checkin" id="frSubmitBtn" onclick="frSubmit()" style="display:none;background:var(--grn)">✅ บันทึกลงทะเบียน</button>
@@ -1747,19 +1791,17 @@ function restartCheckin(){resetCheckin();startCheckinFlow();}
 // ===== FACE REGISTRATION — Video-guided multi-angle scan =====
 let frStream=null,frDescriptors=[],frPhotos=[],frScanning=false;
 // ⭐ v4.8.1: pose มี check function — ต้องหันถูกท่าจริงค่อยผ่าน
-// ⭐ v4.8.4: Face ID Style — hold pose 1.5s ก่อนผ่าน
+// ⭐ v4.8.7 Face ID Style — 3 poses เท่านั้น (ลบก้ม/เงยที่ตรวจยากออก)
 // canvas mirrored แล้ว coords ตรงกับสิ่งที่ผู้ใช้เห็นบนจอ
-// nose.x น้อย (left side of screen) = ผู้ใช้หันซ้าย
-// nose.x มาก (right side of screen) = ผู้ใช้หันขวา
-const FR_POSE_HOLD_MS=1500;  // ต้อง hold ท่า 1.5 วินาที
+const FR_POSE_HOLD_MS=1500;  // hold pose 1.5s
 const FR_POSES=[
-  {emoji:'😊',text:'หันหน้าตรง',timeout:30000,check:(ld)=>{
+  {emoji:'😊',text:'มองตรงเข้ากล้อง',timeout:30000,check:(ld)=>{
     const nose=ld.getNose(),jaw=ld.getJawOutline();
     const noseX=nose[3].x;
     const faceLeft=jaw[0].x,faceRight=jaw[16].x;
     const faceCenter=(faceLeft+faceRight)/2;
     const offset=Math.abs(noseX-faceCenter)/(faceRight-faceLeft);
-    return offset<0.06; // หน้าตรงค่อนข้าง strict
+    return offset<0.06;
   }},
   {emoji:'👈',text:'หันซ้ายช้าๆ',timeout:30000,check:(ld)=>{
     const nose=ld.getNose(),jaw=ld.getJawOutline();
@@ -1767,7 +1809,7 @@ const FR_POSES=[
     const faceLeft=jaw[0].x,faceRight=jaw[16].x;
     const faceCenter=(faceLeft+faceRight)/2;
     const ratio=(noseX-faceCenter)/(faceRight-faceLeft);
-    return ratio<-0.12; // หันซ้าย = nose ไปทางซ้ายของจอ (ค่าน้อย)
+    return ratio<-0.12;
   }},
   {emoji:'👉',text:'หันขวาช้าๆ',timeout:30000,check:(ld)=>{
     const nose=ld.getNose(),jaw=ld.getJawOutline();
@@ -1775,21 +1817,7 @@ const FR_POSES=[
     const faceLeft=jaw[0].x,faceRight=jaw[16].x;
     const faceCenter=(faceLeft+faceRight)/2;
     const ratio=(noseX-faceCenter)/(faceRight-faceLeft);
-    return ratio>0.12; // หันขวา = nose ไปทางขวาของจอ (ค่ามาก)
-  }},
-  {emoji:'☝️',text:'เงยหน้าขึ้น',timeout:30000,check:(ld)=>{
-    const nose=ld.getNose(),jaw=ld.getJawOutline();
-    const noseY=nose[3].y;
-    const faceTop=Math.min(...jaw.map(p=>p.y)),faceBot=Math.max(...jaw.map(p=>p.y));
-    const ratio=(noseY-faceTop)/(faceBot-faceTop);
-    return ratio<0.38; // เงยหน้า = nose ไปบน
-  }},
-  {emoji:'👇',text:'ก้มหน้าลง',timeout:30000,check:(ld)=>{
-    const nose=ld.getNose(),jaw=ld.getJawOutline();
-    const noseY=nose[3].y;
-    const faceTop=Math.min(...jaw.map(p=>p.y)),faceBot=Math.max(...jaw.map(p=>p.y));
-    const ratio=(noseY-faceTop)/(faceBot-faceTop);
-    return ratio>0.65; // ก้มหน้า = nose ไปล่าง
+    return ratio>0.12;
   }},
 ];
 
@@ -1797,9 +1825,48 @@ const FR_POSES=[
 let frSkipPose=false;
 function frSkipCurrentPose(){frSkipPose=true;}
 
+// ⭐ v4.8.7 Face ID UI helpers
+const FR_RING_CIRCUMFERENCE=289; // 2*pi*r where r=46
+function frSetRingProgress(percent,state){
+  // percent 0-100, state: 'idle'|'detect'|'complete'
+  const ring=$('frRing');if(!ring)return;
+  const offset=FR_RING_CIRCUMFERENCE*(1-Math.min(percent/100,1));
+  ring.setAttribute('stroke-dashoffset',offset);
+  ring.classList.remove('detect','complete');
+  if(state==='detect')ring.classList.add('detect');
+  else if(state==='complete')ring.classList.add('complete');
+}
+function frSetAreaState(state){
+  // state: 'idle'|'scanning'|'detected'|'holding'|'complete'
+  const a=$('frArea');if(!a)return;
+  a.classList.remove('scanning','detected','holding','complete');
+  if(state)a.classList.add(state);
+}
+function frPulseSuccess(){
+  const a=$('frArea');if(!a)return;
+  a.classList.add('pulse-success');
+  setTimeout(()=>a.classList.remove('pulse-success'),500);
+}
+function frSetDot(idx,state){
+  // idx 0-4, state: 'idle'|'active'|'done'
+  const dot=$('frDot'+idx);if(!dot)return;
+  dot.classList.remove('active','done');
+  if(state==='active')dot.classList.add('active');
+  else if(state==='done')dot.classList.add('done');
+}
+function frResetDots(total){
+  // ซ่อน dot ที่เกินจำนวน pose, set state idle
+  for(let i=0;i<5;i++){
+    const dot=$('frDot'+i);if(!dot)continue;
+    dot.classList.remove('active','done');
+    dot.style.display=(i<total)?'flex':'none';
+  }
+}
+
 function frReset(){
   frDescriptors=[];frPhotos=[];frScanning=false;frSkipPose=false;
   $('frSubmitBtn').style.display='none';$('frStartBtn').style.display='block';
+  $('frStartBtn').textContent='📸 เปิดกล้อง & เริ่มสแกน';
   $('frInstruction').style.display='none';$('frResult').textContent='';
   $('frCamStatus').textContent='กดปุ่มเพื่อเริ่ม';
   if($('frFirstName')){$('frFirstName').value='';}
@@ -1808,6 +1875,10 @@ function frReset(){
   if($('frEmpPreview')){$('frEmpPreview').style.display='none';$('frEmpPreview').innerHTML='';}
   if($('frSkipBtn'))$('frSkipBtn').style.display='none';
   if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}
+  // ⭐ v4.8.7: reset Face ID UI
+  frSetAreaState('idle');
+  frSetRingProgress(0,'idle');
+  frResetDots(FR_POSES.length);
 }
 
 async function frStartScan(){
@@ -1853,22 +1924,30 @@ async function frStartScan(){
   $('frInstruction').style.display='block';
   if($('frSkipBtn'))$('frSkipBtn').style.display='block';
   frDescriptors=[];frPhotos=[];frScanning=true;
-  // ⭐ v4.8.4 Face ID Style: hold pose 1.5s ก่อนผ่าน
+  // ⭐ v4.8.7 Face ID Style: hold pose 1.5s + visual ring + dots
   let totalPoses=FR_POSES.length,completedPoses=0;
-  for(const pose of FR_POSES){
+  frResetDots(totalPoses);
+  frSetAreaState('scanning');
+  frSetRingProgress(0,'idle');
+  
+  for(let pi=0;pi<FR_POSES.length;pi++){
+    const pose=FR_POSES[pi];
     if(!frScanning)break;
     frSkipPose=false;
     $('frPoseText').textContent=pose.emoji+' '+pose.text;
-    $('frCamStatus').textContent='🎬 ทำท่า: '+pose.text;
+    $('frCamStatus').textContent=pose.text;
+    frSetDot(pi,'active');
+    frSetRingProgress((completedPoses/totalPoses)*100,'idle');
     
-    let holdStart=null;          // เวลาที่เริ่ม hold pose ที่ถูกต้อง
-    let captured=false;          // เก็บ descriptor แล้วหรือยัง
+    let holdStart=null;
+    let captured=false;
     const poseStartTime=Date.now();
     
     while(!captured && frScanning && !frSkipPose){
       // Timeout ทั้ง pose
       if(Date.now()-poseStartTime>pose.timeout){
-        $('frCamStatus').textContent='⏱️ ข้าม "'+pose.text+'" (timeout)';
+        $('frCamStatus').textContent='⏱️ ข้าม (timeout)';
+        frSetDot(pi,'idle');
         await new Promise(r=>setTimeout(r,800));
         break;
       }
@@ -1880,46 +1959,54 @@ async function frStartScan(){
         if(!holdStart)holdStart=Date.now();
         const heldFor=Date.now()-holdStart;
         const holdProgress=Math.min(heldFor/FR_POSE_HOLD_MS,1);
-        $('frCamStatus').textContent='✋ ค้างไว้... '+Math.round(holdProgress*100)+'%';
+        $('frCamStatus').textContent='ค้างไว้... '+Math.round(holdProgress*100)+'%';
         
-        // Update progress bar (รวมทุก pose)
-        const overall=((completedPoses+holdProgress)/totalPoses)*100;
-        $('frProgressBar').style.width=Math.min(overall,100)+'%';
+        // ⭐ Face ID UI: state + ring
+        frSetAreaState(holdProgress>0.3?'holding':'detected');
+        // Ring shows hold progress for current pose (mapped to current pose's segment)
+        const segmentProgress=(completedPoses+holdProgress)/totalPoses;
+        frSetRingProgress(segmentProgress*100,'detect');
         
-        // ถ้า hold ครบ → capture descriptor
+        // ถ้า hold ครบ → capture
         if(heldFor>=FR_POSE_HOLD_MS && result.descriptor){
           frDescriptors.push(Array.from(result.descriptor));
           if(frPhotos.length<3 && result.photo)frPhotos.push(result.photo);
-          $('frCamStatus').textContent='✅ '+pose.text+' สำเร็จ!';
+          $('frCamStatus').textContent='✅ ผ่าน!';
           $('frScanCount').textContent='เก็บข้อมูล '+frDescriptors.length+' จุด';
+          frSetDot(pi,'done');
+          frPulseSuccess();
           captured=true;
-          await new Promise(r=>setTimeout(r,500)); // pause สั้นๆ ก่อน pose ถัดไป
+          await new Promise(r=>setTimeout(r,500));
         }
       }else{
-        // ทำท่าไม่ถูก — reset hold
         holdStart=null;
+        frSetAreaState('scanning');
         if(result.noFace){
           $('frCamStatus').textContent='🔍 หาใบหน้าไม่เจอ';
         }else{
-          $('frCamStatus').textContent='🔄 '+pose.text+' (ทำท่าให้ถูก)';
+          $('frCamStatus').textContent='🔄 ทำท่าให้ถูก';
         }
       }
-      await new Promise(r=>setTimeout(r,150)); // poll ทุก 150ms
+      await new Promise(r=>setTimeout(r,150));
     }
     completedPoses++;
   }
-  $('frProgressBar').style.width='100%';
+  // ⭐ Final state
+  frSetAreaState('complete');
+  frSetRingProgress(100,'complete');
   if(frStream){frStream.getTracks().forEach(t=>t.stop());frStream=null;}
   frScanning=false;
   if($('frSkipBtn'))$('frSkipBtn').style.display='none';
-  if(frDescriptors.length>=3){
-    $('frCamStatus').textContent='✅ สแกนเสร็จ! เก็บได้ '+frDescriptors.length+' จุด';
+  if(frDescriptors.length>=2){
+    $('frCamStatus').textContent='✅ สแกนเสร็จ!';
     $('frPoseText').textContent='✅ สแกนเสร็จสมบูรณ์!';
     $('frSubmitBtn').style.display='block';
   }else{
-    $('frCamStatus').textContent='⚠️ เก็บได้น้อยเกินไป ('+frDescriptors.length+'/3) — ลองใหม่';
-    $('frPoseText').textContent='⚠️ กรุณาลองใหม่';
+    $('frCamStatus').textContent='⚠️ ลองใหม่';
+    $('frPoseText').textContent='⚠️ เก็บได้ '+frDescriptors.length+' จุด (ต้อง 2+) กรุณาลองใหม่';
     $('frStartBtn').style.display='block';$('frStartBtn').textContent='🔄 ลองใหม่';
+    frSetAreaState('idle');
+    frSetRingProgress(0,'idle');
   }
 }
 
