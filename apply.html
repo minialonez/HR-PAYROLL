@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HR Payroll v4.8.2 - 2026-04-30-1130 -->
+<!-- HR Payroll v4.8.6 - 2026-04-30 - Fix: GPS race condition + GPS_REQUIRED handler -->
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1096,6 +1096,8 @@ function showApp(){
     if(p!=='checkin'&&p!=='faceregister'){stopCamera();stopGPS();}
   }));
   startRef();loadAll();loadAllFaces();setupDashDateInput();
+  // ⭐ v4.8.6: เริ่ม GPS ทันทีหลัง login (ไม่รอเข้า Check-in page) — fix race condition
+  if(navigator.geolocation && !gpsWatchId)startGPS();
   // Block print/screenshot shortcuts for employee role
   if(curUser.role==='employee'||curUser.role==='manager'){
     document.addEventListener('keydown',function(e){
@@ -1648,13 +1650,31 @@ async function submitCheckin(reason){
   if(reason==='Early Leave')remarks=($('earlyType').value||'')+': '+($('earlyRemarks').value||'');
   const isOT=(reason==='OT In'||reason==='OT Out');
   const isLeave=(reason==='Sick Leave'||reason==='Personal Leave'||reason==='Early Leave');
-  const gps=gpsFace||gpsData;
-  // ⭐ v4.8.5: แจ้งเตือนถ้าไม่มี GPS (ยกเว้น Leave/OT)
-  if((!gps || !gps.lat || !gps.lng) && !isLeave && !isOT){
-    if(!confirm('⚠️ ไม่มีสัญญาณ GPS\n\n• กดอนุญาต Location Service\n• อาจอยู่ในตึก/พื้นที่ GPS อ่อน\n\nยังต้องการส่งหรือไม่?\n(ระบบจะ block ที่ backend)')){
-      return;
+  
+  // ⭐ v4.8.6: Wait for GPS to resolve (max 8 seconds) — fix race condition
+  if(!isLeave && !isOT){
+    let gps=gpsFace||gpsData;
+    if(!gps || !gps.lat || !gps.lng){
+      // Show waiting overlay
+      $('resultContent').innerHTML='<div class="big">📍</div><h3 style="color:var(--blue)">รอสัญญาณ GPS...</h3><p style="color:var(--t2);margin-top:8px">กำลังหาตำแหน่ง (รอสูงสุด 8 วินาที)</p>';
+      $('ciStep2').style.display='none';$('ciStepConfirm').style.display='none';$('ciStep3').style.display='block';
+      const t0=Date.now();
+      while(Date.now()-t0<8000){
+        gps=gpsFace||gpsData;
+        if(gps && gps.lat && gps.lng)break;
+        await new Promise(r=>setTimeout(r,300));
+      }
+      if(!gps || !gps.lat || !gps.lng){
+        $('resultContent').innerHTML='<div class="big">❌</div><h3 style="color:var(--red)">ไม่พบสัญญาณ GPS</h3>'+
+          '<p style="color:var(--t2);margin-top:8px;line-height:1.6">รอนาน 8 วินาทีแล้วยังไม่ได้ตำแหน่ง<br>'+
+          'กรุณาเปิด Location Service<br>หรือออกจากตึก/พื้นที่ GPS อ่อน</p>'+
+          '<button class="btn-checkin" style="margin-top:12px;background:var(--blue)" onclick="restartCheckin()">↩️ ลองใหม่</button>';
+        return;
+      }
     }
   }
+  
+  const gps=gpsFace||gpsData;
   console.log('[Checkin] sending GPS:',gps?gps.lat:'NULL',gps?gps.lng:'NULL','reason:',reason);
   const result=await apiPost({
     action:'photo_checkin',apiKey:API_KEY,empId:identifiedEmp.empId,reason:reason,
@@ -1681,6 +1701,19 @@ async function submitCheckin(reason){
       '• 🔶 <b>ออกก่อนเวลา</b> (Early Leave)'+
       '</div>'+
       '<button class="btn-checkin" style="margin-top:12px;background:var(--blue)" onclick="restartCheckin()">↩️ กลับไปเลือกเหตุผลลา</button>';
+  }
+  else if(result && result.errorCode==='GPS_REQUIRED'){
+    // ❌ ไม่มี GPS — สอนวิธีเปิด
+    $('resultContent').innerHTML='<div class="big">📍</div><h3 style="color:var(--red)">ไม่พบสัญญาณ GPS</h3>'+
+      '<p style="color:var(--t2);margin-top:8px;line-height:1.6">ไม่สามารถระบุตำแหน่งได้</p>'+
+      '<div style="margin-top:16px;padding:12px;background:var(--s2);border-radius:8px;font-size:13px;color:var(--t2);text-align:left;line-height:1.7">'+
+      '💡 <b>วิธีแก้:</b><br>'+
+      '1️⃣ Settings → Privacy → Location Services → ON<br>'+
+      '2️⃣ Settings → Safari → Location → Allow<br>'+
+      '3️⃣ ออกมานอกตึกถ้าอยู่ในที่ปิด<br>'+
+      '4️⃣ รีเฟรชหน้าใหม่'+
+      '</div>'+
+      '<button class="btn-checkin" style="margin-top:12px;background:var(--blue)" onclick="restartCheckin()">↩️ ลองใหม่</button>';
   }
   else{$('resultContent').innerHTML='<div class="big">❌</div><h3 style="color:var(--red)">ไม่สำเร็จ</h3><p style="color:var(--t2);margin-top:8px">'+(result?result.message:'เชื่อมต่อไม่ได้')+'</p>';}
 }
