@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HR Payroll v4.8.2 - 2026-04-30-1130 -->
+<!-- HR Payroll v4.8.4 - 2026-05-10 — bug fixes + leave quota + payslip PDF + auto OT -->
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -451,6 +451,7 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
         <div class="tw"><div class="th_"><h3>🧾 Payslip</h3><div class="fl">
           <select id="psComp" onchange="loadPayslipList()" style="display:none"><option value="">ทุกบริษัท</option><option>JKN</option><option>FC</option></select>
           <select id="psPeriod" onchange="onPeriodChange()" style="min-width:180px"><option value="">-- เลือกงวด --</option></select>
+          <button id="psPdfBtn" style="padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="downloadPayslipPDF()">📄 PDF</button>
           <button id="psPrintBtn" style="padding:5px 10px;background:var(--grn);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;display:none" onclick="printPayslip()">🖨️ Print</button>
         </div></div>
         <div id="psAdminBar" style="display:none;padding:8px 16px;border-bottom:1px solid var(--bd);font-size:12px">
@@ -533,9 +534,11 @@ td{padding:7px 10px;border-top:1px solid var(--bd);white-space:nowrap}tr:hover t
           <h3>📝 ยื่นขอลาล่วงหน้า</h3>
           <div class="absent-form">
             <label>Employee ID</label>
-            <input id="lrEmpId" placeholder="เช่น JKN001" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+            <input id="lrEmpId" placeholder="เช่น JKN001" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onchange="loadLeaveQuota()">
+            <!-- ⭐ v4.8.4: Quota balance display -->
+            <div id="lrQuotaInfo" style="margin-bottom:10px"></div>
             <label>ประเภทการลา</label>
-            <select id="lrType"><option value="Vacation">ลาพักร้อน</option><option value="Sick Leave">ลาป่วย</option><option value="Personal Leave">ลากิจ</option><option value="Maternity">ลาคลอด</option><option value="Other">อื่นๆ</option></select>
+            <select id="lrType" onchange="loadLeaveQuota()"><option value="Annual">ลาพักร้อน (Annual)</option><option value="Sick">ลาป่วย (Sick)</option><option value="Personal">ลากิจ (Personal)</option><option value="Maternity">ลาคลอด (Maternity)</option><option value="Other">อื่นๆ (Other)</option></select>
             <label>วันเริ่มลา</label>
             <input type="date" id="lrStart">
             <label>วันสิ้นสุดลา</label>
@@ -2384,11 +2387,14 @@ async function initPayslip(){
     $('psAdminBar').style.display='';
     $('psEmpList').style.display='';
     $('psPrintBtn').style.display='';
+    $('psPdfBtn').style.display=''; // ⭐ v4.8.4: PDF available to all
   }else{
     $('psComp').style.display='none';
     $('psAdminBar').style.display='none';
     $('psEmpList').style.display='none';
     $('psPrintBtn').style.display='none';
+    // ⭐ v4.8.4: Employee ดาวน์โหลด PDF ของตัวเองได้
+    $('psPdfBtn').style.display='';
   }
   const empId=curUser.empId||'';
   $('psEmpId').value=empId;
@@ -2521,6 +2527,35 @@ function printPayslip(){
   const content=$('payslipPrint');
   if(!content){alert('โหลด Payslip ก่อน');return;}
   window.print();
+}
+
+// ⭐ v4.8.4: Download Payslip PDF — เรียก backend, รอ Google Doc render → PDF → Drive link
+async function downloadPayslipPDF(){
+  const empId=$('psEmpId').value.trim(),period=$('psPeriod').value;
+  if(!empId||!period){alert('เลือก Period และ Employee ก่อน');return;}
+  const btn=$('psPdfBtn');
+  const orig=btn.innerHTML;
+  btn.disabled=true;
+  btn.innerHTML='⏳ Generating...';
+  try{
+    const d=await apiPost({
+      action:'generate_payslip_pdf',
+      empId,period,
+      viewerRole:curUser.role||'employee',
+      viewerEmpId:curUser.empId||''
+    });
+    if(d&&d.success&&d.url){
+      // เปิดในแท็บใหม่ — ผู้ใช้กด Download ใน Drive viewer ได้
+      window.open(d.url,'_blank');
+    }else{
+      alert(d?d.message:'❌ เชื่อมต่อไม่ได้');
+    }
+  }catch(e){
+    alert('❌ '+e.message);
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML=orig;
+  }
 }
 async function loadHol(){const d=await apiGet('holidays');if(!d||!d.success)return;renderTbl('hlHd','hlBd',d.data)}
 async function loadPrayer(){const d=await apiGet('prayer_log');if(!d||!d.success)return;renderTbl('prHd','prBd',d.data)}
@@ -2884,6 +2919,45 @@ async function loadAdvanceReport(){
 }
 
 // ===== LEAVE REQUEST =====
+// ⭐ v4.8.4: แสดง quota balance ตามประเภทที่เลือก + เลข remaining ของทุก type
+async function loadLeaveQuota(){
+  const el=$('lrQuotaInfo');if(!el)return;
+  const empId=isEmployee()?(curUser.empId||''):($('lrEmpId').value||'').trim();
+  if(!empId){el.innerHTML='';return;}
+  const year=new Date().getFullYear();
+  const d=await apiGet('leave_quota',{empId,year});
+  if(!d||!d.success){el.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center">ไม่สามารถโหลด quota</div>';return;}
+  const lt=$('lrType').value;
+  const used=d.used[lt]||0;
+  const max=d.quotas[lt];
+  const rem=d.remaining[lt];
+  let html='<div style="padding:10px 12px;background:var(--s2);border-radius:8px;font-size:12px;border-left:3px solid ';
+  if(max===undefined){
+    // No quota configured for this type — unlimited
+    html+='var(--t3)"><span style="color:var(--t3)">⚠️ ประเภท "'+lt+'" ยังไม่มี quota ใน Settings — ไม่จำกัด</span>';
+  } else if(rem<=0){
+    html+='var(--red)"><span style="color:var(--red);font-weight:600">❌ '+lt+' โควต้าหมดแล้ว — ใช้ '+used+'/'+max+' วัน (ปี '+year+')</span>';
+  } else {
+    const pct=Math.round(used*100/max);
+    const c=pct>=80?'var(--red)':pct>=50?'var(--amb)':'var(--grn)';
+    html+=c+'"><span style="color:'+c+';font-weight:600">'+lt+' (ปี '+year+'): เหลือ '+rem+' / '+max+' วัน</span> <span style="color:var(--t3);margin-left:6px">ใช้ไป '+used+' วัน</span>';
+    // mini progress bar
+    html+='<div style="margin-top:6px;height:4px;background:var(--s3);border-radius:2px;overflow:hidden"><div style="width:'+Math.min(100,pct)+'%;height:100%;background:'+c+';transition:width .3s"></div></div>';
+  }
+  // Breakdown ของทุก type ใน quota
+  const types=Object.keys(d.quotas);
+  if(types.length>0){
+    html+='<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--bd);font-size:10px;color:var(--t3);display:flex;flex-wrap:wrap;gap:8px">';
+    types.forEach(t=>{
+      const r=d.remaining[t],m=d.quotas[t];
+      html+='<span><b>'+t+'</b> '+r+'/'+m+'</span>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+  el.innerHTML=html;
+}
+
 async function submitLeaveReq(){
   // Employee → ใช้ empId ตัวเอง (read-only)
   const empId=isEmployee()?(curUser.empId||''):$('lrEmpId').value.trim();
@@ -2891,21 +2965,31 @@ async function submitLeaveReq(){
   if(!empId){alert('กรุณากรอก Employee ID');return;}if(!s||!e){alert('กรุณาเลือกวันที่');return;}if(!r){alert('กรุณาระบุเหตุผล');return;}
   $('lrResult').innerHTML='<span style="color:var(--amb)">กำลังส่ง...</span>';
   const d=await apiPost({action:'submit_leave',eid:empId,lt,s,e,half,r});
-  $('lrResult').innerHTML=d.message.includes('✅')?'<span style="color:var(--grn)">'+d.message+'</span>':'<span style="color:var(--red)">'+d.message+'</span>';
-  if(d.message.includes('✅')){$('lrReason').value='';loadLeaveReq();}
+  // ⭐ v4.8.4: backend ตอนนี้ return success:false ถ้า quota ไม่พอ — เช็คทั้ง success flag และ message prefix
+  const ok=d&&(d.success===true||(d.message||'').indexOf('✅')===0);
+  $('lrResult').innerHTML=ok
+    ?'<span style="color:var(--grn)">'+(d.message||'OK')+'</span>'
+    :'<span style="color:var(--red);white-space:pre-line">'+(d?d.message:'เชื่อมต่อไม่ได้')+'</span>';
+  if(ok){$('lrReason').value='';loadLeaveReq();loadLeaveQuota();}
 }
 async function loadLeaveReq(){
   // ⭐ Employee → ส่ง empId param ให้ backend filter ให้
   const params=isEmployee()?{empId:curUser.empId||''}:{};
   const d=await apiGet('leave_requests',params);if(!d||!d.success)return;
   renderTbl('lrHd','lrBd',d.data);
+  // ⭐ v4.8.4: โหลด quota display พร้อมกับ history
+  loadLeaveQuota();
   // Show pending for admin only
   if(isAdmin()){
     const pending=d.data.filter((r,i)=>i>0&&r[10]==='Pending');
     $('lrPending').innerHTML=pending.length===0?'<div class="empty" style="padding:16px">ไม่มีรายการรออนุมัติ</div>':pending.map(r=>'<div class="ai" style="padding:10px 16px"><span style="flex:1"><b>'+r[2]+'</b> ('+r[1]+') — '+r[4]+': '+dispD(r[5])+' ถึง '+dispD(r[6])+'<br><span style="font-size:11px;color:var(--t3)">'+r[8]+'</span></span><button onclick="approveLv(\''+r[0]+'\',\'Approved\')" style="padding:4px 10px;background:var(--grn);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px">✅ อนุมัติ</button><button onclick="approveLv(\''+r[0]+'\',\'Rejected\')" style="padding:4px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px">❌ ไม่อนุมัติ</button></div>').join('');
   }
 }
-async function approveLv(lvId,action){const d=await apiPost({action:'approve_leave',lvId,action_type:action,note:''});alert(d.message);loadLeaveReq();}
+async function approveLv(lvId,action){
+  const d=await apiPost({action:'approve_leave',lvId,action_type:action,note:''});
+  alert(d.message);
+  loadLeaveReq();
+}
 
 // ===== NOTIFICATIONS =====
 async function loadNotifications(){
